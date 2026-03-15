@@ -25,6 +25,7 @@ interface Paquete {
   precio_doble: number;
   tipo: string;
   duracion: number;
+  status?: 'activo' | 'inactivo' | 'eliminado';
 }
 
 export default function CotizacionesPage() {
