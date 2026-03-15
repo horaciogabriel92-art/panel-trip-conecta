@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '@/lib/api';
 import { Package, Search, Filter, Plus, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -12,7 +12,7 @@ export default function PaquetesAdmin() {
   useEffect(() => {
     const fetchPaquetes = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/api/paquetes');
+        const res = await api.get('/paquetes');
         setPaquetes(res.data);
       } catch (err) {
         console.error(err);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '@/lib/api';
 import { Search, Filter, MapPin, Calendar, Users, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -13,7 +13,7 @@ export default function PaquetesCatalogo() {
   useEffect(() => {
     const fetchPaquetes = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/api/paquetes');
+        const res = await api.get('/paquetes');
         setPaquetes(res.data.filter((p: any) => p.status === 'activo'));
       } catch (err) {
         console.error(err);

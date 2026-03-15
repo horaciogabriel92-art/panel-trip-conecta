@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '@/lib/api';
 import { ShoppingCart, CheckCircle, Clock, ExternalLink, Download, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
@@ -14,7 +14,7 @@ export default function VentasPage() {
   useEffect(() => {
     const fetchVentas = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/api/ventas');
+        const res = await api.get('/ventas');
         setVentas(res.data);
       } catch (err) {
         console.error(err);

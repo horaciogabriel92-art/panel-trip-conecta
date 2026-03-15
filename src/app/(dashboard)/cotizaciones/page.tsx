@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '@/lib/api';
 import { FileText, Search, Plus, Filter, Calendar, User, DollarSign, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
@@ -14,7 +14,7 @@ export default function CotizacionesPage() {
   useEffect(() => {
     const fetchCotizaciones = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/api/cotizaciones');
+        const res = await api.get('/cotizaciones');
         setCotizaciones(res.data);
       } catch (err) {
         console.error(err);
