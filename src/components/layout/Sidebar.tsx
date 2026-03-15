@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { 
   LayoutDashboard, 
@@ -35,6 +36,7 @@ const vendedorLinks = [
 
 export default function Sidebar({ role = 'vendedor' }: { role?: 'admin' | 'vendedor' }) {
   const pathname = usePathname();
+  const { logout } = useAuth();
   const links = role === 'admin' ? adminLinks : vendedorLinks;
 
   return (
@@ -79,7 +81,10 @@ export default function Sidebar({ role = 'vendedor' }: { role?: 'admin' | 'vende
           <Settings className="w-5 h-5" />
           <span className="font-medium">Configuración</span>
         </button>
-        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all">
+        <button 
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all"
+        >
           <LogOut className="w-5 h-5" />
           <span className="font-medium">Cerrar Sesión</span>
         </button>
