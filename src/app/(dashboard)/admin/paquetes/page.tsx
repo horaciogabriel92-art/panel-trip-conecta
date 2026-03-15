@@ -56,7 +56,7 @@ export default function PaquetesAdmin() {
   const [formData, setFormData] = useState<Paquete>(emptyPaquete);
   const [incluyeInput, setIncluyeInput] = useState('');
   const [noIncluyeInput, setNoIncluyeInput] = useState('');
-  const [recursoInput, setRecursoInput] = useState({ nombre: '', url: '', tipo: 'imagen' as const });
+  const [recursoInput, setRecursoInput] = useState<{ nombre: string; url: string; tipo: 'imagen' | 'video' | 'pdf' }>({ nombre: '', url: '', tipo: 'imagen' });
 
   useEffect(() => {
     fetchPaquetes();
