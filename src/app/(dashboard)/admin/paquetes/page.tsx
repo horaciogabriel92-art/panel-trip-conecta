@@ -211,7 +211,9 @@ export default function PaquetesAdmin() {
       setShowModal(false);
       fetchPaquetes();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al guardar paquete');
+      console.error('Error completo:', err);
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message || 'Error al guardar paquete';
+      alert('Error: ' + errorMsg);
     }
   };
 
