@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
 import { 
   Plane, 
   Eye, 
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,10 +38,8 @@ export default function LoginPage() {
       const data = await response.json();
       
       if (response.ok) {
-        // Guardar token en localStorage
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        router.push("/dashboard");
+        // Usar el contexto para manejar el login
+        login(data.token, data.user);
       } else {
         alert(data.error || "Credenciales inválidas");
       }

@@ -27,9 +27,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen bg-[#0a0a0f]">
       <div className="gradient-bg" />
-      <Sidebar role={user.role} />
+      <Sidebar role={user.rol} />
       <div className="flex-1 flex flex-col">
-        <Header userName={`${user.nombre} ${user.apellido}`} userRole={user.role} />
+        <Header userName={`${user.nombre} ${user.apellido}`} userRole={user.rol} />
         <main className="flex-1 p-8 overflow-y-auto">
           {children}
         </main>

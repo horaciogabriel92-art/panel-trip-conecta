@@ -9,7 +9,7 @@ interface User {
   email: string;
   nombre: string;
   apellido: string;
-  role: 'admin' | 'vendedor';
+  rol: 'admin' | 'vendedor';
 }
 
 interface AuthContextType {
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('user', JSON.stringify(newUser));
     axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     
-    if (newUser.role === 'admin') {
+    if (newUser.rol === 'admin') {
       router.push('/admin');
     } else {
       router.push('/dashboard');
