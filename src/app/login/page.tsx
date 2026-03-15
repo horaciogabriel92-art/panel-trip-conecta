@@ -23,11 +23,32 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Aquí iría la llamada a la API
-    setTimeout(() => {
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Guardar token en localStorage
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        router.push("/dashboard");
+      } else {
+        alert(data.error || "Credenciales inválidas");
+      }
+    } catch (error) {
+      console.error("Error de login:", error);
+      alert("Error al conectar con el servidor");
+    } finally {
       setIsLoading(false);
-      router.push("/dashboard");
-    }, 1500);
+    }
   };
 
   return (
