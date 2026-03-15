@@ -2,46 +2,38 @@
 
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
-import { ShoppingCart, Search, Filter, Calendar, User, DollarSign, CheckCircle, Clock, XCircle, Download } from 'lucide-react';
+import { 
+  ShoppingCart, 
+  Search, 
+  Eye, 
+  FileText,
+  DollarSign,
+  Calendar,
+  User,
+  Upload
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 interface Venta {
   id: string;
   codigo: string;
   cliente_nombre: string;
-  cliente_email: string;
+  vendedor_nombre?: string;
   paquete_nombre: string;
-  fecha_salida: string;
-  num_pasajeros: number;
   precio_total: number;
   comision_monto: number;
   comision_estado: 'pendiente' | 'pagada';
-  estado: 'confirmada' | 'en_proceso' | 'emitida' | 'cancelada';
+  estado: string;
   fecha_creacion: string;
-  vendedor?: {
-    nombre: string;
-    apellido: string;
-  };
+  num_pasajeros: number;
+  tiene_documentos?: boolean;
 }
 
-const statusColors: Record<string, string> = {
-  confirmada: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  en_proceso: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-  emitida: 'bg-green-500/10 text-green-400 border-green-500/20',
-  cancelada: 'bg-red-500/10 text-red-400 border-red-500/20',
-};
-
-const statusLabels: Record<string, string> = {
-  confirmada: 'Confirmada',
-  en_proceso: 'En Proceso',
-  emitida: 'Emitida',
-  cancelada: 'Cancelada',
-};
-
-export default function VentasAdmin() {
+export default function AdminVentas() {
   const [ventas, setVentas] = useState<Venta[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filtroEstado, setFiltroEstado] = useState<string>('todos');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchVentas();
@@ -52,147 +44,157 @@ export default function VentasAdmin() {
       const res = await api.get('/ventas');
       setVentas(res.data);
     } catch (err) {
-      console.error('Error fetching ventas:', err);
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const ventasFiltradas = filtroEstado === 'todos' 
-    ? ventas 
-    : ventas.filter(v => v.estado === filtroEstado);
+  const getStatusColor = (estado: string) => {
+    switch (estado) {
+      case 'emitida': return 'bg-green-500/10 text-green-400 border-green-500/20';
+      case 'confirmada': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      case 'en_proceso': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+      case 'cancelada': return 'bg-red-500/10 text-red-400 border-red-500/20';
+      default: return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+    }
+  };
 
-  const totalVentas = ventas.reduce((sum, v) => sum + v.precio_total, 0);
-  const totalComisiones = ventas.reduce((sum, v) => sum + v.comision_monto, 0);
+  const filteredVentas = ventas.filter(v => 
+    v.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    v.cliente_nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    v.vendedor_nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    v.paquete_nombre?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const stats = {
+    total: ventas.length,
+    montoTotal: ventas.reduce((sum, v) => sum + v.precio_total, 0),
+    comisionesPendientes: ventas
+      .filter(v => v.comision_estado === 'pendiente')
+      .reduce((sum, v) => sum + v.comision_monto, 0),
+    comisionesPagadas: ventas
+      .filter(v => v.comision_estado === 'pagada')
+      .reduce((sum, v) => sum + v.comision_monto, 0)
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-card p-6 rounded-3xl">
-          <p className="text-sm text-slate-400 font-medium mb-1">Total Ventas</p>
-          <p className="text-3xl font-black text-white">{ventas.length}</p>
-        </div>
-        <div className="glass-card p-6 rounded-3xl">
-          <p className="text-sm text-slate-400 font-medium mb-1">Monto Total</p>
-          <p className="text-3xl font-black text-blue-400">${totalVentas.toLocaleString()}</p>
-        </div>
-        <div className="glass-card p-6 rounded-3xl">
-          <p className="text-sm text-slate-400 font-medium mb-1">Comisiones</p>
-          <p className="text-3xl font-black text-purple-400">${totalComisiones.toLocaleString()}</p>
-        </div>
-      </div>
-
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-black text-white">Todas las Ventas</h2>
-          <p className="text-slate-400">Historial completo de ventas del sistema</p>
+          <h2 className="text-3xl font-black text-white">Gestión de Ventas</h2>
+          <p className="text-slate-400">Administra todas las ventas y emite documentos</p>
         </div>
-        <button className="bg-white/5 hover:bg-white/10 text-white font-medium px-6 py-3 rounded-2xl transition-all flex items-center gap-2">
-          <Download className="w-5 h-5" />
-          Exportar
-        </button>
       </div>
 
-      <div className="glass-card rounded-3xl overflow-hidden">
-        <div className="p-6 border-b border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2 max-w-md">
-            <Search className="w-4 h-4 text-slate-500" />
-            <input 
-              type="text" 
-              placeholder="Buscar venta..." 
-              className="bg-transparent border-none outline-none text-sm w-full text-slate-300" 
-            />
-          </div>
-          <div className="flex gap-2">
-            {['todos', 'confirmada', 'en_proceso', 'emitida'].map((estado) => (
-              <button
-                key={estado}
-                onClick={() => setFiltroEstado(estado)}
-                className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-medium transition-all capitalize",
-                  filtroEstado === estado 
-                    ? "bg-blue-600 text-white" 
-                    : "bg-white/5 text-slate-400 hover:bg-white/10"
-                )}
-              >
-                {estado === 'todos' ? 'Todos' : statusLabels[estado]}
-              </button>
-            ))}
-          </div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="glass-card p-6 rounded-2xl">
+          <p className="text-sm text-slate-400 mb-1">Total Ventas</p>
+          <p className="text-3xl font-black text-white">{stats.total}</p>
         </div>
+        <div className="glass-card p-6 rounded-2xl">
+          <p className="text-sm text-slate-400 mb-1">Monto Total</p>
+          <p className="text-3xl font-black text-blue-400">${stats.montoTotal.toLocaleString()}</p>
+        </div>
+        <div className="glass-card p-6 rounded-2xl">
+          <p className="text-sm text-slate-400 mb-1">Comisiones Pendientes</p>
+          <p className="text-3xl font-black text-orange-400">${stats.comisionesPendientes.toLocaleString()}</p>
+        </div>
+        <div className="glass-card p-6 rounded-2xl">
+          <p className="text-sm text-slate-400 mb-1">Comisiones Pagadas</p>
+          <p className="text-3xl font-black text-green-400">${stats.comisionesPagadas.toLocaleString()}</p>
+        </div>
+      </div>
 
+      {/* Buscador */}
+      <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
+        <Search className="w-5 h-5 text-slate-500" />
+        <input 
+          type="text" 
+          placeholder="Buscar por código, cliente, vendedor..." 
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="bg-transparent border-none outline-none text-sm w-full text-slate-300" 
+        />
+      </div>
+
+      {/* Tabla */}
+      <div className="glass-card rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full">
             <thead>
-              <tr className="bg-white/2 text-slate-400 text-xs uppercase tracking-wider">
-                <th className="px-6 py-4 font-black">Código</th>
-                <th className="px-6 py-4 font-black">Cliente</th>
-                <th className="px-6 py-4 font-black">Paquete</th>
-                <th className="px-6 py-4 font-black">Vendedor</th>
-                <th className="px-6 py-4 font-black">Monto</th>
-                <th className="px-6 py-4 font-black">Comisión</th>
-                <th className="px-6 py-4 font-black">Estado</th>
-                <th className="px-6 py-4 font-black">Fecha</th>
+              <tr className="border-b border-white/10">
+                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Código</th>
+                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Cliente</th>
+                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Paquete</th>
+                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Vendedor</th>
+                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Total</th>
+                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Comisión</th>
+                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Estado</th>
+                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Docs</th>
+                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
-              {ventasFiltradas.map((v) => (
-                <tr key={v.id} className="hover:bg-white/2 transition-colors group">
-                  <td className="px-6 py-4">
-                    <span className="font-mono text-sm text-slate-300">{v.codigo}</span>
+            <tbody>
+              {filteredVentas.map((v) => (
+                <tr key={v.id} className="border-b border-white/5 hover:bg-white/5 transition-all">
+                  <td className="p-4">
+                    <span className="text-blue-400 font-mono text-sm">{v.codigo}</span>
                   </td>
-                  <td className="px-6 py-4">
-                    <p className="font-medium text-white">{v.cliente_nombre}</p>
-                    <p className="text-xs text-slate-500">{v.cliente_email}</p>
+                  <td className="p-4 text-white">{v.cliente_nombre}</td>
+                  <td className="p-4 text-slate-300">{v.paquete_nombre || '-'}</td>
+                  <td className="p-4 text-slate-300">{v.vendedor_nombre || '-'}</td>
+                  <td className="p-4">
+                    <span className="text-white font-bold">${v.precio_total.toLocaleString()}</span>
                   </td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm text-slate-300">{v.paquete_nombre}</p>
-                    <p className="text-xs text-slate-500">{v.num_pasajeros} pasajeros</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    {v.vendedor ? (
-                      <p className="text-sm text-slate-300">
-                        {v.vendedor.nombre} {v.vendedor.apellido}
-                      </p>
-                    ) : (
-                      <span className="text-xs text-slate-500">-</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm font-bold text-white">${v.precio_total.toLocaleString()}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-purple-400">${v.comision_monto.toLocaleString()}</span>
-                      {v.comision_estado === 'pagada' ? (
-                        <CheckCircle className="w-4 h-4 text-green-400" />
-                      ) : (
-                        <Clock className="w-4 h-4 text-yellow-400" />
-                      )}
+                  <td className="p-4">
+                    <div>
+                      <span className="text-green-400">${v.comision_monto.toLocaleString()}</span>
+                      <span className={cn(
+                        "ml-2 text-xs uppercase",
+                        v.comision_estado === 'pagada' ? 'text-green-400' : 'text-orange-400'
+                      )}>
+                        ({v.comision_estado})
+                      </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="p-4">
                     <span className={cn(
-                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase border",
-                      statusColors[v.estado]
+                      "px-3 py-1 rounded-full text-xs font-black uppercase border",
+                      getStatusColor(v.estado)
                     )}>
-                      {statusLabels[v.estado]}
+                      {v.estado.replace('_', ' ')}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-400">
-                    {new Date(v.fecha_creacion).toLocaleDateString('es-UY')}
+                  <td className="p-4">
+                    {v.tiene_documentos ? (
+                      <span className="text-green-400 text-sm">✓</span>
+                    ) : (
+                      <span className="text-slate-500 text-sm">-</span>
+                    )}
+                  </td>
+                  <td className="p-4">
+                    <Link 
+                      href={`/admin/ventas/${v.id}`}
+                      className="p-2 bg-white/5 rounded-lg hover:bg-blue-600 transition-all inline-flex"
+                    >
+                      <Eye className="w-4 h-4 text-slate-300" />
+                    </Link>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {isLoading && (
-            <div className="p-20 flex justify-center">
-              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
         </div>
+
+        {filteredVentas.length === 0 && !isLoading && (
+          <div className="py-20 text-center text-slate-500">
+            <ShoppingCart className="w-12 h-12 mx-auto mb-4 opacity-20" />
+            <p>No se encontraron ventas</p>
+          </div>
+        )}
       </div>
     </div>
   );
