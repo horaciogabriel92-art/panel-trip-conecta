@@ -171,11 +171,14 @@ export default function CotizacionesPage() {
                 <Clock className="w-3.5 h-3.5" />
                 <span>{new Date(c.fecha_creacion).toLocaleDateString()}</span>
               </div>
-              {c.estado === 'pendiente' && (
-                <button className="text-xs font-black text-white hover:text-blue-400 border border-white/10 hover:border-blue-500/50 px-4 py-2 rounded-xl transition-all">
-                  CONVERTIR A VENTA
-                </button>
-              )}
+              <div className="flex gap-2">
+                <Link 
+                  href={`/cotizaciones/${c.id}`}
+                  className="text-xs font-black text-white hover:text-blue-400 border border-white/10 hover:border-blue-500/50 px-4 py-2 rounded-xl transition-all"
+                >
+                  VER DETALLE
+                </Link>
+              </div>
             </div>
           </div>
         ))}
