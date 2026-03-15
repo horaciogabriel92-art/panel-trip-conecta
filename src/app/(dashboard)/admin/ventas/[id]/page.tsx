@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import { useState } from 'react';
 import { 
   ArrowLeft, 
   ShoppingCart, 
@@ -73,12 +74,36 @@ export default function AdminVentaDetalle() {
   const [isUploading, setIsUploading] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showPagarComision, setShowPagarComision] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   
   // Formulario de subida
   const [tipoDocumento, setTipoDocumento] = useState('boleto_aereo');
   const [descripcion, setDescripcion] = useState('');
   const [archivo, setArchivo] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDownload = async (docId: string, fileName: string) => {
+    setDownloadingId(docId);
+    try {
+      const response = await api.get(`/documentos/${docId}/download`, {
+        responseType: 'blob',
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error descargando:', err);
+      alert('Error al descargar el documento');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -265,14 +290,17 @@ export default function AdminVentaDetalle() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <a
-                        href={`${process.env.NEXT_PUBLIC_API_URL}/documentos/${doc.id}/download`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 bg-white/5 rounded-lg hover:bg-blue-600 transition-all"
+                      <button
+                        onClick={() => handleDownload(doc.id, doc.nombre_archivo)}
+                        disabled={downloadingId === doc.id}
+                        className="p-2 bg-white/5 rounded-lg hover:bg-blue-600 disabled:bg-slate-600 transition-all"
                       >
-                        <FileText className="w-4 h-4 text-slate-300" />
-                      </a>
+                        {downloadingId === doc.id ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <FileText className="w-4 h-4 text-slate-300" />
+                        )}
+                      </button>
                       <button
                         onClick={() => handleDeleteDocumento(doc.id)}
                         className="p-2 bg-red-500/20 rounded-lg hover:bg-red-500/30 transition-all"

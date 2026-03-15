@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { 
   ArrowLeft, 
@@ -62,9 +62,11 @@ const tiposDocumentos: Record<string, { icon: any; label: string; color: string 
 
 export default function VentaDetalle() {
   const params = useParams();
+  const router = useRouter();
   const [venta, setVenta] = useState<Venta | null>(null);
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,6 +95,30 @@ export default function VentaDetalle() {
       case 'confirmada': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       case 'en_proceso': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
       default: return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+    }
+  };
+
+  const handleDownload = async (docId: string, fileName: string) => {
+    setDownloadingId(docId);
+    try {
+      const response = await api.get(`/documentos/${docId}/download`, {
+        responseType: 'blob', // Importante para recibir el archivo como blob
+      });
+      
+      // Crear URL del blob y descargar
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error descargando:', err);
+      alert('Error al descargar el documento');
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -191,14 +217,17 @@ export default function VentaDetalle() {
                           )}
                         </div>
                       </div>
-                      <a
-                        href={`${process.env.NEXT_PUBLIC_API_URL}/documentos/${doc.id}/download`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-3 bg-blue-600 hover:bg-blue-700 rounded-xl transition-all"
+                      <button
+                        onClick={() => handleDownload(doc.id, doc.nombre_archivo)}
+                        disabled={downloadingId === doc.id}
+                        className="p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 rounded-xl transition-all"
                       >
-                        <Download className="w-4 h-4 text-white" />
-                      </a>
+                        {downloadingId === doc.id ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Download className="w-4 h-4 text-white" />
+                        )}
+                      </button>
                     </div>
                   );
                 })}
