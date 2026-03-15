@@ -1,36 +1,202 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Trip Conecta Panel
 
-## Getting Started
+Dashboard B2B para vendedores y administradores de Trip Conecta. Permite cotizar paquetes turísticos, gestionar ventas y descargar documentos.
 
-First, run the development server:
+URL Objetivo: `https://panel.tripconecta.com`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🚀 Tecnologías
+
+- **Framework**: Next.js 16.x (App Router)
+- **Lenguaje**: TypeScript 5.x
+- **Estilos**: Tailwind CSS v4
+- **UI**: Lucide React (iconos)
+- **Formularios**: React Hook Form + Zod
+- **HTTP Client**: Axios
+- **Animaciones**: Framer Motion
+
+## 📁 Estructura
+
+```
+trip-conecta-panel/
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx              # Root layout con fuentes
+│   │   ├── page.tsx                # Home (redirige a login)
+│   │   ├── globals.css             # Tailwind v4 + variables CSS
+│   │   ├── login/
+│   │   │   └── page.tsx            # Página de login
+│   │   └── (dashboard)/            # Route group (protegido)
+│   │       ├── layout.tsx          # Layout con Sidebar + Header
+│   │       ├── dashboard/
+│   │       │   └── page.tsx        # Panel del vendedor
+│   │       ├── paquetes/
+│   │       │   └── page.tsx        # Catálogo de paquetes
+│   │       ├── cotizaciones/
+│   │       │   └── page.tsx        # Gestión de cotizaciones
+│   │       ├── ventas/
+│   │       │   └── page.tsx        # Historial de ventas
+│   │       ├── documentos/
+│   │       │   └── page.tsx        # Documentos de viaje
+│   │       └── admin/
+│   │           ├── page.tsx        # Dashboard admin
+│   │           └── paquetes/
+│   │               └── page.tsx    # CRUD de paquetes
+│   ├── components/
+│   │   └── layout/
+│   │       ├── Header.tsx          # Header del dashboard
+│   │       └── Sidebar.tsx         # Navegación lateral
+│   ├── context/
+│   │   └── AuthContext.tsx         # Auth + Axios config
+│   └── lib/
+│       └── utils.ts                # Utilidades (cn, etc)
+├── public/                          # Assets estáticos
+├── .env.local                       # Variables locales
+├── next.config.ts
+└── package.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Instalación Local
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# 1. Navegar al directorio
+cd trip-conecta-panel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# 2. Instalar dependencias
+npm install
 
-## Learn More
+# 3. Configurar variables de entorno
+cp .env.example .env.local
+# Editar .env.local con tus valores
 
-To learn more about Next.js, take a look at the following resources:
+# 4. Iniciar servidor de desarrollo
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+La aplicación estará disponible en: `http://localhost:3000`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔧 Variables de Entorno
 
-## Deploy on Vercel
+```env
+# API Backend
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Supabase (cuando migres)
+NEXT_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-anon-key
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Environments
+
+| Entorno | NEXT_PUBLIC_API_URL |
+|---------|---------------------|
+| Local | `http://localhost:3001/api` |
+| Preview | `https://api-staging.tripconecta.com/api` |
+| Producción | `https://api.panel.tripconecta.com/api` |
+
+## 📱 Funcionalidades
+
+### Para Vendedores
+- [x] Login con JWT
+- [ ] Dashboard con estadísticas
+- [ ] Ver catálogo de paquetes
+- [ ] Crear cotizaciones
+- [ ] Ver historial de cotizaciones
+- [ ] Convertir cotizaciones en ventas
+- [ ] Ver comisiones ganadas
+- [ ] Descargar documentos de viaje
+
+### Para Administradores
+- [x] Login con JWT
+- [ ] Dashboard admin
+- [ ] CRUD de paquetes turísticos
+- [ ] Gestión de vendedores
+- [ ] Subir documentos a ventas
+- [ ] Ver todas las cotizaciones y ventas
+
+## 🎨 Sistema de Diseño
+
+### Colores Principales
+```css
+--background: #0a0a0f;        /* Fondo oscuro */
+--foreground: #ffffff;        /* Texto principal */
+--primary: #2563eb;           /* Azul principal */
+--primary-foreground: #ffffff;
+--muted: #1a1a24;             /* Fondos secundarios */
+--muted-foreground: #94a3b8;  /* Texto secundario */
+```
+
+### Componentes UI
+- **Glassmorphism**: `.glass`, `.glass-card`
+- **Gradientes**: `.text-gradient`, `.gradient-bg`
+- **Botones**: `.btn-primary`, `.btn-secondary`
+
+## 📝 Scripts Disponibles
+
+```bash
+npm run dev      # Desarrollo (puerto 3000)
+npm run build    # Build para producción
+npm run lint     # ESLint
+```
+
+## 🚀 Deployment
+
+### Vercel (Recomendado)
+
+1. Crear proyecto en Vercel
+2. Conectar con este repositorio
+3. Configurar dominio: `panel.tripconecta.com`
+4. Variables de entorno:
+   ```
+   NEXT_PUBLIC_API_URL=https://api.panel.tripconecta.com/api
+   ```
+
+### Build Local
+
+```bash
+npm run build
+# Genera carpeta .next/
+```
+
+## 🔗 Integraciones
+
+- **API**: Conecta con `trip-conecta-api`
+- **Auth**: JWT almacenado en localStorage
+- **File Uploads**: Via API a `/storage/uploads`
+
+## 📋 TODO - Desarrollo Pendiente
+
+Las páginas del dashboard existen pero necesitan desarrollo:
+
+1. **Dashboard Vendedor** (`/dashboard`)
+   - Estadísticas de ventas
+   - Cotizaciones recientes
+   - Comisiones del mes
+
+2. **Catálogo** (`/paquetes`)
+   - Listado con filtros
+   - Vista detalle de paquete
+   - Botón "Cotizar"
+
+3. **Cotizaciones** (`/cotizaciones`)
+   - Formulario de cotización
+   - Listado histórico
+   - Acción "Convertir a Venta"
+
+4. **Ventas** (`/ventas`)
+   - Historial de ventas
+   - Estado de cada venta
+   - Documentos asociados
+
+5. **Documentos** (`/documentos`)
+   - Listado de documentos
+   - Descargas
+
+6. **Admin Paquetes** (`/admin/paquetes`)
+   - Formulario de creación
+   - Lista editable
+   - Gestión de cupos
+
+---
+
+**Última actualización**: Marzo 2026
+**Versión**: 0.1.0 (En desarrollo)
