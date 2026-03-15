@@ -92,11 +92,12 @@ export default function CotizacionDetalle() {
     
     setIsConverting(true);
     try {
-      await api.post(`/cotizaciones/${params.id}/convertir`);
+      await api.put(`/cotizaciones/${params.id}/convertir`);
       alert('Cotización convertida a venta exitosamente');
       router.push('/mis-ventas');
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al convertir cotización');
+      console.error('Error completo:', err);
+      alert(err.response?.data?.error || err.response?.data?.message || 'Error al convertir cotización');
     } finally {
       setIsConverting(false);
     }
