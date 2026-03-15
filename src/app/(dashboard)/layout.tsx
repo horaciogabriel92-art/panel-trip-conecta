@@ -4,19 +4,28 @@ import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    console.log('📊 DashboardLayout: isLoading=', isLoading, 'user=', user, 'isClient=', isClient);
+    // Solo redirigir después de confirmar que estamos en cliente y el loading terminó
+    if (isClient && !isLoading && !user) {
+      console.log('🔴 No user found, redirecting to login');
       router.push('/login');
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, router, isClient]);
 
-  if (isLoading || !user) {
+  // Mostrar loading mientras se inicializa o no hay usuario
+  if (!isClient || isLoading || !user) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />

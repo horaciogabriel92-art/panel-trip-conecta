@@ -31,24 +31,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
+    console.log('🔍 AuthContext: Loading from localStorage...');
     const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
+    
+    console.log('🔍 Token exists:', !!savedToken);
+    console.log('🔍 User exists:', !!savedUser);
 
     if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(JSON.parse(savedUser));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        console.log('✅ AuthContext: User loaded:', parsedUser);
+        setToken(savedToken);
+        setUser(parsedUser);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+      } catch (e) {
+        console.error('❌ Error parsing user:', e);
+      }
+    } else {
+      console.log('⚠️ No token or user found in localStorage');
     }
     setIsLoading(false);
   }, []);
 
   const login = (newToken: string, newUser: User) => {
+    console.log('🔐 Login called with user:', newUser);
     setToken(newToken);
     setUser(newUser);
     localStorage.setItem('token', newToken);
     localStorage.setItem('user', JSON.stringify(newUser));
     axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     
+    console.log('🚀 Redirecting to:', newUser.rol === 'admin' ? '/admin' : '/dashboard');
     if (newUser.rol === 'admin') {
       router.push('/admin');
     } else {
