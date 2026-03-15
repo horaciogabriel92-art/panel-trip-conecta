@@ -1,9 +1,125 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import api from '@/lib/api';
-import { Package, Search, Filter, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Download } from 'lucide-react';
+import { Package, Search, Filter, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Download, Upload, X, ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Componente para subir imágenes a Supabase Storage
+function ImagenUploader({ imagenUrl, onImagenSubida }: { imagenUrl: string; onImagenSubida: (url: string) => void }) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [preview, setPreview] = useState(imagenUrl);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      alert('Solo se permiten archivos de imagen (JPG, PNG, WebP)');
+      return;
+    }
+
+    // Validar tamaño (5MB máximo)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La imagen no debe superar los 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('imagen', file);
+
+      const res = await api.post('/upload/paquete-imagen', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      const imageUrl = res.data.url;
+      setPreview(imageUrl);
+      onImagenSubida(imageUrl);
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Error al subir la imagen');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemove = () => {
+    setPreview('');
+    onImagenSubida('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <label className="text-sm text-slate-400 mb-1 block">Imagen de Portada</label>
+      
+      {preview ? (
+        <div className="relative inline-block">
+          <img 
+            src={preview} 
+            alt="Preview" 
+            className="h-48 rounded-xl object-cover border border-white/10"
+          />
+          <button
+            type="button"
+            onClick={handleRemove}
+            className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white shadow-lg"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      ) : (
+        <div 
+          onClick={() => fileInputRef.current?.click()}
+          className="h-48 rounded-xl border-2 border-dashed border-white/20 hover:border-blue-500/50 bg-white/5 hover:bg-white/10 transition-all cursor-pointer flex flex-col items-center justify-center gap-3"
+        >
+          {isUploading ? (
+            <>
+              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm text-slate-400">Subiendo...</span>
+            </>
+          ) : (
+            <>
+              <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                <ImageIcon className="w-6 h-6 text-blue-400" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-white font-medium">Click para subir imagen</p>
+                <p className="text-xs text-slate-500 mt-1">JPG, PNG o WebP (máx. 5MB)</p>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+      
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+      
+      {preview && (
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+          className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-2"
+        >
+          <Upload className="w-4 h-4" />
+          Cambiar imagen
+        </button>
+      )}
+    </div>
+  );
+}
 
 interface RecursoVendedor {
   nombre: string;
@@ -438,24 +554,10 @@ export default function PaquetesAdmin() {
 
                 {/* Imagen de Portada */}
                 <div className="md:col-span-2">
-                  <label className="text-sm text-slate-400 mb-1 block">Imagen de Portada (URL)</label>
-                  <input
-                    type="url"
-                    value={formData.imagen_url || ''}
-                    onChange={(e) => setFormData({...formData, imagen_url: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
-                    placeholder="https://ejemplo.com/imagen.jpg"
+                  <ImagenUploader 
+                    imagenUrl={formData.imagen_url || ''}
+                    onImagenSubida={(url) => setFormData({...formData, imagen_url: url})}
                   />
-                  {formData.imagen_url && (
-                    <div className="mt-2">
-                      <img 
-                        src={formData.imagen_url} 
-                        alt="Preview" 
-                        className="h-32 rounded-xl object-cover"
-                        onError={(e) => (e.target as HTMLImageElement).style.display = 'none'}
-                      />
-                    </div>
-                  )}
                 </div>
 
                 {/* Recursos para Vendedores */}
