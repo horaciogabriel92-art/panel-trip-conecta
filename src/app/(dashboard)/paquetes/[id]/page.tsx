@@ -1,0 +1,322 @@
+"use client";
+
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import api from '@/lib/api';
+import { 
+  ArrowLeft, 
+  MapPin, 
+  Calendar, 
+  Users, 
+  CheckCircle, 
+  XCircle,
+  Clock,
+  ImageIcon,
+  FileText,
+  Download,
+  ArrowRight,
+  Package
+} from 'lucide-react';
+import Link from 'next/link';
+
+interface Paquete {
+  id: string;
+  nombre: string;
+  titulo: string;
+  destino: string;
+  tipo: string;
+  descripcion: string;
+  precio_doble: number;
+  precio_triple: number;
+  precio_cuadruple: number;
+  duracion: number;
+  duracion_dias: number;
+  cupos_disponibles: number;
+  cupos_totales: number;
+  fecha_salida?: string;
+  imagen_url?: string;
+  imagen_principal?: string;
+  incluye: string[];
+  no_incluye: string[];
+  itinerario?: any[];
+  galeria?: any[];
+  recursos_vendedores?: any[];
+  status: string;
+  estado: string;
+}
+
+export default function PaqueteDetalle() {
+  const params = useParams();
+  const router = useRouter();
+  const [paquete, setPaquete] = useState<Paquete | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'info' | 'itinerario' | 'recursos'>('info');
+
+  useEffect(() => {
+    const fetchPaquete = async () => {
+      try {
+        const res = await api.get(`/paquetes/${params.id}`);
+        setPaquete(res.data);
+      } catch (err) {
+        console.error('Error cargando paquete:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (params.id) {
+      fetchPaquete();
+    }
+  }, [params.id]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!paquete) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Package className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-2">Paquete no encontrado</h2>
+          <p className="text-slate-400 mb-6">El paquete que buscas no existe o ha sido eliminado.</p>
+          <Link href="/paquetes" className="text-blue-400 hover:text-blue-300">
+            ← Volver al catálogo
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const imagen = paquete.imagen_url || paquete.imagen_principal || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800';
+  const dias = paquete.duracion || paquete.duracion_dias || 7;
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-700">
+      {/* Header con navegación */}
+      <div className="flex items-center gap-4">
+        <Link 
+          href="/paquetes" 
+          className="p-2 bg-white/5 rounded-xl hover:bg-white/10 transition-all"
+        >
+          <ArrowLeft className="w-5 h-5 text-slate-400" />
+        </Link>
+        <div>
+          <h2 className="text-2xl font-black text-white">{paquete.nombre || paquete.titulo}</h2>
+          <p className="text-slate-400 text-sm flex items-center gap-1">
+            <MapPin className="w-3 h-3" /> {paquete.destino}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Columna izquierda - Imagen y precios */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Imagen principal */}
+          <div className="relative h-80 rounded-3xl overflow-hidden">
+            <img 
+              src={imagen} 
+              alt={paquete.nombre} 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute top-4 left-4">
+              <span className="px-4 py-2 bg-blue-600 rounded-full text-xs font-black uppercase tracking-wider text-white">
+                {paquete.tipo}
+              </span>
+            </div>
+            <div className="absolute bottom-4 left-6">
+              <div className="flex items-center gap-4 text-white">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  <span className="text-sm font-medium">{dias} días / {dias - 1} noches</span>
+                </div>
+                {paquete.fecha_salida && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span className="text-sm font-medium">
+                      Salida: {new Date(paquete.fecha_salida).toLocaleDateString('es-AR')}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs de contenido */}
+          <div className="glass-card rounded-2xl overflow-hidden">
+            <div className="flex border-b border-white/10">
+              {['info', 'itinerario', 'recursos'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab as any)}
+                  className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-all ${
+                    activeTab === tab 
+                      ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-500/10' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {tab === 'info' && 'Información'}
+                  {tab === 'itinerario' && 'Itinerario'}
+                  {tab === 'recursos' && 'Recursos'}
+                </button>
+              ))}
+            </div>
+
+            <div className="p-6">
+              {activeTab === 'info' && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-3">Descripción</h3>
+                    <p className="text-slate-300 leading-relaxed">
+                      {paquete.descripcion || "Sin descripción disponible."}
+                    </p>
+                  </div>
+
+                  {paquete.incluye && paquete.incluye.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-green-400" />
+                        Incluye
+                      </h3>
+                      <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {paquete.incluye.map((item, i) => (
+                          <li key={i} className="flex items-center gap-2 text-slate-300 text-sm">
+                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {paquete.no_incluye && paquete.no_incluye.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                        <XCircle className="w-5 h-5 text-red-400" />
+                        No Incluye
+                      </h3>
+                      <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {paquete.no_incluye.map((item, i) => (
+                          <li key={i} className="flex items-center gap-2 text-slate-300 text-sm">
+                            <span className="w-1.5 h-1.5 bg-red-400 rounded-full" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'itinerario' && (
+                <div className="space-y-4">
+                  {paquete.itinerario && paquete.itinerario.length > 0 ? (
+                    paquete.itinerario.map((dia: any, i: number) => (
+                      <div key={i} className="flex gap-4 p-4 bg-white/5 rounded-xl">
+                        <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center font-black text-white">
+                          {dia.dia || i + 1}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white mb-1">{dia.titulo || `Día ${i + 1}`}</h4>
+                          <p className="text-slate-400 text-sm">{dia.descripcion || "Sin descripción."}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-slate-400 text-center py-8">Itinerario no disponible.</p>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'recursos' && (
+                <div className="space-y-4">
+                  {paquete.recursos_vendedores && paquete.recursos_vendedores.length > 0 ? (
+                    paquete.recursos_vendedores.map((recurso: any, i: number) => (
+                      <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                            {recurso.tipo === 'imagen' ? <ImageIcon className="w-5 h-5 text-blue-400" /> :
+                             recurso.tipo === 'video' ? <FileText className="w-5 h-5 text-purple-400" /> :
+                             <FileText className="w-5 h-5 text-green-400" />}
+                          </div>
+                          <div>
+                            <p className="font-medium text-white">{recurso.nombre}</p>
+                            <p className="text-xs text-slate-400 uppercase">{recurso.tipo}</p>
+                          </div>
+                        </div>
+                        <a 
+                          href={recurso.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="p-2 bg-white/5 rounded-lg hover:bg-blue-600 transition-all"
+                        >
+                          <Download className="w-4 h-4 text-slate-300" />
+                        </a>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-slate-400 text-center py-8">No hay recursos disponibles.</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Columna derecha - Precios y acción */}
+        <div className="space-y-6">
+          {/* Precios */}
+          <div className="glass-card rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-white mb-4">Precios por Persona</h3>
+            <div className="space-y-3">
+              {paquete.precio_doble > 0 && (
+                <div className="flex justify-between items-center p-3 bg-white/5 rounded-xl">
+                  <span className="text-slate-400">Doble</span>
+                  <span className="text-xl font-black text-white">${paquete.precio_doble}</span>
+                </div>
+              )}
+              {paquete.precio_triple > 0 && (
+                <div className="flex justify-between items-center p-3 bg-white/5 rounded-xl">
+                  <span className="text-slate-400">Triple</span>
+                  <span className="text-xl font-black text-white">${paquete.precio_triple}</span>
+                </div>
+              )}
+              {paquete.precio_cuadruple > 0 && (
+                <div className="flex justify-between items-center p-3 bg-white/5 rounded-xl">
+                  <span className="text-slate-400">Cuádruple</span>
+                  <span className="text-xl font-black text-white">${paquete.precio_cuadruple}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Cupos */}
+          <div className="glass-card rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <Users className="w-5 h-5 text-blue-400" />
+              <h3 className="text-lg font-bold text-white">Cupos Disponibles</h3>
+            </div>
+            <div className="text-center">
+              <p className="text-4xl font-black text-white mb-2">{paquete.cupos_disponibles}</p>
+              <p className="text-slate-400 text-sm">de {paquete.cupos_totales} totales</p>
+            </div>
+          </div>
+
+          {/* Botón Cotizar */}
+          <Link 
+            href={`/paquetes/${paquete.id}/cotizar`}
+            className="block w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl text-center transition-all flex items-center justify-center gap-2"
+          >
+            Cotizar Ahora
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

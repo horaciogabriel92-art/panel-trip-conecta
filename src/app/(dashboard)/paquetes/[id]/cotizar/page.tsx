@@ -1,0 +1,507 @@
+"use client";
+
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import api from '@/lib/api';
+import { 
+  ArrowLeft, 
+  User, 
+  Users, 
+  Mail, 
+  Phone, 
+  Calendar,
+  BedDouble,
+  ArrowRight,
+  Plus,
+  X,
+  FileText,
+  CreditCard
+} from 'lucide-react';
+import Link from 'next/link';
+
+interface Paquete {
+  id: string;
+  nombre: string;
+  titulo: string;
+  destino: string;
+  precio_doble: number;
+  precio_triple: number;
+  precio_cuadruple: number;
+  cupos_disponibles: number;
+  imagen_url?: string;
+  imagen_principal?: string;
+}
+
+interface Pasajero {
+  nombre: string;
+  apellido: string;
+  documento: string;
+  fecha_nacimiento: string;
+  nacionalidad: string;
+  telefono: string;
+  email: string;
+}
+
+export default function CotizarPaquete() {
+  const params = useParams();
+  const router = useRouter();
+  const [paquete, setPaquete] = useState<Paquete | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Datos del cliente principal
+  const [cliente, setCliente] = useState({
+    nombre: '',
+    apellido: '',
+    email: '',
+    telefono: '',
+    documento: '',
+    fecha_nacimiento: '',
+    nacionalidad: 'Argentina',
+    direccion: '',
+    ciudad: '',
+    notas: ''
+  });
+
+  // Configuración de la cotización
+  const [config, setConfig] = useState({
+    num_pasajeros: 2,
+    tipo_habitacion: 'doble' as 'doble' | 'triple' | 'cuadruple',
+    fecha_salida: ''
+  });
+
+  // Pasajeros adicionales (si hay más de 1)
+  const [pasajeros, setPasajeros] = useState<Pasajero[]>([]);
+
+  useEffect(() => {
+    const fetchPaquete = async () => {
+      try {
+        const res = await api.get(`/paquetes/${params.id}`);
+        setPaquete(res.data);
+      } catch (err) {
+        console.error('Error cargando paquete:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (params.id) {
+      fetchPaquete();
+    }
+  }, [params.id]);
+
+  // Actualizar pasajeros cuando cambia el número
+  useEffect(() => {
+    const numAdicionales = Math.max(0, config.num_pasajeros - 1);
+    setPasajeros(prev => {
+      const nuevos = [...prev];
+      while (nuevos.length < numAdicionales) {
+        nuevos.push({
+          nombre: '',
+          apellido: '',
+          documento: '',
+          fecha_nacimiento: '',
+          nacionalidad: 'Argentina',
+          telefono: '',
+          email: ''
+        });
+      }
+      return nuevos.slice(0, numAdicionales);
+    });
+  }, [config.num_pasajeros]);
+
+  const calcularPrecio = () => {
+    if (!paquete) return 0;
+    const precioPorPersona = 
+      config.tipo_habitacion === 'doble' ? paquete.precio_doble :
+      config.tipo_habitacion === 'triple' ? paquete.precio_triple :
+      paquete.precio_cuadruple;
+    return precioPorPersona * config.num_pasajeros;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const cotizacionData = {
+        paquete_id: params.id,
+        cliente_nombre: `${cliente.nombre} ${cliente.apellido}`,
+        cliente_email: cliente.email,
+        cliente_telefono: cliente.telefono,
+        num_pasajeros: config.num_pasajeros,
+        tipo_habitacion: config.tipo_habitacion,
+        fecha_salida: config.fecha_salida || null,
+        precio_total: calcularPrecio(),
+        notas: cliente.notas,
+        // Datos completos del cliente para referencia
+        datos_completos: {
+          cliente,
+          pasajeros,
+          config
+        }
+      };
+
+      const res = await api.post('/cotizaciones', cotizacionData);
+      
+      alert('Cotización creada exitosamente');
+      router.push('/cotizaciones');
+    } catch (err: any) {
+      console.error('Error creando cotización:', err);
+      alert(err.response?.data?.error || 'Error al crear cotización');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!paquete) {
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-2xl font-bold text-white">Paquete no encontrado</h2>
+        <Link href="/paquetes" className="text-blue-400 hover:text-blue-300 mt-4 inline-block">
+          ← Volver al catálogo
+        </Link>
+      </div>
+    );
+  }
+
+  const imagen = paquete.imagen_url || paquete.imagen_principal || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800';
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-700 max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Link 
+          href={`/paquetes/${params.id}`} 
+          className="p-2 bg-white/5 rounded-xl hover:bg-white/10 transition-all"
+        >
+          <ArrowLeft className="w-5 h-5 text-slate-400" />
+        </Link>
+        <div>
+          <h2 className="text-2xl font-black text-white">Nueva Cotización</h2>
+          <p className="text-slate-400 text-sm">{paquete.nombre || paquete.titulo}</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Columna izquierda - Datos del cliente */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Resumen del paquete */}
+          <div className="glass-card rounded-2xl p-4 flex items-center gap-4">
+            <img 
+              src={imagen} 
+              alt={paquete.nombre} 
+              className="w-20 h-20 rounded-xl object-cover"
+            />
+            <div className="flex-1">
+              <h3 className="font-bold text-white">{paquete.nombre || paquete.titulo}</h3>
+              <p className="text-slate-400 text-sm">{paquete.destino}</p>
+            </div>
+          </div>
+
+          {/* Configuración de la cotización */}
+          <div className="glass-card rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-blue-400" />
+              Configuración del Viaje
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
+                  Pasajeros
+                </label>
+                <select
+                  value={config.num_pasajeros}
+                  onChange={(e) => setConfig({...config, num_pasajeros: parseInt(e.target.value)})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                >
+                  {[1,2,3,4,5,6].map(n => (
+                    <option key={n} value={n}>{n} pasajero{n > 1 ? 's' : ''}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
+                  Tipo de Habitación
+                </label>
+                <select
+                  value={config.tipo_habitacion}
+                  onChange={(e) => setConfig({...config, tipo_habitacion: e.target.value as any})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                >
+                  <option value="doble">Doble</option>
+                  <option value="triple">Triple</option>
+                  <option value="cuadruple">Cuádruple</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
+                  Fecha de Salida
+                </label>
+                <input
+                  type="date"
+                  value={config.fecha_salida}
+                  onChange={(e) => setConfig({...config, fecha_salida: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Datos del cliente principal */}
+          <div className="glass-card rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <User className="w-5 h-5 text-blue-400" />
+              Datos del Cliente Principal
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Nombre *</label>
+                <input
+                  type="text"
+                  required
+                  value={cliente.nombre}
+                  onChange={(e) => setCliente({...cliente, nombre: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  placeholder="Juan"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Apellido *</label>
+                <input
+                  type="text"
+                  required
+                  value={cliente.apellido}
+                  onChange={(e) => setCliente({...cliente, apellido: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  placeholder="Pérez"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Email *</label>
+                <input
+                  type="email"
+                  required
+                  value={cliente.email}
+                  onChange={(e) => setCliente({...cliente, email: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  placeholder="cliente@email.com"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Teléfono *</label>
+                <input
+                  type="tel"
+                  required
+                  value={cliente.telefono}
+                  onChange={(e) => setCliente({...cliente, telefono: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  placeholder="+54 11 1234-5678"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Documento (DNI/Pasaporte) *</label>
+                <input
+                  type="text"
+                  required
+                  value={cliente.documento}
+                  onChange={(e) => setCliente({...cliente, documento: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  placeholder="12345678"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Fecha de Nacimiento *</label>
+                <input
+                  type="date"
+                  required
+                  value={cliente.fecha_nacimiento}
+                  onChange={(e) => setCliente({...cliente, fecha_nacimiento: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Nacionalidad</label>
+                <input
+                  type="text"
+                  value={cliente.nacionalidad}
+                  onChange={(e) => setCliente({...cliente, nacionalidad: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  placeholder="Argentina"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Ciudad</label>
+                <input
+                  type="text"
+                  value={cliente.ciudad}
+                  onChange={(e) => setCliente({...cliente, ciudad: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  placeholder="Buenos Aires"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Dirección</label>
+                <input
+                  type="text"
+                  value={cliente.direccion}
+                  onChange={(e) => setCliente({...cliente, direccion: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  placeholder="Av. Siempre Viva 123"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Pasajeros adicionales */}
+          {pasajeros.length > 0 && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-400" />
+                Pasajeros Adicionales
+              </h3>
+              <div className="space-y-4">
+                {pasajeros.map((pasajero, index) => (
+                  <div key={index} className="p-4 bg-white/5 rounded-xl">
+                    <h4 className="font-medium text-white mb-3">Pasajero {index + 2}</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Nombre</label>
+                        <input
+                          type="text"
+                          value={pasajero.nombre}
+                          onChange={(e) => {
+                            const nuevos = [...pasajeros];
+                            nuevos[index].nombre = e.target.value;
+                            setPasajeros(nuevos);
+                          }}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Apellido</label>
+                        <input
+                          type="text"
+                          value={pasajero.apellido}
+                          onChange={(e) => {
+                            const nuevos = [...pasajeros];
+                            nuevos[index].apellido = e.target.value;
+                            setPasajeros(nuevos);
+                          }}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Documento</label>
+                        <input
+                          type="text"
+                          value={pasajero.documento}
+                          onChange={(e) => {
+                            const nuevos = [...pasajeros];
+                            nuevos[index].documento = e.target.value;
+                            setPasajeros(nuevos);
+                          }}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Fecha de Nacimiento</label>
+                        <input
+                          type="date"
+                          value={pasajero.fecha_nacimiento}
+                          onChange={(e) => {
+                            const nuevos = [...pasajeros];
+                            nuevos[index].fecha_nacimiento = e.target.value;
+                            setPasajeros(nuevos);
+                          }}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Notas adicionales */}
+          <div className="glass-card rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-400" />
+              Notas Adicionales
+            </h3>
+            <textarea
+              value={cliente.notas}
+              onChange={(e) => setCliente({...cliente, notas: e.target.value})}
+              rows={4}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none"
+              placeholder="Requerimientos especiales, preferencias de horario, etc."
+            />
+          </div>
+        </div>
+
+        {/* Columna derecha - Resumen */}
+        <div className="space-y-6">
+          <div className="glass-card rounded-2xl p-6 sticky top-6">
+            <h3 className="text-lg font-bold text-white mb-4">Resumen</h3>
+            
+            <div className="space-y-3 mb-6">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-400">Paquete</span>
+                <span className="text-white">{paquete.destino}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-400">Pasajeros</span>
+                <span className="text-white">{config.num_pasajeros}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-400">Habitación</span>
+                <span className="text-white capitalize">{config.tipo_habitacion}</span>
+              </div>
+              <div className="h-px bg-white/10 my-3" />
+              <div className="flex justify-between">
+                <span className="text-slate-400">Precio por persona</span>
+                <span className="text-white">
+                  ${config.tipo_habitacion === 'doble' ? paquete.precio_doble :
+                    config.tipo_habitacion === 'triple' ? paquete.precio_triple :
+                    paquete.precio_cuadruple}
+                </span>
+              </div>
+              <div className="flex justify-between items-center pt-2">
+                <span className="text-lg font-bold text-white">Total</span>
+                <span className="text-2xl font-black text-blue-400">${calcularPrecio()}</span>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  Crear Cotización
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
+            </button>
+
+            <p className="text-xs text-slate-400 text-center mt-4">
+              La cotización tendrá una validez de 7 días
+            </p>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+}
