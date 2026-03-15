@@ -1,0 +1,268 @@
+"use client";
+
+import { useEffect, useState } from 'react';
+import api from '@/lib/api';
+import { Users, Search, Plus, Edit, Mail, Phone, Percent, CheckCircle, XCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface Vendedor {
+  id: string;
+  email: string;
+  nombre: string;
+  apellido: string;
+  telefono?: string;
+  rol: string;
+  activo: boolean;
+  comision_porcentaje: number;
+  fecha_registro: string;
+}
+
+export default function VendedoresAdmin() {
+  const [vendedores, setVendedores] = useState<Vendedor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    nombre: '',
+    apellido: '',
+    telefono: '',
+    comision_porcentaje: 12
+  });
+
+  useEffect(() => {
+    fetchVendedores();
+  }, []);
+
+  const fetchVendedores = async () => {
+    try {
+      const res = await api.get('/auth/users');
+      // Filtrar solo vendedores
+      const soloVendedores = res.data.filter((u: Vendedor) => u.rol === 'vendedor');
+      setVendedores(soloVendedores);
+    } catch (err) {
+      console.error('Error fetching vendedores:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await api.post('/auth/users', {
+        ...formData,
+        rol: 'vendedor'
+      });
+      setShowModal(false);
+      setFormData({
+        email: '',
+        password: '',
+        nombre: '',
+        apellido: '',
+        telefono: '',
+        comision_porcentaje: 12
+      });
+      fetchVendedores();
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Error al crear vendedor');
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-700">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-black text-white">Gestión de Vendedores</h2>
+          <p className="text-slate-400">Administra tu red de agentes de viajes</p>
+        </div>
+        <button 
+          onClick={() => setShowModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2"
+        >
+          <Plus className="w-5 h-5" />
+          Nuevo Vendedor
+        </button>
+      </div>
+
+      <div className="glass-card rounded-3xl overflow-hidden">
+        <div className="p-6 border-b border-white/5">
+          <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2 max-w-md">
+            <Search className="w-4 h-4 text-slate-500" />
+            <input 
+              type="text" 
+              placeholder="Buscar vendedor..." 
+              className="bg-transparent border-none outline-none text-sm w-full text-slate-300" 
+            />
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-white/2 text-slate-400 text-xs uppercase tracking-wider">
+                <th className="px-6 py-4 font-black">Vendedor</th>
+                <th className="px-6 py-4 font-black">Contacto</th>
+                <th className="px-6 py-4 font-black">Comisión</th>
+                <th className="px-6 py-4 font-black">Estado</th>
+                <th className="px-6 py-4 font-black">Registro</th>
+                <th className="px-6 py-4 font-black text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {vendedores.map((v) => (
+                <tr key={v.id} className="hover:bg-white/2 transition-colors group">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                        <span className="text-blue-400 font-bold">
+                          {v.nombre[0]}{v.apellido[0]}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-bold text-white">{v.nombre} {v.apellido}</p>
+                        <p className="text-xs text-slate-500">ID: {v.id.slice(0, 8)}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="space-y-1">
+                      <p className="text-sm text-slate-300 flex items-center gap-1">
+                        <Mail className="w-3 h-3" /> {v.email}
+                      </p>
+                      {v.telefono && (
+                        <p className="text-sm text-slate-300 flex items-center gap-1">
+                          <Phone className="w-3 h-3" /> {v.telefono}
+                        </p>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                      <Percent className="w-3 h-3" /> {v.comision_porcentaje}%
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {v.activo ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-green-500/10 text-green-400 border border-green-500/20">
+                        <CheckCircle className="w-3 h-3" /> Activo
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-red-500/10 text-red-400 border border-red-500/20">
+                        <XCircle className="w-3 h-3" /> Inactivo
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-400">
+                    {new Date(v.fecha_registro).toLocaleDateString('es-UY')}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-all">
+                      <Edit className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {isLoading && (
+            <div className="p-20 flex justify-center">
+              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modal Nuevo Vendedor */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="glass-card w-full max-w-lg rounded-3xl p-8">
+            <h3 className="text-2xl font-black text-white mb-6">Nuevo Vendedor</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-slate-400 mb-1 block">Nombre</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.nombre}
+                    onChange={(e) => setFormData({...formData, nombre: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-400 mb-1 block">Apellido</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.apellido}
+                    onChange={(e) => setFormData({...formData, apellido: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-slate-400 mb-1 block">Email</label>
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-slate-400 mb-1 block">Contraseña</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={formData.password}
+                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-slate-400 mb-1 block">Teléfono</label>
+                  <input
+                    type="tel"
+                    value={formData.telefono}
+                    onChange={(e) => setFormData({...formData, telefono: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-400 mb-1 block">Comisión (%)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={50}
+                    value={formData.comision_porcentaje}
+                    onChange={(e) => setFormData({...formData, comision_porcentaje: Number(e.target.value)})}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all"
+                >
+                  Crear Vendedor
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
