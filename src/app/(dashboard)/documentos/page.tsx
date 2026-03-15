@@ -26,7 +26,7 @@ export default function DocumentosPage() {
           <h2 className="text-3xl font-black text-white">Bandeja de Documentos</h2>
           <p className="text-slate-400">Accede a vouchers, itinerarios y boletos</p>
         </div>
-        {user?.role === 'admin' && (
+        {user?.rol === 'admin' && (
           <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2">
             <Upload className="w-5 h-5" />
             Subir Documento
