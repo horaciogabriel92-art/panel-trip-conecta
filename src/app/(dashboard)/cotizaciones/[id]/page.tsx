@@ -19,7 +19,8 @@ import {
   AlertCircle,
   ArrowRight,
   Edit,
-  Printer
+  Printer,
+  CreditCard
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -61,7 +62,17 @@ export default function CotizacionDetalle() {
   const [isLoading, setIsLoading] = useState(true);
   const [isConverting, setIsConverting] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showVentaModal, setShowVentaModal] = useState(false);
   const [editData, setEditData] = useState<Partial<Cotizacion>>({});
+  
+  // Datos de conversión a venta
+  const [ventaData, setVentaData] = useState({
+    monto_pagado: '',
+    tipo_pago: 'completo' as 'completo' | 'sena',
+    medio_pago: 'transferencia',
+    datos_pasajeros: '',
+    observaciones_pago: ''
+  });
 
   useEffect(() => {
     const fetchCotizacion = async () => {
@@ -87,13 +98,16 @@ export default function CotizacionDetalle() {
     }
   }, [params.id]);
 
-  const handleConvertirAVenta = async () => {
-    if (!confirm('¿Estás seguro de convertir esta cotización en venta?')) return;
+  const handleConvertirAVenta = async (e: React.FormEvent) => {
+    e.preventDefault();
     
     setIsConverting(true);
     try {
-      await api.put(`/cotizaciones/${params.id}/convertir`);
+      await api.put(`/cotizaciones/${params.id}/convertir`, {
+        datos_pago: ventaData
+      });
       alert('Cotización convertida a venta exitosamente');
+      setShowVentaModal(false);
       router.push('/mis-ventas');
     } catch (err: any) {
       console.error('Error completo:', err);
@@ -321,18 +335,11 @@ export default function CotizacionDetalle() {
 
             {puedeConvertir && (
               <button
-                onClick={handleConvertirAVenta}
-                disabled={isConverting}
-                className="w-full py-4 bg-green-600 hover:bg-green-700 disabled:bg-slate-600 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2"
+                onClick={() => setShowVentaModal(true)}
+                className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2"
               >
-                {isConverting ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <CheckCircle className="w-5 h-5" />
-                    Convertir a Venta
-                  </>
-                )}
+                <CheckCircle className="w-5 h-5" />
+                Convertir a Venta
               </button>
             )}
 
@@ -439,6 +446,145 @@ export default function CotizacionDetalle() {
                   className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all"
                 >
                   Guardar Cambios
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Convertir a Venta */}
+      {showVentaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="glass-card w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-8">
+            <h3 className="text-2xl font-black text-white mb-6">Convertir a Venta</h3>
+            <form onSubmit={handleConvertirAVenta} className="space-y-6">
+              {/* Datos de Pago */}
+              <div className="p-4 bg-white/5 rounded-2xl space-y-4">
+                <h4 className="font-bold text-white flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-green-400" />
+                  Datos de Pago
+                </h4>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-slate-400 mb-1 block">Monto Pagado *</label>
+                    <input
+                      type="number"
+                      required
+                      value={ventaData.monto_pagado}
+                      onChange={(e) => setVentaData({...ventaData, monto_pagado: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                      placeholder="Ej: 6000"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-slate-400 mb-1 block">Tipo de Pago *</label>
+                    <select
+                      value={ventaData.tipo_pago}
+                      onChange={(e) => setVentaData({...ventaData, tipo_pago: e.target.value as 'completo' | 'sena'})}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                    >
+                      <option value="completo">Pago Completo</option>
+                      <option value="sena">Seña</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm text-slate-400 mb-1 block">Medio de Pago *</label>
+                  <select
+                    value={ventaData.medio_pago}
+                    onChange={(e) => setVentaData({...ventaData, medio_pago: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  >
+                    <option value="transferencia">Transferencia Bancaria</option>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="tarjeta">Tarjeta de Crédito/Débito</option>
+                    <option value="mercadopago">Mercado Pago</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </div>
+
+                {ventaData.tipo_pago === 'sena' && (
+                  <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                    <p className="text-sm text-orange-400">
+                      <strong>Resta cobrar:</strong> ${(cotizacion.precio_total - (parseFloat(ventaData.monto_pagado) || 0)).toLocaleString()}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Datos de Pasajeros */}
+              <div className="p-4 bg-white/5 rounded-2xl space-y-4">
+                <h4 className="font-bold text-white flex items-center gap-2">
+                  <Users className="w-5 h-5 text-blue-400" />
+                  Datos de Pasajeros
+                </h4>
+                <div>
+                  <label className="text-sm text-slate-400 mb-1 block">
+                    Datos completos de los {cotizacion.num_pasajeros} pasajero(s)
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={ventaData.datos_pasajeros}
+                    onChange={(e) => setVentaData({...ventaData, datos_pasajeros: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none"
+                    placeholder={`Nombre completo, DNI/Pasaporte, Fecha de nacimiento de cada pasajero...\n\nEjemplo:\n1. Juan Pérez, DNI 12345678, 15/03/1985\n2. María López, DNI 87654321, 20/07/1990`}
+                  />
+                </div>
+              </div>
+
+              {/* Observaciones */}
+              <div className="p-4 bg-white/5 rounded-2xl space-y-4">
+                <h4 className="font-bold text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-purple-400" />
+                  Observaciones / Dónde cobrar
+                </h4>
+                <div>
+                  <label className="text-sm text-slate-400 mb-1 block">
+                    Detalles adicionales, cuenta bancaria, dirección de cobro, etc.
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={ventaData.observaciones_pago}
+                    onChange={(e) => setVentaData({...ventaData, observaciones_pago: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none"
+                    placeholder="CBU para transferencia, dirección si hay que ir a cobrar, notas especiales..."
+                  />
+                </div>
+              </div>
+
+              {/* Resumen */}
+              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-300">Total a pagar:</span>
+                  <span className="text-xl font-black text-white">${cotizacion.precio_total.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowVentaModal(false)}
+                  className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isConverting || !ventaData.monto_pagado}
+                  className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 disabled:bg-slate-600 text-white font-bold transition-all flex items-center justify-center gap-2"
+                >
+                  {isConverting ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <CheckCircle className="w-5 h-5" />
+                      Confirmar Venta
+                    </>
+                  )}
                 </button>
               </div>
             </form>
