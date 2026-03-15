@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
-import { Package, Search, Filter, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Package, Search, Filter, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+interface RecursoVendedor {
+  nombre: string;
+  url: string;
+  tipo: 'imagen' | 'video' | 'pdf';
+}
 
 interface Paquete {
   id?: string;
@@ -22,6 +28,7 @@ interface Paquete {
   imagen_url?: string;
   incluye: string[];
   no_incluye: string[];
+  recursos_vendedores?: RecursoVendedor[];
 }
 
 const emptyPaquete: Paquete = {
@@ -37,7 +44,8 @@ const emptyPaquete: Paquete = {
   duracion: 7,
   status: 'activo',
   incluye: [],
-  no_incluye: []
+  no_incluye: [],
+  recursos_vendedores: []
 };
 
 export default function PaquetesAdmin() {
@@ -48,6 +56,7 @@ export default function PaquetesAdmin() {
   const [formData, setFormData] = useState<Paquete>(emptyPaquete);
   const [incluyeInput, setIncluyeInput] = useState('');
   const [noIncluyeInput, setNoIncluyeInput] = useState('');
+  const [recursoInput, setRecursoInput] = useState({ nombre: '', url: '', tipo: 'imagen' as const });
 
   useEffect(() => {
     fetchPaquetes();
@@ -120,6 +129,21 @@ export default function PaquetesAdmin() {
 
   const removeNoIncluye = (index: number) => {
     setFormData({ ...formData, no_incluye: formData.no_incluye.filter((_, i) => i !== index) });
+  };
+
+  const addRecurso = () => {
+    if (recursoInput.nombre.trim() && recursoInput.url.trim()) {
+      const nuevosRecursos = [...(formData.recursos_vendedores || []), { ...recursoInput }];
+      setFormData({ ...formData, recursos_vendedores: nuevosRecursos });
+      setRecursoInput({ nombre: '', url: '', tipo: 'imagen' });
+    }
+  };
+
+  const removeRecurso = (index: number) => {
+    setFormData({ 
+      ...formData, 
+      recursos_vendedores: (formData.recursos_vendedores || []).filter((_, i) => i !== index) 
+    });
   };
 
   return (
@@ -408,6 +432,99 @@ export default function PaquetesAdmin() {
                         {item}
                         <button type="button" onClick={() => removeNoIncluye(idx)} className="hover:text-red-300">×</button>
                       </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Imagen de Portada */}
+                <div className="md:col-span-2">
+                  <label className="text-sm text-slate-400 mb-1 block">Imagen de Portada (URL)</label>
+                  <input
+                    type="url"
+                    value={formData.imagen_url || ''}
+                    onChange={(e) => setFormData({...formData, imagen_url: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                    placeholder="https://ejemplo.com/imagen.jpg"
+                  />
+                  {formData.imagen_url && (
+                    <div className="mt-2">
+                      <img 
+                        src={formData.imagen_url} 
+                        alt="Preview" 
+                        className="h-32 rounded-xl object-cover"
+                        onError={(e) => (e.target as HTMLImageElement).style.display = 'none'}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Recursos para Vendedores */}
+                <div className="md:col-span-2">
+                  <label className="text-sm text-slate-400 mb-1 block">Recursos para Vendedores (Placas RRSS)</label>
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={recursoInput.nombre}
+                      onChange={(e) => setRecursoInput({...recursoInput, nombre: e.target.value})}
+                      className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-blue-500"
+                      placeholder="Nombre del recurso"
+                    />
+                    <input
+                      type="url"
+                      value={recursoInput.url}
+                      onChange={(e) => setRecursoInput({...recursoInput, url: e.target.value})}
+                      className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-blue-500"
+                      placeholder="URL del archivo"
+                    />
+                    <select
+                      value={recursoInput.tipo}
+                      onChange={(e) => setRecursoInput({...recursoInput, tipo: e.target.value as 'imagen' | 'video' | 'pdf'})}
+                      className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-blue-500"
+                    >
+                      <option value="imagen">Imagen</option>
+                      <option value="video">Video</option>
+                      <option value="pdf">PDF</option>
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addRecurso}
+                    className="px-4 py-2 bg-blue-600 rounded-xl text-white font-medium mb-2"
+                  >
+                    Agregar Recurso
+                  </button>
+                  <div className="space-y-2">
+                    {(formData.recursos_vendedores || []).map((recurso, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <span className={cn(
+                            "px-2 py-1 rounded text-xs font-medium",
+                            recurso.tipo === 'imagen' && "bg-purple-500/20 text-purple-400",
+                            recurso.tipo === 'video' && "bg-red-500/20 text-red-400",
+                            recurso.tipo === 'pdf' && "bg-orange-500/20 text-orange-400"
+                          )}>
+                            {recurso.tipo.toUpperCase()}
+                          </span>
+                          <span className="text-sm text-white">{recurso.nombre}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <a 
+                            href={recurso.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-400 hover:underline"
+                          >
+                            Ver
+                          </a>
+                          <button 
+                            type="button" 
+                            onClick={() => removeRecurso(idx)}
+                            className="text-red-400 hover:text-red-300"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
