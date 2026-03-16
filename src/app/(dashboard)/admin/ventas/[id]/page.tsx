@@ -136,9 +136,7 @@ export default function AdminVentaDetalle() {
     formData.append('venta_id', params.id as string);
 
     try {
-      await api.post('/documentos', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.post('/documentos', formData);  // Axios maneja automáticamente el Content-Type con boundary
       
       // Actualizar estado de venta a "emitida" si es la primera vez
       if (documentos.length === 0 && venta?.estado === 'confirmada') {

@@ -33,9 +33,7 @@ function ImagenUploader({ imagenUrl, onImagenSubida }: { imagenUrl: string; onIm
       const formData = new FormData();
       formData.append('imagen', file);
 
-      const res = await api.post('/upload/paquete-imagen', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const res = await api.post('/upload/paquete-imagen', formData);
 
       const imageUrl = res.data.url;
       setPreview(imageUrl);

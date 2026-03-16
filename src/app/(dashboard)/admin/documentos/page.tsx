@@ -92,9 +92,7 @@ export default function DocumentosAdmin() {
     formData.append('archivo', uploadForm.archivo);
 
     try {
-      await api.post('/documentos', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.post('/documentos', formData);
       setShowUploadModal(false);
       setUploadForm({ tipo: 'otro', descripcion: '', archivo: null });
       setSelectedVenta('');
