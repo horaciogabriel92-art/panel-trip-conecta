@@ -68,12 +68,18 @@ export default function CotizacionDetalle() {
   
   // Datos de conversión a venta
   const [ventaData, setVentaData] = useState({
+    pago_realizado: false,
     monto_pagado: '',
-    tipo_pago: 'completo' as 'completo' | 'sena',
+    tipo_pago: 'total' as 'total' | 'adelanto' | 'pendiente',
     medio_pago: 'transferencia',
     datos_pasajeros: '',
     observaciones_pago: ''
   });
+  
+  // Estado para comprobantes
+  const [comprobantes, setComprobantes] = useState<File[]>([]);
+  const [comprobantesPreview, setComprobantesPreview] = useState<{name: string, type: string}[]>([]);
+  const [isUploadingComprobantes, setIsUploadingComprobantes] = useState(false);
 
   useEffect(() => {
     const fetchCotizacion = async () => {
@@ -103,11 +109,34 @@ export default function CotizacionDetalle() {
     e.preventDefault();
     
     setIsConverting(true);
+    
     try {
+      // 1. Subir comprobantes si hay
+      if (comprobantes.length > 0) {
+        setIsUploadingComprobantes(true);
+        
+        for (const file of comprobantes) {
+          const formData = new FormData();
+          formData.append('comprobante', file);
+          formData.append('descripcion', `Comprobante de ${ventaData.tipo_pago === 'total' ? 'pago total' : 'adelanto'} - ${ventaData.medio_pago}`);
+          
+          await api.post(`/upload/comprobante-pago/${params.id}`, formData);
+        }
+        
+        setIsUploadingComprobantes(false);
+      }
+      
+      // 2. Convertir a venta con datos de pago
       await api.put(`/cotizaciones/${params.id}/convertir`, {
-        datos_pago: ventaData
+        pago_realizado: ventaData.pago_realizado,
+        monto_pagado: ventaData.pago_realizado ? parseFloat(ventaData.monto_pagado) || 0 : 0,
+        tipo_pago: ventaData.pago_realizado ? ventaData.tipo_pago : 'pendiente',
+        medio_pago: ventaData.medio_pago,
+        observaciones_pago: ventaData.observaciones_pago,
+        datos_pasajeros: ventaData.datos_pasajeros
       });
-      alert('Cotización convertida a venta exitosamente');
+      
+      alert('✅ Cotización convertida a venta exitosamente');
       setShowVentaModal(false);
       router.push('/mis-ventas');
     } catch (err: any) {
@@ -115,7 +144,48 @@ export default function CotizacionDetalle() {
       alert(err.response?.data?.error || err.response?.data?.message || 'Error al convertir cotización');
     } finally {
       setIsConverting(false);
+      setIsUploadingComprobantes(false);
     }
+  };
+  
+  // Manejar selección de archivos
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    
+    const newFiles: File[] = [];
+    const newPreviews: {name: string, type: string}[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // Validar tipo
+      if (!file.type.match(/image\/(jpeg|png|webp)|application\/pdf/)) {
+        alert(`El archivo ${file.name} no es válido. Solo se permiten imágenes (JPG, PNG, WebP) o PDFs.`);
+        continue;
+      }
+      
+      // Validar tamaño (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`El archivo ${file.name} excede el límite de 10MB.`);
+        continue;
+      }
+      
+      newFiles.push(file);
+      newPreviews.push({
+        name: file.name,
+        type: file.type === 'application/pdf' ? 'pdf' : 'imagen'
+      });
+    }
+    
+    setComprobantes([...comprobantes, ...newFiles]);
+    setComprobantesPreview([...comprobantesPreview, ...newPreviews]);
+  };
+  
+  // Eliminar comprobante seleccionado
+  const removeComprobante = (index: number) => {
+    setComprobantes(comprobantes.filter((_, i) => i !== index));
+    setComprobantesPreview(comprobantesPreview.filter((_, i) => i !== index));
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -458,64 +528,179 @@ export default function CotizacionDetalle() {
       {showVentaModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="glass-card w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-8">
-            <h3 className="text-2xl font-black text-white mb-6">Convertir a Venta</h3>
+            <h3 className="text-2xl font-black text-white mb-2">Cerrar Venta</h3>
+            <p className="text-slate-400 text-sm mb-6">
+              Cotización: <span className="text-blue-400 font-mono">{cotizacion.codigo}</span>
+            </p>
+            
             <form onSubmit={handleConvertirAVenta} className="space-y-6">
-              {/* Datos de Pago */}
-              <div className="p-4 bg-white/5 rounded-2xl space-y-4">
+              {/* Pregunta principal: ¿Recibió pago? */}
+              <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-2xl space-y-4">
                 <h4 className="font-bold text-white flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-green-400" />
-                  Datos de Pago
+                  <DollarSign className="w-5 h-5 text-blue-400" />
+                  ¿El cliente ya realizó algún pago?
                 </h4>
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm text-slate-400 mb-1 block">Monto Pagado *</label>
-                    <input
-                      type="number"
-                      required
-                      value={ventaData.monto_pagado}
-                      onChange={(e) => setVentaData({...ventaData, monto_pagado: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
-                      placeholder="Ej: 6000"
-                    />
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setVentaData({...ventaData, pago_realizado: true, tipo_pago: 'adelanto'})}
+                    className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
+                      ventaData.pago_realizado 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                    }`}
+                  >
+                    ✅ Sí, recibí pago
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVentaData({...ventaData, pago_realizado: false, monto_pagado: '', tipo_pago: 'pendiente'})}
+                    className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
+                      !ventaData.pago_realizado 
+                        ? 'bg-orange-600 text-white' 
+                        : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                    }`}
+                  >
+                    ⏳ No, aún no
+                  </button>
+                </div>
+              </div>
+              
+              {/* Si recibió pago - mostrar campos de pago */}
+              {ventaData.pago_realizado && (
+                <div className="p-4 bg-white/5 rounded-2xl space-y-4">
+                  <h4 className="font-bold text-white flex items-center gap-2">
+                    <CreditCard className="w-5 h-5 text-green-400" />
+                    Detalles del Pago Recibido
+                  </h4>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm text-slate-400 mb-1 block">Monto Recibido *</label>
+                      <input
+                        type="number"
+                        required={ventaData.pago_realizado}
+                        min={1}
+                        value={ventaData.monto_pagado}
+                        onChange={(e) => setVentaData({...ventaData, monto_pagado: e.target.value})}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                        placeholder="Ej: 6000"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-slate-400 mb-1 block">Tipo de Pago *</label>
+                      <select
+                        value={ventaData.tipo_pago}
+                        onChange={(e) => setVentaData({...ventaData, tipo_pago: e.target.value as 'total' | 'adelanto'})}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                      >
+                        <option value="adelanto">Adelanto / Seña</option>
+                        <option value="total">Pago Total</option>
+                      </select>
+                    </div>
                   </div>
+
                   <div>
-                    <label className="text-sm text-slate-400 mb-1 block">Tipo de Pago *</label>
+                    <label className="text-sm text-slate-400 mb-1 block">Medio de Pago *</label>
                     <select
-                      value={ventaData.tipo_pago}
-                      onChange={(e) => setVentaData({...ventaData, tipo_pago: e.target.value as 'completo' | 'sena'})}
+                      value={ventaData.medio_pago}
+                      onChange={(e) => setVentaData({...ventaData, medio_pago: e.target.value})}
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
                     >
-                      <option value="completo">Pago Completo</option>
-                      <option value="sena">Seña</option>
+                      <option value="transferencia">Transferencia Bancaria</option>
+                      <option value="efectivo">Efectivo</option>
+                      <option value="tarjeta">Tarjeta de Crédito/Débito</option>
+                      <option value="mercadopago">Mercado Pago</option>
+                      <option value="paypal">PayPal</option>
+                      <option value="otro">Otro</option>
                     </select>
                   </div>
-                </div>
 
-                <div>
-                  <label className="text-sm text-slate-400 mb-1 block">Medio de Pago *</label>
-                  <select
-                    value={ventaData.medio_pago}
-                    onChange={(e) => setVentaData({...ventaData, medio_pago: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
-                  >
-                    <option value="transferencia">Transferencia Bancaria</option>
-                    <option value="efectivo">Efectivo</option>
-                    <option value="tarjeta">Tarjeta de Crédito/Débito</option>
-                    <option value="mercadopago">Mercado Pago</option>
-                    <option value="paypal">PayPal</option>
-                    <option value="otro">Otro</option>
-                  </select>
-                </div>
-
-                {ventaData.tipo_pago === 'sena' && (
-                  <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl">
-                    <p className="text-sm text-orange-400">
-                      <strong>Resta cobrar:</strong> ${formatCurrency(cotizacion.precio_total - (parseFloat(ventaData.monto_pagado) || 0))}
-                    </p>
+                  {ventaData.tipo_pago === 'adelanto' && ventaData.monto_pagado && (
+                    <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                      <p className="text-sm text-orange-400">
+                        <strong>Resta cobrar:</strong> ${formatCurrency(cotizacion.precio_total - (parseFloat(ventaData.monto_pagado) || 0))}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Upload de comprobantes */}
+                  <div>
+                    <label className="text-sm text-slate-400 mb-2 block">
+                      Comprobante de Pago (opcional)
+                    </label>
+                    
+                    {comprobantesPreview.length === 0 ? (
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/20 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-white/5 transition-all">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <svg className="w-8 h-8 text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          <p className="text-sm text-slate-400">Click para subir comprobante</p>
+                          <p className="text-xs text-slate-500">Imagen o PDF (máx. 10MB)</p>
+                        </div>
+                        <input 
+                          type="file" 
+                          className="hidden" 
+                          accept="image/jpeg,image/png,image/webp,application/pdf"
+                          onChange={handleFileSelect}
+                        />
+                      </label>
+                    ) : (
+                      <div className="space-y-2">
+                        {comprobantesPreview.map((comp, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                            <div className="flex items-center gap-3">
+                              <span className="text-2xl">{comp.type === 'pdf' ? '📄' : '📷'}</span>
+                              <span className="text-sm text-white truncate max-w-[200px]">{comp.name}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeComprobante(idx)}
+                              className="p-1 text-red-400 hover:text-red-300"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                        <label className="flex items-center justify-center w-full py-2 border border-dashed border-white/20 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-white/5 transition-all text-sm text-slate-400">
+                          + Agregar otro comprobante
+                          <input 
+                            type="file" 
+                            className="hidden" 
+                            accept="image/jpeg,image/png,image/webp,application/pdf"
+                            onChange={handleFileSelect}
+                          />
+                        </label>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+              
+              {/* Si NO recibió pago */}
+              {!ventaData.pago_realizado && (
+                <div className="p-4 bg-orange-500/5 border border-orange-500/20 rounded-2xl space-y-4">
+                  <h4 className="font-bold text-white flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-orange-400" />
+                    Información de Pago Pendiente
+                  </h4>
+                  <p className="text-sm text-slate-400">
+                    Indica cuándo o cómo planeas recibir el pago. Esta información será útil para el administrador.
+                  </p>
+                  <div>
+                    <label className="text-sm text-slate-400 mb-1 block">Detalles / Acuerdo de pago</label>
+                    <textarea
+                      rows={3}
+                      value={ventaData.observaciones_pago}
+                      onChange={(e) => setVentaData({...ventaData, observaciones_pago: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none"
+                      placeholder="Ej: El cliente pagará el lunes por transferencia..."
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Datos de Pasajeros */}
               <div className="p-4 bg-white/5 rounded-2xl space-y-4">
@@ -559,10 +744,16 @@ export default function CotizacionDetalle() {
 
               {/* Resumen */}
               <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-300">Total a pagar:</span>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-slate-300">Total del viaje:</span>
                   <span className="text-xl font-black text-white">${formatCurrency(cotizacion.precio_total)}</span>
                 </div>
+                {ventaData.pago_realizado && ventaData.monto_pagado && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-green-400">Recibido:</span>
+                    <span className="text-green-400 font-medium">${formatCurrency(parseFloat(ventaData.monto_pagado) || 0)}</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3 pt-4">
@@ -575,15 +766,18 @@ export default function CotizacionDetalle() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isConverting || !ventaData.monto_pagado}
+                  disabled={isConverting || (ventaData.pago_realizado && !ventaData.monto_pagado)}
                   className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 disabled:bg-slate-600 text-white font-bold transition-all flex items-center justify-center gap-2"
                 >
                   {isConverting ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      {isUploadingComprobantes ? 'Subiendo comprobantes...' : 'Procesando...'}
+                    </>
                   ) : (
                     <>
                       <CheckCircle className="w-5 h-5" />
-                      Confirmar Venta
+                      {ventaData.pago_realizado ? 'Confirmar Venta' : 'Enviar a Administrador'}
                     </>
                   )}
                 </button>
