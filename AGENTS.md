@@ -1,287 +1,186 @@
-# Trip Conecta B2B - Guía para Agentes de IA
+# Trip Conecta - Checkpoint 16/03/2026
 
-**Documento de referencia para desarrollo colaborativo**
+## ✅ Funcionalidades Implementadas
 
-**Última actualización:** Marzo 2026
+### 1. Pipeline de Cotizaciones Completo
 
----
-
-## 🚀 Inicio Rápido
-
-### Estructura de Documentación
-
+**Flujo del Vendedor:**
 ```
-docs/
-├── README.md           ← Índice central (empieza aquí)
-├── 00-SETUP.md         ← Instalación y configuración
-├── 01-ARQUITECTURA.md  ← Infraestructura y flujos
-├── 02-DATABASE.md      ← Schema SQL
-├── 03-API.md           ← Endpoints
-├── 04-FRONTEND.md      ← Next.js estructura
-└── 05-DECISIONES.md    ← Decisiones técnicas (ADRs)
-
-Root:
-├── AGENTS.md           ← Este archivo
-└── README.md           ← README principal del proyecto
+NUEVA → ENVIADA → VENDIDA/PERDIDA
 ```
 
-**Antes de hacer cambios, leer:**
-1. `docs/01-ARQUITECTURA.md` - Entender infraestructura
-2. `docs/05-DECISIONES.md` - Ver decisiones previas
-3. Este archivo (`AGENTS.md`) - Convenciones de código
+- **Nueva**: Cotización creada, botón "Marcar como Enviada"
+- **Enviada**: Ya enviada al cliente, botones:
+  - "Cerrar Venta" → Abre modal con datos de pago
+  - "Venta Perdida" → Modal para indicar motivo
+- **Vendida**: Convertida en venta, link a "Mis Ventas"
+- **Perdida**: No se concretó, queda archivada
 
----
+**Archivos modificados:**
+- `src/app/(dashboard)/cotizaciones/page.tsx` - Kanban con 4 columnas
+- `src/app/(dashboard)/cotizaciones/[id]/page.tsx` - Modal de cierre de venta
 
-## 📋 Contexto del Proyecto
+### 2. Modal de Cierre de Venta (Vendedor)
 
-### Qué es Trip Conecta B2B
-Plataforma de gestión de paquetes turísticos que conecta una agencia mayorista con vendedores independientes.
+**Pregunta principal:** "¿El cliente ya realizó algún pago?"
 
-**Flujo principal:**
-```
-Admin publica paquete → Vendedor cotiza → Admin responde → 
-Cliente acepta → Venta confirmada → Admin sube documentos → 
-Vendedor entrega a cliente
-```
+**Si SÍ:**
+- Monto recibido
+- Tipo: Adelanto/Seña o Pago Total
+- Medio de pago (transferencia, efectivo, tarjeta, etc.)
+- Upload de comprobantes (imagen o PDF, máx 10MB)
+- Resta cobrar (calculado automáticamente)
 
-### Usuarios
-- **Admin:** Gestiona paquetes, emite documentos, paga comisiones
-- **Vendedor:** Cotiza, vende, recibe documentos para clientes
+**Si NO:**
+- Campo para detalles/acuerdo de pago
 
----
+**Datos heredados al admin:**
+- Toda la información de pago se copia a la venta
+- Comprobantes almacenados en VPS: `/data/trip-conecta/uploads/comprobantes/`
 
-## 🏗️ Arquitectura (Resumen)
+### 3. Backend - API Endpoints
 
-### Stack Tecnológico
-| Capa | Tecnología | Ubicación |
-|------|-----------|-----------|
-| **API** | Express.js + TypeScript | Coolify Docker |
-| **Panel** | Next.js 16 + Tailwind v4 | Coolify Docker |
-| **Landing** | Next.js 16 + Tailwind v3 | Vercel |
-| **DB** | PostgreSQL | Supabase Cloud |
-| **Storage** | VPS Filesystem + Supabase | Híbrido |
+**Nuevos endpoints:**
+- `POST /api/upload/comprobante-pago/:cotizacionId` - Subir comprobante
+- `GET /api/upload/comprobantes-pago/:cotizacionId` - Listar comprobantes
+- `GET /api/upload/comprobante-pago/:id/download` - Descargar comprobante
+- `DELETE /api/upload/comprobante-pago/:id` - Eliminar comprobante
+- `PUT /api/cotizaciones/:id/convertir` - Actualizado con datos de pago
 
-### Storage de Archivos (CRÍTICO)
-**Siempre usar arquitectura híbrida:**
-- **Imágenes de paquetes:** Supabase Storage (CDN público)
-- **Documentos de viaje:** VPS Filesystem (`/data/trip-conecta/uploads/`)
-- **PDFs de cotizaciones:** VPS Filesystem
+**Configuración crítica:**
+- `express.json()` NO se aplica globalmente (rompe multipart)
+- Se aplica solo a rutas específicas
+- `/api/upload` va sin `express.json()` para permitir multipart
 
-⚠️ **NUNCA** guardar documentos solo en contenedor Docker (se pierden al reiniciar).
+**Almacenamiento:**
+- Imágenes de paquetes → Supabase Storage (`paquetes-imagenes`)
+- Comprobantes de pago → VPS local (`/data/trip-conecta/uploads/comprobantes/`)
+- Documentos de viaje → VPS local
 
----
+### 4. Base de Datos (Supabase)
 
-## 💻 Convenciones de Código
-
-### Nomenclatura
-
-| Tipo | Convención | Ejemplo |
-|------|------------|---------|
-| Archivos | kebab-case | `auth.controller.ts` |
-| Componentes | PascalCase | `Sidebar.tsx` |
-| Funciones/Vars | camelCase | `getUserById` |
-| Constantes | UPPER_SNAKE | `JWT_SECRET` |
-| Interfaces | PascalCase | `AuthContextType` |
-| API Routes | kebab-case | `/api/paquetes` |
-
-### TypeScript - Reglas Estrictas
-
-```typescript
-// ✅ SIEMPRE tipar Request/Response
-export const getAllItems = (req: Request, res: Response) => { ... }
-
-// ✅ Preferir interface sobre type para objetos
-interface User {
-  id: string;
-  nombre: string;
-}
-
-// ✅ Usar enums para valores fijos
-enum EstadoCotizacion {
-  PENDIENTE = 'pendiente',
-  RESPONDIDA = 'respondida',
-  CONVERTIDA = 'convertida'
-}
+**Campos agregados a `cotizaciones`:**
+```sql
+pago_realizado BOOLEAN DEFAULT FALSE
+monto_pagado DECIMAL(12, 2)
+tipo_pago VARCHAR(20) -- 'adelanto', 'total', 'pendiente'
+medio_pago VARCHAR(50)
+observaciones_pago TEXT
+comprobante_pago_url TEXT
+fecha_pago TIMESTAMP
 ```
 
-### Formateo de Moneda (OBLIGATORIO)
-
-```typescript
-// ❌ NUNCA hacer esto:
-${venta.precio_total.toLocaleString()}  // Rompe si es null
-
-// ✅ SIEMPRE usar helper:
-import { formatCurrency } from '@/lib/utils';
-${formatCurrency(venta.precio_total)}   // Seguro para null/undefined
+**Nueva tabla `comprobantes_pago`:**
+```sql
+id UUID PRIMARY KEY
+cotizacion_id UUID REFERENCES cotizaciones(id)
+vendedor_id UUID REFERENCES users(id)
+nombre_archivo VARCHAR(255)
+ruta_archivo VARCHAR(500)
+tipo_archivo VARCHAR(50) -- 'imagen', 'pdf'
+tamaño_bytes INTEGER
+descripcion TEXT
+fecha_subida TIMESTAMP
 ```
 
-### Download de Archivos (OBLIGATORIO)
-
-```typescript
-// ❌ NUNCA enlace directo:
-<a href="/api/documentos/123/download" target="_blank">
-
-// ✅ SIEMPRE con axios:
-const handleDownload = async (docId: string, fileName: string) => {
-  const response = await api.get(`/documentos/${docId}/download`, {
-    responseType: 'blob'
-  });
-  const url = window.URL.createObjectURL(new Blob([response.data]));
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', fileName);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.URL.revokeObjectURL(url);
-};
+**Campos agregados a `ventas`:**
+```sql
+pago_heredado BOOLEAN DEFAULT FALSE
+monto_pagado_heredado DECIMAL(12, 2)
+tipo_pago_heredado VARCHAR(20)
+observaciones_pago_heredado TEXT
+comprobantes_pago_urls TEXT -- JSON array
 ```
 
-### SQL - Prepared Statements
+### 5. Infraestructura
 
-```typescript
-// ✅ SIEMPRE usar prepared statements
-const items = db.prepare('SELECT * FROM table WHERE id = ?').all(id);
+**Traefik (Coolify):**
+- SSL automático con Let's Encrypt
+- Buffering deshabilitado para uploads: `maxRequestBodyBytes=0`
+- Redirección HTTP → HTTPS automática
 
-// ❌ NUNCA concatenar strings
-const items = db.prepare(`SELECT * FROM table WHERE id = ${id}`).all();  // INSEGuro
-```
+**Docker:**
+- Panel: Coolify managed (auto-deploy en push)
+- API: Manual container con labels Traefik
+- Volumen persistente: `/data/trip-conecta/uploads:/app/storage/uploads`
 
----
+## 🐛 Problemas Resueltos
 
-## 🗄️ Database - Conocimientos Clave
+### Problema: Upload de imágenes daba 400 "No se proporcionó ninguna imagen"
+**Causa:** `express.json()` consumía el body antes de que multer lo procesara
+**Solución:** Aplicar `express.json()` solo a rutas que lo necesitan, no globalmente
 
-### Tablas Principales
-- `users` - Admin y vendedores
-- `paquetes` - Paquetes turísticos (con campos JSON: itinerario, incluye, no_incluye, galeria)
-- `cotizaciones` - Presupuestos (estados: pendiente, respondida, convertida, vencida, cancelada)
-- `ventas` - Cierres confirmados
-- `documentos_viaje` - Metadatos de archivos (ruta_archivo apunta a VPS)
-- `pagos_comisiones` - Registro de pagos a vendedores
+### Problema: Coolify no deployaba cambios automáticamente
+**Causa:** Build fallaba silenciosamente o caché de Docker
+**Solución:** Forzar redeploy manual o rebuild con `--no-cache`
 
-### Estados Importantes
+### Problema: Endpoint de comprobantes daba 404
+**Causa:** Caché de Docker no invalidaba capas
+**Solución:** `docker build --no-cache` y recrear contenedor
 
-**Cotización:**
-- `pendiente` → `respondida` → `convertida` (o `cancelada`)
+## 📋 Pendientes para Próxima Sesión
 
-**Venta:**
-- `confirmada` → `en_proceso` → `emitida` → `completada`
+### Alta Prioridad:
+1. **Mostrar comprobantes en panel de admin**
+   - Sección en `/admin/ventas/[id]` para ver comprobantes de pago
+   - Links de descarga
+   
+2. **Agregar botones de estado en venta:**
+   - "Emitido" (boletos/tickets emitidos)
+   - "Cancelado" (venta cancelada)
 
-### Cupos
-- Cotización NO reduce cupos
-- Venta SÍ reduce cupos: `cupos_disponibles -= num_pasajeros`
+### Baja Prioridad:
+3. Agregar comisiones a vendedores
+4. Historial de cambios en ventas
+5. Notificaciones por email
 
----
+## 🚀 Cómo Deployar
 
-## 🔧 Patrones de Implementación
-
-### API Controller
-
-```typescript
-import { Request, Response } from 'express';
-import { supabase } from '../config/supabase';
-
-export const getAllItems = async (req: Request, res: Response) => {
-  const user = (req as any).user;
-  
-  try {
-    let query = supabase.from('table').select('*');
-    
-    // Filtrar por rol
-    if (user.role !== 'admin') {
-      query = query.eq('user_id', user.userId);
-    }
-    
-    const { data, error } = await query;
-    if (error) throw error;
-    
-    res.json(data);
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
-```
-
-### React Component (Client)
-
-```typescript
-"use client";
-
-import { useState, useEffect } from 'react';
-import api from '@/lib/api';
-
-interface Props {
-  prop: string;
-}
-
-export function ComponentName({ prop }: Props) {
-  const [data, setData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  useEffect(() => {
-    fetchData();
-  }, []);
-  
-  const fetchData = async () => {
-    try {
-      const res = await api.get('/endpoint');
-      setData(res.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  if (isLoading) return <Skeleton />;
-  
-  return (
-    <div className="glass-card p-6">
-      {/* JSX */}
-    </div>
-  );
-}
-```
-
----
-
-## ⚠️ Checklist Antes de Cambios
-
-### Si modificás documentos/archivos:
-- [ ] ¿El volumen Docker está montado en `/data/trip-conecta/uploads`?
-- [ ] ¿La variable `STORAGE_PATH` apunta al path correcto?
-- [ ] ¿Usás `formatCurrency()` para montos?
-- [ ] ¿Usás axios con `responseType: 'blob'` para downloads?
-
-### Si modificás base de datos:
-- [ ] ¿Actualizaste `docs/02-DATABASE.md`?
-- [ ] ¿Creaste migración SQL?
-- [ ] ¿Actualizaste tipos en TypeScript?
-
-### Si modificás API:
-- [ ] ¿Actualizaste `docs/03-API.md`?
-- [ ] ¿Protegiste rutas con `authenticateToken`?
-- [ ] ¿Validaste inputs con Zod?
-
-### Si es decisión arquitectónica:
-- [ ] ¿Agregaste entrada a `docs/05-DECISIONES.md`?
-- [ ] ¿Documentaste por qué se eligió esa opción?
-
----
-
-## 📞 Contacto y Recursos
-
-- **VPS:** Hetzner CX21 (5.78.158.76)
-- **Panel:** https://panel.tripconecta.com
-- **API:** https://api.tripconecta.com
-- **Landing:** https://tripconecta.com
-
-**Para ver documentación completa:**
+### Panel (Coolify):
 ```bash
-cat docs/README.md
+git add -A
+git commit -m "mensaje"
+git push origin main
+# Coolify deploya automáticamente
+```
+
+### API (Manual):
+```bash
+# En servidor:
+cd /data/trip-conecta/api-build
+git pull origin master
+docker build -t trip-conecta-api:latest .
+docker stop trip-conecta-api
+docker rm trip-conecta-api
+docker run -d --name trip-conecta-api ... (ver comando completo en infra)
+```
+
+## 🔑 URLs Importantes
+
+- Panel: https://panel.tripconecta.com
+- API: https://api.tripconecta.com
+- Supabase: https://fcaglzfkqqgoqoayrrzc.supabase.co
+- Coolify: http://5.78.158.76:8000
+
+## 📁 Estructura de Archivos
+
+```
+trip-conecta-panel/
+├── src/app/(dashboard)/
+│   ├── cotizaciones/page.tsx       # Kanban 4 columnas
+│   ├── cotizaciones/[id]/page.tsx  # Detalle + modal cierre
+│   ├── admin/ventas/[id]/page.tsx  # Ver venta (falta comprobantes)
+│   └── ...
+
+trip-conecta-api/
+├── src/routes/upload.routes.ts     # Endpoints comprobantes
+├── src/controllers/cotizaciones.controller.ts  # Convertir con pago
+├── src/index.ts                    # Config express.json()
+└── migrations/004_add_pago_cotizaciones.sql
 ```
 
 ---
 
-**Recordá:** Este proyecto usa archivos locales en VPS para documentos. Nunca guardar archivos solo en contenedores Docker.
+**Última actualización:** 16/03/2026 19:50
+**Commit panel:** `71fbd81`
+**Commit API:** `2ad50f4`
