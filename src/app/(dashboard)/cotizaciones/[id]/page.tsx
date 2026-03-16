@@ -43,7 +43,7 @@ interface Cotizacion {
   fecha_salida?: string;
   precio_total: number;
   comision_vendedor?: number;
-  estado: 'pendiente' | 'convertida' | 'vencida' | 'cancelada';
+  estado: 'pendiente' | 'respondida' | 'convertida' | 'vencida' | 'cancelada';
   notas?: string;
   fecha_creacion: string;
   fecha_expiracion?: string;
@@ -245,7 +245,7 @@ export default function CotizacionDetalle() {
 
   const imagen = paquete?.imagen_url || paquete?.imagen_principal || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800';
   const puedeEditar = cotizacion.estado === 'pendiente' && user?.rol === 'vendedor';
-  const puedeConvertir = cotizacion.estado === 'pendiente';
+  const puedeConvertir = cotizacion.estado === 'pendiente' || cotizacion.estado === 'respondida';
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700 max-w-6xl mx-auto">
