@@ -50,7 +50,7 @@ export default function PaqueteDetalle() {
   const router = useRouter();
   const [paquete, setPaquete] = useState<Paquete | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'info' | 'itinerario' | 'recursos'>('info');
+  const [activeTab, setActiveTab] = useState<'itinerario' | 'recursos'>('itinerario');
 
   useEffect(() => {
     const fetchPaquete = async () => {
@@ -147,10 +147,10 @@ export default function PaqueteDetalle() {
             </div>
           </div>
 
-          {/* Tabs de contenido */}
+          {/* Tabs de contenido - Solo 2 pestañas: Itinerario y Recursos */}
           <div className="glass-card rounded-2xl overflow-hidden">
             <div className="flex border-b border-white/10">
-              {['info', 'itinerario', 'recursos'].map((tab) => (
+              {['itinerario', 'recursos'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab as any)}
@@ -160,7 +160,6 @@ export default function PaqueteDetalle() {
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  {tab === 'info' && 'Información'}
                   {tab === 'itinerario' && 'Itinerario'}
                   {tab === 'recursos' && 'Recursos'}
                 </button>
@@ -168,7 +167,7 @@ export default function PaqueteDetalle() {
             </div>
 
             <div className="p-6">
-              {activeTab === 'info' && (
+              {activeTab === 'itinerario' && (
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-bold text-white mb-3">Descripción</h3>
@@ -209,26 +208,6 @@ export default function PaqueteDetalle() {
                         ))}
                       </ul>
                     </div>
-                  )}
-                </div>
-              )}
-
-              {activeTab === 'itinerario' && (
-                <div className="space-y-4">
-                  {paquete.itinerario && paquete.itinerario.length > 0 ? (
-                    paquete.itinerario.map((dia: any, i: number) => (
-                      <div key={i} className="flex gap-4 p-4 bg-white/5 rounded-xl">
-                        <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center font-black text-white">
-                          {dia.dia || i + 1}
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-white mb-1">{dia.titulo || `Día ${i + 1}`}</h4>
-                          <p className="text-slate-400 text-sm">{dia.descripcion || "Sin descripción."}</p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-slate-400 text-center py-8">Itinerario no disponible.</p>
                   )}
                 </div>
               )}
