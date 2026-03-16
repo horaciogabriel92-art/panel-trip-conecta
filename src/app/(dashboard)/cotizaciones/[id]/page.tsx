@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+
+// Configuración para forzar renderizado dinámico y evitar problemas de build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 import api from '@/lib/api';
 import { 
   ArrowLeft, 
