@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 // Configuración para forzar renderizado dinámico y evitar problemas de build
 export const dynamic = 'force-dynamic';
@@ -61,7 +61,11 @@ interface Paquete {
 export default function CotizacionDetalle() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
+  
+  // Detectar si venimos del kanban con accion=cerrar
+  const accion = searchParams.get('accion');
   const [cotizacion, setCotizacion] = useState<Cotizacion | null>(null);
   const [paquete, setPaquete] = useState<Paquete | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -97,6 +101,11 @@ export default function CotizacionDetalle() {
           const paqueteRes = await api.get(`/paquetes/${res.data.paquete_id}`);
           setPaquete(paqueteRes.data);
         }
+        
+        // Si venimos del kanban con accion=cerrar, abrir modal automáticamente
+        if (accion === 'cerrar' && res.data.estado === 'respondida') {
+          setShowVentaModal(true);
+        }
       } catch (err) {
         console.error('Error cargando cotización:', err);
       } finally {
@@ -107,7 +116,7 @@ export default function CotizacionDetalle() {
     if (params.id) {
       fetchCotizacion();
     }
-  }, [params.id]);
+  }, [params.id, accion]);
 
   const handleConvertirAVenta = async (e: React.FormEvent) => {
     e.preventDefault();
