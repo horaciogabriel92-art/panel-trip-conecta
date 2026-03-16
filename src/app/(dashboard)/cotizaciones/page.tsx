@@ -28,6 +28,7 @@ interface Cotizacion {
   fecha_envio?: string;
   fecha_vencimiento?: string;
   num_pasajeros: number;
+  notas?: string;
 }
 
 // Pipeline correcto: Nueva → Enviada → Vendida/Perdida
