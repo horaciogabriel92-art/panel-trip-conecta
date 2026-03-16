@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import api from '@/lib/api';
 import { Package, Search, Filter, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Download, Upload, X, ImageIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 // Componente para subir imágenes a Supabase Storage
 function ImagenUploader({ imagenUrl, onImagenSubida }: { imagenUrl: string; onImagenSubida: (url: string) => void }) {
@@ -321,7 +321,7 @@ export default function PaquetesAdmin() {
                     <p className="text-xs text-slate-500">{p.tipo} • {p.duracion} días</p>
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-300">{p.destino}</td>
-                  <td className="px-6 py-4 text-sm font-bold text-blue-400">${p.precio_doble?.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-sm font-bold text-blue-400">${formatCurrency(p.precio_doble)}</td>
                   <td className="px-6 py-4 text-sm text-slate-300">{p.cupos_disponibles} / {p.cupos_totales}</td>
                   <td className="px-6 py-4">
                     {p.status === 'activo' ? (

@@ -21,6 +21,7 @@ import {
   UserCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import { formatCurrency } from '@/lib/utils';
 
 interface Cotizacion {
   id: string;
@@ -248,7 +249,7 @@ export default function AdminCotizacionDetalle() {
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Precio por persona</span>
                 <span className="text-white">
-                  ${Math.round(cotizacion.precio_total / cotizacion.num_pasajeros).toLocaleString()}
+                  ${formatCurrency(Math.round(cotizacion.precio_total / cotizacion.num_pasajeros))}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -258,12 +259,12 @@ export default function AdminCotizacionDetalle() {
               <div className="h-px bg-white/10 my-3" />
               <div className="flex justify-between items-center">
                 <span className="text-lg font-bold text-white">Total</span>
-                <span className="text-2xl font-black text-blue-400">${cotizacion.precio_total.toLocaleString()}</span>
+                <span className="text-2xl font-black text-blue-400">${formatCurrency(cotizacion.precio_total)}</span>
               </div>
               {cotizacion.comision_vendedor && (
                 <div className="flex justify-between text-sm pt-2">
                   <span className="text-slate-400">Comisión vendedor (12%)</span>
-                  <span className="text-green-400 font-medium">${cotizacion.comision_vendedor.toLocaleString()}</span>
+                  <span className="text-green-400 font-medium">${formatCurrency(cotizacion.comision_vendedor)}</span>
                 </div>
               )}
             </div>

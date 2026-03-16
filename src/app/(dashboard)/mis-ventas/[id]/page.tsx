@@ -23,6 +23,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import { formatCurrency } from '@/lib/utils';
 
 interface Venta {
   id: string;
@@ -273,11 +274,11 @@ export default function VentaDetalle() {
               <div className="h-px bg-white/10 my-3" />
               <div className="flex justify-between items-center">
                 <span className="text-lg font-bold text-white">Total</span>
-                <span className="text-2xl font-black text-blue-400">${venta.precio_total.toLocaleString()}</span>
+                <span className="text-2xl font-black text-blue-400">${formatCurrency(venta.precio_total)}</span>
               </div>
               <div className="flex justify-between text-sm pt-2">
                 <span className="text-slate-400">Tu comisión</span>
-                <span className="text-green-400 font-medium">${venta.comision_monto.toLocaleString()}</span>
+                <span className="text-green-400 font-medium">${formatCurrency(venta.comision_monto)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Estado comisión</span>

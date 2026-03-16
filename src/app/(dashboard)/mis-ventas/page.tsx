@@ -14,7 +14,7 @@ import {
   FileText,
   Download
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
 interface Venta {
@@ -105,7 +105,7 @@ export default function MisVentas() {
         </div>
         <div className="glass-card p-6 rounded-2xl">
           <p className="text-sm text-slate-400 mb-1">Comisión Pendiente</p>
-          <p className="text-3xl font-black text-orange-400">${stats.comisionPendiente.toLocaleString()}</p>
+          <p className="text-3xl font-black text-orange-400">${formatCurrency(stats.comisionPendiente)}</p>
         </div>
       </div>
 
@@ -159,11 +159,11 @@ export default function MisVentas() {
               </div>
               <div className="space-y-1">
                 <p className="text-[10px] text-slate-500 uppercase font-black">Total Venta</p>
-                <p className="text-lg font-black text-white">${venta.precio_total.toLocaleString()}</p>
+                <p className="text-lg font-black text-white">${formatCurrency(venta.precio_total)}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-[10px] text-slate-500 uppercase font-black">Tu Comisión</p>
-                <p className="text-lg font-black text-green-400">${venta.comision_monto.toLocaleString()}</p>
+                <p className="text-lg font-black text-green-400">${formatCurrency(venta.comision_monto)}</p>
                 <span className={cn(
                   "text-[10px] uppercase font-bold",
                   venta.comision_estado === 'pagada' ? 'text-green-400' : 'text-orange-400'

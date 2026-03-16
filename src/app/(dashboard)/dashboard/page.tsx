@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { ShoppingCart, FileText, Package, Wallet, Star, ArrowUpRight, TrendingUp, Calendar } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
 interface DashboardStats {
@@ -44,16 +44,25 @@ export default function VendedorDashboard() {
       setCotizacionesCount(pendientes.length);
 
       // Fetch comisiones para el historial mensual
-      const comisionesRes = await api.get('/comisiones/pagadas');
-      const pagos = comisionesRes.data || [];
-      
-      // Agrupar por mes (simulado por ahora)
-      const mensual: ComisionMensual[] = [
-        { mes: 'Enero 2024', monto: 1200, estado: 'pagado' },
-        { mes: 'Febrero 2024', monto: 950, estado: 'pendiente' },
-        { mes: 'Marzo 2024', monto: statsRes.data.comisiones_pagadas || 1300, estado: 'pagado' },
-      ];
-      setComisionesMensual(mensual);
+      try {
+        const comisionesRes = await api.get('/comisiones/pagadas');
+        const pagos = comisionesRes.data || [];
+        
+        // Agrupar por mes (simulado por ahora)
+        const mensual: ComisionMensual[] = [
+          { mes: 'Enero 2024', monto: 1200, estado: 'pagado' },
+          { mes: 'Febrero 2024', monto: 950, estado: 'pendiente' },
+          { mes: 'Marzo 2024', monto: statsRes.data?.comisiones_pagadas || 1300, estado: 'pagado' },
+        ];
+        setComisionesMensual(mensual);
+      } catch (err) {
+        // Si falla el endpoint de comisiones, usar datos mock
+        setComisionesMensual([
+          { mes: 'Enero 2024', monto: 1200, estado: 'pagado' },
+          { mes: 'Febrero 2024', monto: 950, estado: 'pendiente' },
+          { mes: 'Marzo 2024', monto: statsRes.data?.comisiones_pagadas || 1300, estado: 'pagado' },
+        ]);
+      }
 
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
@@ -69,7 +78,7 @@ export default function VendedorDashboard() {
     { 
       title: 'Mis Ventas', 
       value: stats?.cantidad_ventas || 0, 
-      subtext: stats ? `$${stats.total_ventas.toLocaleString()}` : '$0',
+      subtext: stats ? `$${formatCurrency(stats.total_ventas)}` : '$0',
       icon: ShoppingCart, 
       color: 'text-blue-400', 
       bg: 'bg-blue-500/10' 
@@ -84,8 +93,8 @@ export default function VendedorDashboard() {
     },
     { 
       title: 'Comisiones', 
-      value: stats ? `$${stats.total_comisiones.toLocaleString()}` : '$0', 
-      subtext: `${stats?.comisiones_pendientes ? '$' + stats.comisiones_pendientes.toLocaleString() : '$0'} pendientes`,
+      value: stats ? `$${formatCurrency(stats.total_comisiones)}` : '$0', 
+      subtext: `${stats?.comisiones_pendientes ? '$' + formatCurrency(stats.comisiones_pendientes) : '$0'} pendientes`,
       icon: Wallet, 
       color: 'text-green-400', 
       bg: 'bg-green-500/10' 
@@ -171,7 +180,7 @@ export default function VendedorDashboard() {
                     <span className="text-slate-300 font-medium">{item.mes}</span>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="font-bold">${item.monto.toLocaleString()}</span>
+                    <span className="font-bold">${formatCurrency(item.monto)}</span>
                     <span className={cn(
                       "text-xs font-black uppercase tracking-tighter px-2 py-1 rounded-full",
                       item.estado === 'pagado' 

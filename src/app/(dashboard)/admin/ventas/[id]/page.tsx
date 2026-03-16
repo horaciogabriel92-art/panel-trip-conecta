@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
-import { useState } from 'react';
 import { 
   ArrowLeft, 
   ShoppingCart, 
@@ -26,6 +25,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import { formatCurrency } from '@/lib/utils';
 
 interface Venta {
   id: string;
@@ -335,12 +335,12 @@ export default function AdminVentaDetalle() {
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Total Venta</span>
-                <span className="text-white">${venta.precio_total.toLocaleString()}</span>
+                <span className="text-white">${formatCurrency(venta.precio_total)}</span>
               </div>
               <div className="h-px bg-white/10 my-3" />
               <div className="flex justify-between items-center">
                 <span className="text-lg font-bold text-white">Comisión Vendedor</span>
-                <span className="text-2xl font-black text-green-400">${venta.comision_monto.toLocaleString()}</span>
+                <span className="text-2xl font-black text-green-400">${formatCurrency(venta.comision_monto)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Estado</span>
@@ -444,7 +444,7 @@ export default function AdminVentaDetalle() {
           <div className="glass-card w-full max-w-md rounded-3xl p-8">
             <h3 className="text-2xl font-black text-white mb-4">Pagar Comisión</h3>
             <p className="text-slate-400 mb-6">
-              ¿Estás seguro de marcar la comisión de ${venta.comision_monto.toLocaleString()} como pagada al vendedor?
+              ¿Estás seguro de marcar la comisión de ${formatCurrency(venta.comision_monto)} como pagada al vendedor?
             </p>
             <div className="flex gap-3">
               <button

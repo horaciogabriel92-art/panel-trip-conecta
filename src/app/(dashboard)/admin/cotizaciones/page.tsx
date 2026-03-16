@@ -15,7 +15,7 @@ import {
   DollarSign,
   Calendar
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
 interface Cotizacion {
@@ -106,7 +106,7 @@ export default function AdminCotizaciones() {
         </div>
         <div className="glass-card p-6 rounded-2xl">
           <p className="text-sm text-slate-400 mb-1">Monto Total</p>
-          <p className="text-3xl font-black text-blue-400">${stats.montoTotal.toLocaleString()}</p>
+          <p className="text-3xl font-black text-blue-400">${formatCurrency(stats.montoTotal)}</p>
         </div>
       </div>
 
@@ -177,7 +177,7 @@ export default function AdminCotizaciones() {
                     <span className="text-white font-medium">{c.num_pasajeros}</span>
                   </td>
                   <td className="p-4">
-                    <span className="text-blue-400 font-bold">${c.precio_total.toLocaleString()}</span>
+                    <span className="text-blue-400 font-bold">${formatCurrency(c.precio_total)}</span>
                   </td>
                   <td className="p-4">
                     <span className={cn(

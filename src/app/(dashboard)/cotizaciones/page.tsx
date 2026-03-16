@@ -11,7 +11,7 @@ import {
   ArrowRight,
   DollarSign
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
 interface Cotizacion {
@@ -147,7 +147,7 @@ export default function CotizacionesCRM() {
                         {c.codigo}
                       </span>
                       <span className="text-lg font-black text-white">
-                        ${c.precio_total.toLocaleString()}
+                        ${formatCurrency(c.precio_total)}
                       </span>
                     </div>
 

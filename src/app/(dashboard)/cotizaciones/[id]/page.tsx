@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { formatCurrency } from '@/lib/utils';
 
 interface Cotizacion {
   id: string;
@@ -255,7 +256,7 @@ export default function CotizacionDetalle() {
               </div>
               <div className="p-4 bg-white/5 rounded-xl">
                 <p className="text-xs text-slate-500 uppercase font-black mb-1">Total</p>
-                <p className="text-xl font-black text-blue-400">${cotizacion.precio_total.toLocaleString()}</p>
+                <p className="text-xl font-black text-blue-400">${formatCurrency(cotizacion.precio_total)}</p>
               </div>
             </div>
           </div>
@@ -313,7 +314,7 @@ export default function CotizacionDetalle() {
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Precio por persona</span>
                 <span className="text-white">
-                  ${Math.round(cotizacion.precio_total / cotizacion.num_pasajeros).toLocaleString()}
+                  ${formatCurrency(Math.round(cotizacion.precio_total / cotizacion.num_pasajeros))}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -323,12 +324,12 @@ export default function CotizacionDetalle() {
               <div className="h-px bg-white/10 my-3" />
               <div className="flex justify-between items-center">
                 <span className="text-lg font-bold text-white">Total</span>
-                <span className="text-2xl font-black text-blue-400">${cotizacion.precio_total.toLocaleString()}</span>
+                <span className="text-2xl font-black text-blue-400">${formatCurrency(cotizacion.precio_total)}</span>
               </div>
               {cotizacion.comision_vendedor && (
                 <div className="flex justify-between text-sm pt-2">
                   <span className="text-slate-400">Tu comisión</span>
-                  <span className="text-green-400 font-medium">${cotizacion.comision_vendedor.toLocaleString()}</span>
+                  <span className="text-green-400 font-medium">${formatCurrency(cotizacion.comision_vendedor)}</span>
                 </div>
               )}
             </div>
@@ -510,7 +511,7 @@ export default function CotizacionDetalle() {
                 {ventaData.tipo_pago === 'sena' && (
                   <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl">
                     <p className="text-sm text-orange-400">
-                      <strong>Resta cobrar:</strong> ${(cotizacion.precio_total - (parseFloat(ventaData.monto_pagado) || 0)).toLocaleString()}
+                      <strong>Resta cobrar:</strong> ${formatCurrency(cotizacion.precio_total - (parseFloat(ventaData.monto_pagado) || 0))}
                     </p>
                   </div>
                 )}
@@ -560,7 +561,7 @@ export default function CotizacionDetalle() {
               <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
                 <div className="flex justify-between items-center">
                   <span className="text-slate-300">Total a pagar:</span>
-                  <span className="text-xl font-black text-white">${cotizacion.precio_total.toLocaleString()}</span>
+                  <span className="text-xl font-black text-white">${formatCurrency(cotizacion.precio_total)}</span>
                 </div>
               </div>
 

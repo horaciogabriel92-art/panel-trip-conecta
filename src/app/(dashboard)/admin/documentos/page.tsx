@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { Files, Upload, Download, Trash2, Search, FileText, Image, File, CheckCircle, XCircle, Eye } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 interface Documento {
   id: string;
@@ -53,6 +53,7 @@ export default function DocumentosAdmin() {
     descripcion: '',
     archivo: null as File | null
   });
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -117,6 +118,28 @@ export default function DocumentosAdmin() {
     const config = tipoLabels[tipo] || tipoLabels.otro;
     const Icon = config.icon;
     return <Icon className="w-5 h-5" />;
+  };
+
+  const handleDownload = async (docId: string, fileName: string) => {
+    try {
+      setDownloadingId(docId);
+      const response = await api.get(`/documentos/${docId}/download`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Error al descargar documento');
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   return (
@@ -192,15 +215,18 @@ export default function DocumentosAdmin() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <a 
-                          href={doc.ruta_archivo}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-blue-400 transition-all"
-                          title="Ver/Download"
+                        <button 
+                          onClick={() => handleDownload(doc.id, doc.nombre_archivo)}
+                          disabled={downloadingId === doc.id}
+                          className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-blue-400 transition-all disabled:opacity-50"
+                          title="Descargar"
                         >
-                          <Download className="w-4 h-4" />
-                        </a>
+                          {downloadingId === doc.id ? (
+                            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Download className="w-4 h-4" />
+                          )}
+                        </button>
                         <button 
                           onClick={() => handleDelete(doc.id)}
                           className="p-2 hover:bg-red-500/10 rounded-lg text-slate-500 hover:text-red-400 transition-all"

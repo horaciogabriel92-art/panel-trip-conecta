@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { ShoppingCart, CheckCircle, Clock, ExternalLink, Download, Search } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 
 export default function VentasPage() {
@@ -61,7 +61,7 @@ export default function VentasPage() {
                     <p className="text-xs text-slate-500">{v.cliente_email}</p>
                   </td>
                   <td className="px-8 py-6 text-sm text-slate-300 font-medium">Europa Classic 15d</td>
-                  <td className="px-8 py-6 text-sm font-black text-white">${v.precio_venta_total.toLocaleString()}</td>
+                  <td className="px-8 py-6 text-sm font-black text-white">${formatCurrency(v.precio_venta_total)}</td>
                   <td className="px-8 py-6">
                     <span className="text-xs px-2 py-1 bg-white/5 rounded-lg text-slate-400">ID: {v.vendedor_id}</span>
                   </td>

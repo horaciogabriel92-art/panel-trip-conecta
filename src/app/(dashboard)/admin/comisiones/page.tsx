@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { Wallet, CheckCircle, Clock, DollarSign, Users, Calendar, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 interface ComisionPendiente {
   id: string;
@@ -96,7 +96,7 @@ export default function ComisionesAdmin() {
             </div>
             <p className="text-sm text-slate-400 font-medium">Total Pendiente</p>
           </div>
-          <p className="text-3xl font-black text-white">${totalPendiente.toLocaleString()}</p>
+          <p className="text-3xl font-black text-white">${formatCurrency(totalPendiente)}</p>
         </div>
         <div className="glass-card p-6 rounded-3xl">
           <div className="flex items-center gap-3 mb-2">
@@ -156,7 +156,7 @@ export default function ComisionesAdmin() {
                   <div className="text-right">
                     <p className="text-sm text-slate-400">Total a pagar</p>
                     <p className="text-2xl font-black text-orange-400">
-                      ${item.total_comision.toLocaleString()}
+                      ${formatCurrency(item.total_comision)}
                     </p>
                   </div>
                   <button
@@ -192,7 +192,7 @@ export default function ComisionesAdmin() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-purple-400">${venta.comision_monto.toLocaleString()}</p>
+                      <p className="font-bold text-purple-400">${formatCurrency(venta.comision_monto)}</p>
                       <p className="text-xs text-slate-500">
                         {new Date(venta.fecha_creacion).toLocaleDateString('es-UY')}
                       </p>

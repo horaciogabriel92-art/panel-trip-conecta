@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { ShoppingCart, Users, Package, Wallet, TrendingUp, Calendar } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -27,7 +27,7 @@ export default function AdminDashboard() {
     { title: 'Ventas Totales', value: stats.ventasTotales, icon: ShoppingCart, color: 'text-blue-400', bg: 'bg-blue-500/10' },
     { title: 'Vendedores', value: stats.vendedoresActivos, icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10' },
     { title: 'Paquetes', value: stats.paquetesActivos, icon: Package, color: 'text-green-400', bg: 'bg-green-500/10' },
-    { title: 'Comisiones Pend.', value: `$${stats.comisionesPendientes.toLocaleString()}`, icon: Wallet, color: 'text-orange-400', bg: 'bg-orange-500/10' },
+    { title: 'Comisiones Pend.', value: `$${formatCurrency(stats.comisionesPendientes)}`, icon: Wallet, color: 'text-orange-400', bg: 'bg-orange-500/10' },
   ];
 
   return (

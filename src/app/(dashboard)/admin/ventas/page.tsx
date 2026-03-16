@@ -12,7 +12,7 @@ import {
   User,
   Upload
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
 interface Venta {
@@ -96,15 +96,15 @@ export default function AdminVentas() {
         </div>
         <div className="glass-card p-6 rounded-2xl">
           <p className="text-sm text-slate-400 mb-1">Monto Total</p>
-          <p className="text-3xl font-black text-blue-400">${stats.montoTotal.toLocaleString()}</p>
+          <p className="text-3xl font-black text-blue-400">${formatCurrency(stats.montoTotal)}</p>
         </div>
         <div className="glass-card p-6 rounded-2xl">
           <p className="text-sm text-slate-400 mb-1">Comisiones Pendientes</p>
-          <p className="text-3xl font-black text-orange-400">${stats.comisionesPendientes.toLocaleString()}</p>
+          <p className="text-3xl font-black text-orange-400">${formatCurrency(stats.comisionesPendientes)}</p>
         </div>
         <div className="glass-card p-6 rounded-2xl">
           <p className="text-sm text-slate-400 mb-1">Comisiones Pagadas</p>
-          <p className="text-3xl font-black text-green-400">${stats.comisionesPagadas.toLocaleString()}</p>
+          <p className="text-3xl font-black text-green-400">${formatCurrency(stats.comisionesPagadas)}</p>
         </div>
       </div>
 
@@ -147,11 +147,11 @@ export default function AdminVentas() {
                   <td className="p-4 text-slate-300">{v.paquete_nombre || '-'}</td>
                   <td className="p-4 text-slate-300">{v.vendedor_nombre || '-'}</td>
                   <td className="p-4">
-                    <span className="text-white font-bold">${v.precio_total.toLocaleString()}</span>
+                    <span className="text-white font-bold">${formatCurrency(v.precio_total)}</span>
                   </td>
                   <td className="p-4">
                     <div>
-                      <span className="text-green-400">${v.comision_monto.toLocaleString()}</span>
+                      <span className="text-green-400">${formatCurrency(v.comision_monto)}</span>
                       <span className={cn(
                         "ml-2 text-xs uppercase",
                         v.comision_estado === 'pagada' ? 'text-green-400' : 'text-orange-400'
