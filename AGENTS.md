@@ -118,21 +118,49 @@ comprobantes_pago_urls TEXT -- JSON array
 **Causa:** Caché de Docker no invalidaba capas
 **Solución:** `docker build --no-cache` y recrear contenedor
 
+## ✅ Cambios Recientes (16/03/2026)
+
+### Pestañas de Paquete Simplificadas
+- Antes: 3 pestañas (Información, Itinerario, Recursos)
+- Ahora: 2 pestañas (Itinerario, Recursos)
+- La pestaña "Itinerario" ahora contiene: descripción, incluye, no incluye
+- La pestaña "Recursos" se mantiene igual
+
+### Datos de Venta - Estructura Actual
+Los datos de pago se muestran en la sección "Notas" de la venta con este formato:
+```
+=== INFORMACIÓN DE PAGO ===
+Pago Realizado: Sí/No
+Monto Pagado: $X
+Tipo de Pago: Adelanto/Seña o Total
+Medio de Pago: transferencia/efectivo/etc
+Fecha de Pago: DD/MM/YYYY
+Observaciones: ...
+
+=== COMPROBANTES ADJUNTOS ===
+1. archivo.png (imagen)
+
+=== DATOS DE PASAJEROS ===
+...
+
+=== NOTAS ORIGINALES ===
+...
+```
+
 ## 📋 Pendientes para Próxima Sesión
 
 ### Alta Prioridad:
 1. **Mostrar comprobantes en panel de admin**
-   - Sección en `/admin/ventas/[id]` para ver comprobantes de pago
-   - Links de descarga
+   - Sección en `/admin/ventas/[id]` para ver/descargar comprobantes de pago
    
 2. **Agregar botones de estado en venta:**
    - "Emitido" (boletos/tickets emitidos)
    - "Cancelado" (venta cancelada)
 
-### Baja Prioridad:
-3. Agregar comisiones a vendedores
-4. Historial de cambios en ventas
-5. Notificaciones por email
+### Mejora UI (Opcional):
+3. **Estructurar mejor los datos de pago**
+   - Actualmente están en notas como texto plano
+   - Podría mostrarse en cards/boxes separados más visuales
 
 ## 🚀 Cómo Deployar
 
