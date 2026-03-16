@@ -1,202 +1,85 @@
-# Trip Conecta Panel
+# Trip Conecta B2B
 
-Dashboard B2B para vendedores y administradores de Trip Conecta. Permite cotizar paquetes turísticos, gestionar ventas y descargar documentos.
+Sistema de gestión de paquetes turísticos para agencias de viajes. Conecta agencias mayoristas con vendedores independientes.
 
-URL Objetivo: `https://panel.tripconecta.com`
+## 📚 Documentación
 
-## 🚀 Tecnologías
+**Toda la documentación técnica está en `/docs/`:**
 
-- **Framework**: Next.js 16.x (App Router)
-- **Lenguaje**: TypeScript 5.x
-- **Estilos**: Tailwind CSS v4
-- **UI**: Lucide React (iconos)
-- **Formularios**: React Hook Form + Zod
-- **HTTP Client**: Axios
-- **Animaciones**: Framer Motion
+| Documento | Descripción |
+|-----------|-------------|
+| [docs/README.md](./docs/README.md) | **Índice central** - Empezar aquí |
+| [docs/00-SETUP.md](./docs/00-SETUP.md) | Instalación y configuración |
+| [docs/01-ARQUITECTURA.md](./docs/01-ARQUITECTURA.md) | Infraestructura y flujos |
+| [docs/02-DATABASE.md](./docs/02-DATABASE.md) | Schema de base de datos |
+| [docs/03-API.md](./docs/03-API.md) | Endpoints y autenticación |
+| [docs/04-FRONTEND.md](./docs/04-FRONTEND.md) | Estructura Next.js |
+| [docs/05-DECISIONES.md](./docs/05-DECISIONES.md) | Decisiones técnicas (ADRs) |
 
-## 📁 Estructura
-
-```
-trip-conecta-panel/
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx              # Root layout con fuentes
-│   │   ├── page.tsx                # Home (redirige a login)
-│   │   ├── globals.css             # Tailwind v4 + variables CSS
-│   │   ├── login/
-│   │   │   └── page.tsx            # Página de login
-│   │   └── (dashboard)/            # Route group (protegido)
-│   │       ├── layout.tsx          # Layout con Sidebar + Header
-│   │       ├── dashboard/
-│   │       │   └── page.tsx        # Panel del vendedor
-│   │       ├── paquetes/
-│   │       │   └── page.tsx        # Catálogo de paquetes
-│   │       ├── cotizaciones/
-│   │       │   └── page.tsx        # Gestión de cotizaciones
-│   │       ├── ventas/
-│   │       │   └── page.tsx        # Historial de ventas
-│   │       ├── documentos/
-│   │       │   └── page.tsx        # Documentos de viaje
-│   │       └── admin/
-│   │           ├── page.tsx        # Dashboard admin
-│   │           └── paquetes/
-│   │               └── page.tsx    # CRUD de paquetes
-│   ├── components/
-│   │   └── layout/
-│   │       ├── Header.tsx          # Header del dashboard
-│   │       └── Sidebar.tsx         # Navegación lateral
-│   ├── context/
-│   │   └── AuthContext.tsx         # Auth + Axios config
-│   └── lib/
-│       └── utils.ts                # Utilidades (cn, etc)
-├── public/                          # Assets estáticos
-├── .env.local                       # Variables locales
-├── next.config.ts
-└── package.json
-```
-
-## 🛠️ Instalación Local
-
-```bash
-# 1. Navegar al directorio
-cd trip-conecta-panel
-
-# 2. Instalar dependencias
-npm install
-
-# 3. Configurar variables de entorno
-cp .env.example .env.local
-# Editar .env.local con tus valores
-
-# 4. Iniciar servidor de desarrollo
-npm run dev
-```
-
-La aplicación estará disponible en: `http://localhost:3000`
-
-## 🔧 Variables de Entorno
-
-```env
-# API Backend
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
-
-# Supabase (cuando migres)
-NEXT_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-anon-key
-```
-
-### Environments
-
-| Entorno | NEXT_PUBLIC_API_URL |
-|---------|---------------------|
-| Local | `http://localhost:3001/api` |
-| Preview | `https://api-staging.tripconecta.com/api` |
-| Producción | `https://api.panel.tripconecta.com/api` |
-
-## 📱 Funcionalidades
-
-### Para Vendedores
-- [x] Login con JWT
-- [ ] Dashboard con estadísticas
-- [ ] Ver catálogo de paquetes
-- [ ] Crear cotizaciones
-- [ ] Ver historial de cotizaciones
-- [ ] Convertir cotizaciones en ventas
-- [ ] Ver comisiones ganadas
-- [ ] Descargar documentos de viaje
-
-### Para Administradores
-- [x] Login con JWT
-- [ ] Dashboard admin
-- [ ] CRUD de paquetes turísticos
-- [ ] Gestión de vendedores
-- [ ] Subir documentos a ventas
-- [ ] Ver todas las cotizaciones y ventas
-
-## 🎨 Sistema de Diseño
-
-### Colores Principales
-```css
---background: #0a0a0f;        /* Fondo oscuro */
---foreground: #ffffff;        /* Texto principal */
---primary: #2563eb;           /* Azul principal */
---primary-foreground: #ffffff;
---muted: #1a1a24;             /* Fondos secundarios */
---muted-foreground: #94a3b8;  /* Texto secundario */
-```
-
-### Componentes UI
-- **Glassmorphism**: `.glass`, `.glass-card`
-- **Gradientes**: `.text-gradient`, `.gradient-bg`
-- **Botones**: `.btn-primary`, `.btn-secondary`
-
-## 📝 Scripts Disponibles
-
-```bash
-npm run dev      # Desarrollo (puerto 3000)
-npm run build    # Build para producción
-npm run lint     # ESLint
-```
-
-## 🚀 Deployment
-
-### Vercel (Recomendado)
-
-1. Crear proyecto en Vercel
-2. Conectar con este repositorio
-3. Configurar dominio: `panel.tripconecta.com`
-4. Variables de entorno:
-   ```
-   NEXT_PUBLIC_API_URL=https://api.panel.tripconecta.com/api
-   ```
-
-### Build Local
-
-```bash
-npm run build
-# Genera carpeta .next/
-```
-
-## 🔗 Integraciones
-
-- **API**: Conecta con `trip-conecta-api`
-- **Auth**: JWT almacenado en localStorage
-- **File Uploads**: Via API a `/storage/uploads`
-
-## 📋 TODO - Desarrollo Pendiente
-
-Las páginas del dashboard existen pero necesitan desarrollo:
-
-1. **Dashboard Vendedor** (`/dashboard`)
-   - Estadísticas de ventas
-   - Cotizaciones recientes
-   - Comisiones del mes
-
-2. **Catálogo** (`/paquetes`)
-   - Listado con filtros
-   - Vista detalle de paquete
-   - Botón "Cotizar"
-
-3. **Cotizaciones** (`/cotizaciones`)
-   - Formulario de cotización
-   - Listado histórico
-   - Acción "Convertir a Venta"
-
-4. **Ventas** (`/ventas`)
-   - Historial de ventas
-   - Estado de cada venta
-   - Documentos asociados
-
-5. **Documentos** (`/documentos`)
-   - Listado de documentos
-   - Descargas
-
-6. **Admin Paquetes** (`/admin/paquetes`)
-   - Formulario de creación
-   - Lista editable
-   - Gestión de cupos
+**Para agentes de IA:** [AGENTS.md](./AGENTS.md) - Convenciones y guías de código
 
 ---
 
-**Última actualización**: Marzo 2026
-**Versión**: 0.1.0 (En desarrollo)
+## 🚀 Inicio Rápido
+
+```bash
+# Backend
+cd trip-conecta-api && npm install && npm run dev
+
+# Panel
+cd trip-conecta-panel && npm install && npm run dev
+
+# Landing
+cd trip-conecta-landing && npm install && npm run dev
+```
+
+Ver guía completa: [docs/00-SETUP.md](./docs/00-SETUP.md)
+
+---
+
+## 🏗️ Arquitectura (Resumen)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    PRODUCCIÓN                           │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  tripconecta.com         panel.tripconecta.com         │
+│  ┌──────────────┐       ┌──────────────────┐           │
+│  │   Landing    │       │  Dashboard B2B   │           │
+│  │   (Vercel)   │       │   (Coolify)      │           │
+│  └──────────────┘       └────────┬─────────┘           │
+│                                  │                      │
+│  ┌───────────────────────────────┴───────────────┐     │
+│  │           api.tripconecta.com                 │     │
+│  │         Coolify + Nginx + VPS                 │     │
+│  └───────────────────────┬───────────────────────┘     │
+│                          │                             │
+│  ┌───────────────────────▼───────────────────────┐     │
+│  │       Supabase (PostgreSQL + Storage)         │     │
+│  └───────────────────────────────────────────────┘     │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📦 Proyectos
+
+| Proyecto | Tecnología | Descripción |
+|----------|-----------|-------------|
+| [trip-conecta-api](./trip-conecta-api/) | Express.js + TypeScript | API RESTful |
+| [trip-conecta-panel](./trip-conecta-panel/) | Next.js 16 + Tailwind v4 | Dashboard B2B |
+| [trip-conecta-landing](./trip-conecta-landing/) | Next.js 16 + Tailwind v3 | Landing Page |
+
+---
+
+## ⚡ Estado del Proyecto
+
+- ✅ Panel Admin/Vendedor funcional
+- ✅ API con autenticación JWT
+- ✅ Base de datos en Supabase
+- ✅ Storage híbrido (Supabase + VPS)
+- 🔄 En desarrollo: Mejoras de UX
+
+**Última actualización:** Marzo 2026
