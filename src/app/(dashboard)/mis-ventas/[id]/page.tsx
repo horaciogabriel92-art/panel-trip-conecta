@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
+import NotasVenta from '@/components/NotasVenta';
 
 interface Venta {
   id: string;
@@ -244,11 +245,11 @@ export default function VentaDetalle() {
             )}
           </div>
 
-          {/* Notas */}
+          {/* Notas - Formateadas con tarjetas */}
           {venta.notas && (
-            <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4">Notas</h3>
-              <p className="text-slate-300 whitespace-pre-wrap">{venta.notas}</p>
+            <div>
+              <h3 className="text-lg font-bold text-white mb-4">Información de la Venta</h3>
+              <NotasVenta notas={venta.notas} />
             </div>
           )}
         </div>
