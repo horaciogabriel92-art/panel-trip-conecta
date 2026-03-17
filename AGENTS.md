@@ -126,26 +126,21 @@ comprobantes_pago_urls TEXT -- JSON array
 - La pestaña "Itinerario" ahora contiene: descripción, incluye, no incluye
 - La pestaña "Recursos" se mantiene igual
 
-### Datos de Venta - Estructura Actual
-Los datos de pago se muestran en la sección "Notas" de la venta con este formato:
-```
-=== INFORMACIÓN DE PAGO ===
-Pago Realizado: Sí/No
-Monto Pagado: $X
-Tipo de Pago: Adelanto/Seña o Total
-Medio de Pago: transferencia/efectivo/etc
-Fecha de Pago: DD/MM/YYYY
-Observaciones: ...
+### Datos de Venta - Visualización Mejorada
+**Nuevo componente `NotasVenta`** que parsea el JSON de `datos_completos` y lo muestra en tarjetas:
 
-=== COMPROBANTES ADJUNTOS ===
-1. archivo.png (imagen)
+- **Datos del Cliente**: Nombre, documento, email, teléfono, fecha nacimiento, nacionalidad, dirección
+- **Configuración del Viaje**: Cantidad de pasajeros, tipo habitación, fecha salida
+- **Pasajeros**: Lista con documento, fecha nacimiento, nacionalidad
+- **Datos de Pago**: Pago realizado, monto, tipo, medio, observaciones
+- **Comprobantes**: Lista de archivos adjuntos
 
-=== DATOS DE PASAJEROS ===
-...
+Todo se muestra en cards/tarjetas con iconos, no más JSON crudo.
 
-=== NOTAS ORIGINALES ===
-...
-```
+**Archivos:**
+- `src/components/NotasVenta.tsx` - Componente reutilizable
+- `src/app/(dashboard)/admin/ventas/[id]/page.tsx`
+- `src/app/(dashboard)/mis-ventas/[id]/page.tsx`
 
 ## 📋 Pendientes para Próxima Sesión
 
