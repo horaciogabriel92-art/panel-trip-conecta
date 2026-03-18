@@ -47,4 +47,41 @@ api.interceptors.response.use(
   }
 );
 
+// ============================================
+// PDF API
+// ============================================
+
+export interface PDFResponse {
+  success: boolean;
+  message: string;
+  data: {
+    url: string;
+    filename: string;
+    cotizacion_id: string;
+    cotizacion_codigo: string;
+  };
+}
+
+export const pdfAPI = {
+  // Generar nuevo PDF
+  generar: async (cotizacionId: string): Promise<PDFResponse> => {
+    const response = await api.post(`/pdf/cotizaciones/${cotizacionId}/pdf`);
+    return response.data;
+  },
+
+  // Descargar PDF existente (devuelve blob)
+  descargar: async (cotizacionId: string): Promise<Blob> => {
+    const response = await api.get(`/pdf/cotizaciones/${cotizacionId}/pdf`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  // Regenerar PDF
+  regenerar: async (cotizacionId: string): Promise<PDFResponse> => {
+    const response = await api.put(`/pdf/cotizaciones/${cotizacionId}/pdf`);
+    return response.data;
+  },
+};
+
 export default api;
