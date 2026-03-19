@@ -82,6 +82,12 @@ export const pdfAPI = {
     const response = await api.put(`/pdf/cotizaciones/${cotizacionId}/pdf`);
     return response.data;
   },
+
+  // Obtener estado de la cola
+  getQueueStatus: async (): Promise<{ success: boolean; data: any }> => {
+    const response = await api.get('/pdf/queue/status');
+    return response.data;
+  },
 };
 
 export default api;
