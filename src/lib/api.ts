@@ -9,7 +9,7 @@ export const api = axios.create({
   },
 });
 
-// Interceptor para agregar el token a todas las peticiones
+// Interceptor para agregar el token
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
@@ -18,25 +18,19 @@ api.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
-    
-    // Si es FormData, eliminar Content-Type para que el navegador lo genere con boundary
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];
     }
-    
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Interceptor para manejar errores de autenticación
+// Interceptor para errores 401
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expirado o inválido
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -57,19 +51,15 @@ export interface PDFResponse {
   data: {
     url: string;
     filename: string;
-    cotizacion_id: string;
-    cotizacion_codigo: string;
   };
 }
 
 export const pdfAPI = {
-  // Generar nuevo PDF
   generar: async (cotizacionId: string): Promise<PDFResponse> => {
     const response = await api.post(`/pdf/cotizaciones/${cotizacionId}/pdf`);
     return response.data;
   },
 
-  // Descargar PDF existente (devuelve blob)
   descargar: async (cotizacionId: string): Promise<Blob> => {
     const response = await api.get(`/pdf/cotizaciones/${cotizacionId}/pdf`, {
       responseType: 'blob',
@@ -77,15 +67,8 @@ export const pdfAPI = {
     return response.data;
   },
 
-  // Regenerar PDF
   regenerar: async (cotizacionId: string): Promise<PDFResponse> => {
     const response = await api.put(`/pdf/cotizaciones/${cotizacionId}/pdf`);
-    return response.data;
-  },
-
-  // Obtener estado de la cola
-  getQueueStatus: async (): Promise<{ success: boolean; data: any }> => {
-    const response = await api.get('/pdf/queue/status');
     return response.data;
   },
 };
