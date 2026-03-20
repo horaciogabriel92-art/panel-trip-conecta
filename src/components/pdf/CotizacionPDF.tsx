@@ -673,10 +673,10 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
         )}
 
         {/* Incluye / No Incluye */}
-        {(paquete.incluye?.length > 0 || paquete.no_incluye?.length > 0) && (
+        {(!!paquete.incluye?.length || !!paquete.no_incluye?.length) && (
           <View style={styles.includesSection}>
             <View style={styles.includesGrid}>
-              {paquete.incluye?.length > 0 && (
+              {!!paquete.incluye?.length && (
                 <View style={[styles.includesBox, styles.includesBoxIncluye]}>
                   <Text style={[styles.includesTitle, styles.includesTitleGreen]}>✅ El paquete incluye</Text>
                   {paquete.incluye.map((item, idx) => (
@@ -685,7 +685,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
                 </View>
               )}
 
-              {paquete.no_incluye?.length > 0 && (
+              {!!paquete.no_incluye?.length && (
                 <View style={[styles.includesBox, styles.includesBoxNoIncluye]}>
                   <Text style={[styles.includesTitle, styles.includesTitleRed]}>❌ El paquete NO incluye</Text>
                   {paquete.no_incluye.map((item, idx) => (
