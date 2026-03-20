@@ -7,7 +7,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 import api from '@/lib/api';
-import { PDFButton } from '@/components/PDFButton';
+import { PDFDownloadButton } from '@/components/pdf/PDFDownloadButton';
 import { 
   ArrowLeft, 
   FileText, 
@@ -277,9 +277,20 @@ export default function CotizacionDetalle() {
           </p>
         </div>
         <div className="flex gap-2">
-          <PDFButton 
-            cotizacionId={cotizacion.id}
-            cotizacionCodigo={cotizacion.codigo}
+          <PDFDownloadButton 
+            data={{
+              ...cotizacion,
+              paquete: paquete ? {
+                titulo: paquete.titulo || paquete.nombre,
+                destino: paquete.destino,
+                imagen_principal: paquete.imagen_principal || paquete.imagen_url
+              } : undefined,
+              vendedor: user ? {
+                nombre: user.nombre,
+                apellido: user.apellido,
+                email: user.email
+              } : undefined
+            }}
           />
           <button 
             onClick={() => window.print()}
