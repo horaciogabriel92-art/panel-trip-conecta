@@ -3,6 +3,21 @@
 import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer';
 
 // ============================================
+// COLORES DE MARCA TRIP CONECTA
+// ============================================
+const COLORS = {
+  primary: '#0d9488',      // Teal-600 (color principal)
+  primaryDark: '#0f766e',  // Teal-700
+  primaryLight: '#14b8a6', // Teal-500
+  accent: '#5eead4',       // Teal-300
+  dark: '#134e4a',         // Teal-900
+  text: '#1f2937',         // Gray-800
+  textLight: '#6b7280',    // Gray-500
+  background: '#f0fdfa',   // Teal-50
+  white: '#ffffff',
+};
+
+// ============================================
 // ESTILOS
 // ============================================
 const styles = StyleSheet.create({
@@ -10,7 +25,7 @@ const styles = StyleSheet.create({
     padding: 30,
     fontFamily: 'Helvetica',
     fontSize: 10,
-    color: '#1a1a2e',
+    color: COLORS.text,
   },
   
   // Header
@@ -20,7 +35,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 20,
     paddingBottom: 15,
-    borderBottom: '3px solid #e63946',
+    borderBottom: `3px solid ${COLORS.primary}`,
   },
   logoSection: {
     flexDirection: 'row',
@@ -30,7 +45,7 @@ const styles = StyleSheet.create({
   logoBox: {
     width: 50,
     height: 50,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: COLORS.primary,
     borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
@@ -41,13 +56,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   companyName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a1a2e',
+    color: COLORS.dark,
   },
   companyTagline: {
     fontSize: 9,
-    color: '#666',
+    color: COLORS.textLight,
   },
   quoteInfo: {
     textAlign: 'right',
@@ -55,11 +70,11 @@ const styles = StyleSheet.create({
   quoteNumber: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#e63946',
+    color: COLORS.primary,
   },
   quoteDate: {
     fontSize: 9,
-    color: '#666',
+    color: COLORS.textLight,
     marginTop: 4,
   },
 
@@ -70,7 +85,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#e63946',
+    color: COLORS.primary,
     marginBottom: 8,
     textTransform: 'uppercase',
   },
@@ -82,10 +97,10 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: COLORS.background,
     padding: 10,
     borderRadius: 6,
-    borderLeft: '4px solid #e63946',
+    borderLeft: `4px solid ${COLORS.primary}`,
   },
   infoRow: {
     flexDirection: 'row',
@@ -106,21 +121,15 @@ const styles = StyleSheet.create({
   packageCard: {
     flexDirection: 'row',
     gap: 10,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: COLORS.background,
     padding: 12,
     borderRadius: 8,
   },
   packageImage: {
     width: 100,
     height: 70,
-    backgroundColor: '#ddd',
     borderRadius: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  packageImageText: {
-    fontSize: 8,
-    color: '#999',
+    objectFit: 'cover',
   },
   packageDetails: {
     flex: 1,
@@ -175,7 +184,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   totalRow: {
-    backgroundColor: '#e63946',
+    backgroundColor: COLORS.primary,
     color: 'white',
     padding: 10,
     marginTop: 8,
@@ -216,8 +225,8 @@ const styles = StyleSheet.create({
 
   // Banner de validez
   validityBanner: {
-    backgroundColor: '#fff3cd',
-    border: '1px solid #ffc107',
+    backgroundColor: '#ccfbf1',
+    border: `1px solid ${COLORS.primaryLight}`,
     padding: 10,
     borderRadius: 6,
     marginTop: 15,
@@ -225,11 +234,11 @@ const styles = StyleSheet.create({
   },
   validityText: {
     fontSize: 9,
-    color: '#856404',
+    color: COLORS.dark,
   },
   validityHighlight: {
     fontWeight: 'bold',
-    color: '#e63946',
+    color: COLORS.primaryDark,
   },
 
   // Vendedor
@@ -242,7 +251,7 @@ const styles = StyleSheet.create({
   sellerAvatar: {
     width: 35,
     height: 35,
-    backgroundColor: '#e63946',
+    backgroundColor: COLORS.primary,
     borderRadius: 9999,
     justifyContent: 'center',
     alignItems: 'center',
@@ -266,21 +275,26 @@ const styles = StyleSheet.create({
   footer: {
     marginTop: 30,
     paddingTop: 10,
-    borderTop: '2px solid #ddd',
+    borderTop: `2px solid ${COLORS.primaryLight}`,
     textAlign: 'center',
   },
   footerText: {
     fontSize: 8,
-    color: '#999',
+    color: COLORS.textLight,
+  },
+  footerLogo: {
+    width: 40,
+    height: 40,
+    marginBottom: 5,
   },
 
   // Página 2 - Itinerario
   dayCard: {
     marginBottom: 15,
     padding: 12,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: COLORS.background,
     borderRadius: 8,
-    borderLeft: '4px solid #e63946',
+    borderLeft: `4px solid ${COLORS.primary}`,
   },
   dayHeader: {
     flexDirection: 'row',
@@ -289,7 +303,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   dayBadge: {
-    backgroundColor: '#e63946',
+    backgroundColor: COLORS.primary,
     color: 'white',
     padding: '4 12',
     borderRadius: 20,
@@ -354,19 +368,19 @@ const styles = StyleSheet.create({
   policiesSection: {
     marginTop: 15,
     padding: 12,
-    backgroundColor: '#e7f3ff',
+    backgroundColor: '#ccfbf1',
     borderRadius: 6,
-    border: '1px solid #b8daff',
+    border: `1px solid ${COLORS.primaryLight}`,
   },
   policiesTitle: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#004085',
+    color: COLORS.dark,
     marginBottom: 6,
   },
   policiesText: {
     fontSize: 9,
-    color: '#004085',
+    color: COLORS.dark,
     lineHeight: 1.4,
   },
 });
@@ -448,15 +462,12 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           PÁGINA 1: RESUMEN Y PRECIO
           ============================================ */}
       <Page size="A4" style={styles.page}>
-        {/* Header */}
+        {/* Header - Título es el nombre del vendedor */}
         <View style={styles.header}>
           <View style={styles.logoSection}>
-            <View style={styles.logoBox}>
-              <Text style={styles.logoText}>LOGO</Text>
-            </View>
             <View>
-              <Text style={styles.companyName}>TRIP CONECTA</Text>
-              <Text style={styles.companyTagline}>Viajes y Turismo B2B</Text>
+              <Text style={styles.companyName}>{vendedor.nombre} {vendedor.apellido}</Text>
+              <Text style={styles.companyTagline}>Viajes y Turismo • tripconecta.com</Text>
             </View>
           </View>
           <View style={styles.quoteInfo}>
@@ -517,13 +528,13 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         </View>
 
-        {/* Paquete */}
+        {/* Paquete - Imagen real si existe */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>📦 Paquete Turístico</Text>
           <View style={styles.packageCard}>
-            <View style={styles.packageImage}>
-              <Text style={styles.packageImageText}>Imagen</Text>
-            </View>
+            {paquete.imagen_principal ? (
+              <Image src={paquete.imagen_principal} style={styles.packageImage} />
+            ) : null}
             <View style={styles.packageDetails}>
               <Text style={styles.packageTitle}>{paquete.titulo}</Text>
               <View style={styles.packageMeta}>
@@ -610,15 +621,15 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
             </View>
             <View style={styles.paymentItem}>
               <Text style={styles.paymentLabel}>Moneda:</Text>
-              <Text style={styles.paymentValue}>{precios.moneda}</Text>
+              <Text style={styles.paymentValue}>USD (Dólares Americanos)</Text>
             </View>
           </View>
         </View>
 
-        {/* Validez */}
+        {/* Validez - 24 horas si no está paga */}
         <View style={styles.validityBanner}>
           <Text style={styles.validityText}>
-            ⏰ Esta cotización tiene una validez de <Text style={styles.validityHighlight}>{cotizacion.dias_validez} días</Text> desde la fecha de emisión. Los precios están sujetos a disponibilidad y pueden variar sin previo aviso.
+            ⏰ Esta cotización tiene una validez de <Text style={styles.validityHighlight}>24 horas</Text> desde la fecha de emisión si aún no ha sido pagada. Una vez confirmada, el límite de validez será definido por el vendedor. Los precios están sujetos a disponibilidad.
           </Text>
         </View>
 
@@ -633,8 +644,9 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         </View>
 
-        {/* Footer */}
+        {/* Footer con Logo */}
         <View style={styles.footer}>
+          <Image src="/logo-trip-conecta.png" style={styles.footerLogo} />
           <Text style={styles.footerText}>Trip Conecta B2B - Plataforma de viajes para agencias</Text>
           <Text style={styles.footerText}>www.tripconecta.com | soporte@tripconecta.com</Text>
           <Text style={styles.footerText}>Los precios indicados son válidos al momento de la cotización y pueden estar sujetos a cambios.</Text>
