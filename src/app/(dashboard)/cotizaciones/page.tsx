@@ -30,6 +30,9 @@ interface Cotizacion {
   fecha_vencimiento?: string;
   num_pasajeros: number;
   notas?: string;
+  tipo_cotizacion?: 'paquete' | 'manual';
+  vuelos?: any[];
+  hospedaje?: any[];
 }
 
 // Pipeline correcto: Nueva → Enviada → Vendida/Perdida
@@ -216,8 +219,20 @@ export default function CotizacionesCRM() {
 
                       {/* Info del cliente */}
                       <div>
-                        <h4 className="font-bold text-white text-sm truncate">{c.cliente_nombre}</h4>
-                        <p className="text-xs text-slate-400 truncate">{c.paquete_nombre}</p>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-white text-sm truncate">{c.cliente_nombre}</h4>
+                          {c.tipo_cotizacion === 'manual' && (
+                            <span className="px-1.5 py-0.5 bg-teal-500/20 text-teal-400 text-[9px] font-bold rounded">
+                              MANUAL
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-400 truncate">
+                          {c.tipo_cotizacion === 'manual' 
+                            ? `${c.vuelos?.length || 0} vuelos, ${c.hospedaje?.length || 0} hoteles`
+                            : c.paquete_nombre
+                          }
+                        </p>
                       </div>
 
                       {/* Metadata */}
