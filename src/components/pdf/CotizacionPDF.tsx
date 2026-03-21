@@ -22,9 +22,9 @@ const COLORS = {
 // ============================================
 const styles = StyleSheet.create({
   page: {
-    padding: 30,
+    padding: 25,
     fontFamily: 'Helvetica',
-    fontSize: 10,
+    fontSize: 9,
     color: COLORS.text,
   },
   
@@ -33,9 +33,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 20,
-    paddingBottom: 15,
-    borderBottom: `3px solid ${COLORS.primary}`,
+    marginBottom: 12,
+    paddingBottom: 10,
+    borderBottom: `2px solid ${COLORS.primary}`,
   },
   logoSection: {
     flexDirection: 'row',
@@ -80,13 +80,13 @@ const styles = StyleSheet.create({
 
   // Secciones
   section: {
-    marginBottom: 15,
+    marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
     color: COLORS.primary,
-    marginBottom: 8,
+    marginBottom: 5,
     textTransform: 'uppercase',
   },
 
@@ -122,14 +122,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     backgroundColor: COLORS.background,
-    padding: 12,
-    borderRadius: 8,
+    padding: 8,
+    borderRadius: 6,
   },
   packageImage: {
-    width: 100,
-    height: 70,
-    borderRadius: 6,
-    objectFit: 'cover',
+    width: 80,
+    height: 60,
+    borderRadius: 4,
   },
   packageDetails: {
     flex: 1,
@@ -273,13 +272,13 @@ const styles = StyleSheet.create({
 
   // Footer
   footer: {
-    marginTop: 30,
-    paddingTop: 10,
-    borderTop: `2px solid ${COLORS.primaryLight}`,
+    marginTop: 15,
+    paddingTop: 8,
+    borderTop: `1px solid ${COLORS.primaryLight}`,
     textAlign: 'center',
   },
   footerText: {
-    fontSize: 8,
+    fontSize: 7,
     color: COLORS.textLight,
   },
   footerLogo: {
@@ -481,7 +480,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
         <View style={styles.section}>
           <View style={styles.infoGrid}>
             <View style={styles.infoCard}>
-              <Text style={styles.sectionTitle}>👤 Cliente</Text>
+              <Text style={styles.sectionTitle}>Cliente</Text>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Nombre:</Text>
                 <Text style={styles.infoValue}>{cliente.nombre} {cliente.apellido}</Text>
@@ -507,7 +506,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
             </View>
 
             <View style={styles.infoCard}>
-              <Text style={styles.sectionTitle}>✈️ Configuración del Viaje</Text>
+              <Text style={styles.sectionTitle}>Configuración del Viaje</Text>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Pasajeros:</Text>
                 <Text style={styles.infoValue}>{cotizacion.num_pasajeros}</Text>
@@ -530,7 +529,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
 
         {/* Paquete - Imagen real si existe */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📦 Paquete Turístico</Text>
+          <Text style={styles.sectionTitle}>Paquete Turístico</Text>
           <View style={styles.packageCard}>
             {paquete.imagen_principal ? (
               <Image src={paquete.imagen_principal} style={styles.packageImage} />
@@ -555,7 +554,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
         {/* Tabla de Pasajeros */}
         {pasajeros.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>👥 Pasajeros ({pasajeros.length})</Text>
+            <Text style={styles.sectionTitle}>Pasajeros ({pasajeros.length})</Text>
             <View style={styles.pricingTable}>
               <View style={styles.tableHeader}>
                 <Text style={styles.tableCell}>#</Text>
@@ -579,7 +578,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
 
         {/* Detalle de Precios */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>💰 Detalle de Precios</Text>
+          <Text style={styles.sectionTitle}>Detalle de Precios</Text>
           <View style={styles.pricingTable}>
             <View style={styles.tableHeader}>
               <Text style={styles.tableCell}>Concepto</Text>
@@ -605,7 +604,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
 
         {/* Info de Pago */}
         <View style={styles.paymentSection}>
-          <Text style={styles.sectionTitle}>💳 Información de Pago</Text>
+          <Text style={styles.sectionTitle}>Información de Pago</Text>
           <View style={styles.paymentGrid}>
             <View style={styles.paymentItem}>
               <Text style={styles.paymentLabel}>Anticipo requerido (30%):</Text>
@@ -647,9 +646,8 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
         {/* Footer con Logo */}
         <View style={styles.footer}>
           <Image src="/logo-trip-conecta.png" style={styles.footerLogo} />
-          <Text style={styles.footerText}>Trip Conecta B2B - Plataforma de viajes para agencias</Text>
-          <Text style={styles.footerText}>www.tripconecta.com | soporte@tripconecta.com</Text>
-          <Text style={styles.footerText}>Los precios indicados son válidos al momento de la cotización y pueden estar sujetos a cambios.</Text>
+          <Text style={styles.footerText}>Trip Conecta - www.tripconecta.com</Text>
+          <Text style={styles.footerText}>soporte@tripconecta.com</Text>
         </View>
       </Page>
 
@@ -657,7 +655,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           PÁGINA 2: ITINERARIO
           ============================================ */}
       <Page size="A4" style={styles.page}>
-        <Text style={styles.sectionTitle}>🗓️ Itinerario Detallado</Text>
+        <Text style={styles.sectionTitle}>Itinerario Detallado</Text>
 
         {paquete.itinerario && paquete.itinerario.length > 0 ? (
           paquete.itinerario.map((dia, idx) => (
@@ -679,7 +677,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
         ) : (
           <View style={styles.dayCard}>
             <Text style={styles.dayContent}>
-              El itinerario detallado será proporcionado por el operador turístico una vez confirmada la reserva.
+              Itinerario disponible próximamente.
             </Text>
           </View>
         )}
@@ -690,7 +688,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
             <View style={styles.includesGrid}>
               {!!paquete.incluye?.length && (
                 <View style={[styles.includesBox, styles.includesBoxIncluye]}>
-                  <Text style={[styles.includesTitle, styles.includesTitleGreen]}>✅ El paquete incluye</Text>
+                  <Text style={[styles.includesTitle, styles.includesTitleGreen]}>El paquete incluye</Text>
                   {paquete.incluye.map((item, idx) => (
                     <Text key={idx} style={[styles.includesItem, styles.checkGreen]}>✓ {item}</Text>
                   ))}
@@ -699,7 +697,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
 
               {!!paquete.no_incluye?.length && (
                 <View style={[styles.includesBox, styles.includesBoxNoIncluye]}>
-                  <Text style={[styles.includesTitle, styles.includesTitleRed]}>❌ El paquete NO incluye</Text>
+                  <Text style={[styles.includesTitle, styles.includesTitleRed]}>El paquete NO incluye</Text>
                   {paquete.no_incluye.map((item, idx) => (
                     <Text key={idx} style={[styles.includesItem, styles.checkRed]}>✗ {item}</Text>
                   ))}
@@ -712,14 +710,14 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
         {/* Políticas de Cancelación */}
         {paquete.politicas_cancelacion && (
           <View style={styles.policiesSection}>
-            <Text style={styles.policiesTitle}>📋 Políticas de Cancelación</Text>
+            <Text style={styles.policiesTitle}>Políticas de Cancelación</Text>
             <Text style={styles.policiesText}>{paquete.politicas_cancelacion}</Text>
           </View>
         )}
 
         {/* Footer Página 2 */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Esta cotización fue generada automáticamente por el sistema Trip Conecta B2B</Text>
+          <Text style={styles.footerText}>Cotización generada por Trip Conecta</Text>
           <Text style={styles.footerText}>Para confirmar esta reserva, contacte a su vendedor asignado</Text>
         </View>
       </Page>

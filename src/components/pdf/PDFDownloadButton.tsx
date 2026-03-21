@@ -61,14 +61,14 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
     cotizacion: {
       id: data.id,
       codigo: data.codigo,
-      fecha_creacion: new Date(data.fecha_creacion).toLocaleDateString('es-AR'),
+      fecha_creacion: new Date(data.fecha_creacion).toLocaleDateString('es-UY'),
       fecha_expiracion: data.fecha_expiracion 
-        ? new Date(data.fecha_expiracion).toLocaleDateString('es-AR')
-        : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('es-AR'),
+        ? new Date(data.fecha_expiracion).toLocaleDateString('es-UY')
+        : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('es-UY'),
       num_pasajeros: data.num_pasajeros || 1,
       tipo_habitacion: data.tipo_habitacion,
       fecha_salida: data.fecha_salida 
-        ? new Date(data.fecha_salida).toLocaleDateString('es-AR')
+        ? new Date(data.fecha_salida).toLocaleDateString('es-UY')
         : undefined,
       dias_validez: 7
     },
@@ -95,19 +95,19 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
       apellido: p.apellido || '',
       documento: p.documento || '',
       fecha_nacimiento: p.fecha_nacimiento 
-        ? new Date(p.fecha_nacimiento).toLocaleDateString('es-AR')
+        ? new Date(p.fecha_nacimiento).toLocaleDateString('es-UY')
         : '',
       nacionalidad: p.nacionalidad || ''
     })),
     precios: {
-      moneda: 'ARS',
-      precio_unitario: ((data.precio_total || 0) / (data.num_pasajeros || 1)).toLocaleString('es-AR', { minimumFractionDigits: 2 }),
-      subtotal: (data.precio_total || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 }),
+      moneda: 'USD',
+      precio_unitario: ((data.precio_total || 0) / (data.num_pasajeros || 1)).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
+      subtotal: (data.precio_total || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
       impuestos: '0.00',
       extras: '0.00',
-      total: (data.precio_total || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 }),
-      anticipo: ((data.precio_total || 0) * 0.3).toLocaleString('es-AR', { minimumFractionDigits: 2 }),
-      saldo: ((data.precio_total || 0) * 0.7).toLocaleString('es-AR', { minimumFractionDigits: 2 })
+      total: (data.precio_total || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
+      anticipo: ((data.precio_total || 0) * 0.3).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
+      saldo: ((data.precio_total || 0) * 0.7).toLocaleString('es-UY', { minimumFractionDigits: 2 })
     },
     vendedor: {
       nombre: data.vendedor?.nombre || 'Vendedor',
