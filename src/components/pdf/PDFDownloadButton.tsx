@@ -45,66 +45,30 @@ interface PDFDownloadButtonProps {
 export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonProps) {
   const [showPreview, setShowPreview] = useState(false);
 
-  // Parsear datos_completos de las notas si existen
+  // Parsear paquete y datos_completos desde notas JSON
+  let paqueteDesdeNotas: any = null;
   let datosCompletos: any = {};
-  if (data.notas?.includes('--- DATOS COMPLETOS ---')) {
-    try {
-      const match = data.notas.match(/--- DATOS COMPLETOS ---\n([\s\S]+?)(?:\n--- FIN DATOS ---|$)/);
-      if (match) datosCompletos = JSON.parse(match[1]);
-    } catch (e) {
-      console.error('Error parseando datos_completos:', e);
-    }
-  }
-
-  // Parsear itinerario desde notas formateadas
-  function parsearItinerarioDesdeNotas(notas: string): any[] | string | null {
-    if (!notas) return null;
-    
-    // Buscar sección de itinerario
-    const itinerarioMatch = notas.match(/--- ITINERARIO ---\n([\s\S]*?)(?:\n--- |$)/);
-    if (!itinerarioMatch) return null;
-    
-    const textoItinerario = itinerarioMatch[1].trim();
-    if (!textoItinerario) return null;
-    
-    // Intentar parsear como array de días
-    const dias: any[] = [];
-    const lineas = textoItinerario.split('\n');
-    let diaActual: any = null;
-    
-    for (const linea of lineas) {
-      const matchDia = linea.match(/^Día (\d+):\s*(.+)$/);
-      if (matchDia) {
-        if (diaActual) dias.push(diaActual);
-        diaActual = {
-          dia: parseInt(matchDia[1]),
-          titulo: matchDia[2].trim(),
-          descripcion: ''
-        };
-      } else if (diaActual && linea.trim().startsWith('  ')) {
-        diaActual.descripcion += linea.trim() + ' ';
-      } else if (linea.trim() && !diaActual) {
-        // Si no hay estructura de días, devolver como texto plano
-        return textoItinerario;
+  
+  if (data.notas) {
+    // Buscar PAQUETE JSON
+    const paqueteMatch = data.notas.match(/--- PAQUETE JSON ---\n([\s\S]+?)(?:\n--- |$)/);
+    if (paqueteMatch) {
+      try {
+        paqueteDesdeNotas = JSON.parse(paqueteMatch[1]);
+      } catch (e) {
+        console.error('Error parseando paquete JSON:', e);
       }
     }
     
-    if (diaActual) dias.push(diaActual);
-    return dias.length > 0 ? dias : textoItinerario;
-  }
-  
-  // Parsear incluye/no incluye desde notas
-  function parsearListaDesdeNotas(notas: string, seccion: string): string[] {
-    if (!notas) return [];
-    const regex = new RegExp(`--- ${seccion} ---\\n([\\s\\S]*?)(?:\\n--- |$)`);
-    const match = notas.match(regex);
-    if (!match) return [];
-    
-    return match[1]
-      .split('\n')
-      .map(l => l.trim())
-      .filter(l => l.startsWith('✓') || l.startsWith('✗'))
-      .map(l => l.substring(1).trim());
+    // Buscar DATOS COMPLETOS
+    const datosMatch = data.notas.match(/--- DATOS COMPLETOS ---\n([\s\S]+?)(?:\n--- |$)/);
+    if (datosMatch) {
+      try {
+        datosCompletos = JSON.parse(datosMatch[1]);
+      } catch (e) {
+        console.error('Error parseando datos_completos:', e);
+      }
+    }
   }
 
   // Preparar datos para el PDF
@@ -131,19 +95,15 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
       telefono: datosCompletos.cliente?.telefono || data.cliente_telefono || ''
     },
     paquete: {
-      titulo: data.paquete?.titulo || 'Paquete no disponible',
-      destino: data.paquete?.destino || '',
-      descripcion: data.paquete?.descripcion || '',
-      duracion_dias: data.paquete?.duracion_dias || 0,
-      imagen_principal: data.paquete?.imagen_principal,
-      politicas_cancelacion: data.paquete?.politicas_cancelacion,
-      itinerario: parsearItinerarioDesdeNotas(data.notas || '') || data.paquete?.itinerario || [],
-      incluye: parsearListaDesdeNotas(data.notas || '', 'INCLUYE').length > 0 
-        ? parsearListaDesdeNotas(data.notas || '', 'INCLUYE')
-        : data.paquete?.incluye || [],
-      no_incluye: parsearListaDesdeNotas(data.notas || '', 'NO INCLUYE').length > 0
-        ? parsearListaDesdeNotas(data.notas || '', 'NO INCLUYE')
-        : data.paquete?.no_incluye || []
+      titulo: paqueteDesdeNotas?.titulo || data.paquete?.titulo || 'Paquete no disponible',
+      destino: paqueteDesdeNotas?.destino || data.paquete?.destino || '',
+      descripcion: paqueteDesdeNotas?.descripcion || data.paquete?.descripcion || '',
+      duracion_dias: paqueteDesdeNotas?.duracion_dias || data.paquete?.duracion_dias || 0,
+      imagen_principal: paqueteDesdeNotas?.imagen_principal || data.paquete?.imagen_principal,
+      politicas_cancelacion: paqueteDesdeNotas?.politicas_cancelacion || data.paquete?.politicas_cancelacion,
+      itinerario: paqueteDesdeNotas?.itinerario || data.paquete?.itinerario || [],
+      incluye: paqueteDesdeNotas?.incluye || data.paquete?.incluye || [],
+      no_incluye: paqueteDesdeNotas?.no_incluye || data.paquete?.no_incluye || []
     },
     pasajeros: (datosCompletos.pasajeros || []).map((p: any) => ({
       nombre: p.nombre || '',
