@@ -35,6 +35,15 @@ interface CotizacionData {
     email?: string;
     telefono?: string;
   };
+  hospedaje?: Array<{
+    nombre_hotel: string;
+    link_hotel?: string;
+    ciudad: string;
+    fecha_checkin?: string;
+    fecha_checkout?: string;
+    tipo_habitacion?: string;
+    regimen?: string;
+  }>;
 }
 
 interface PDFDownloadButtonProps {
@@ -127,6 +136,7 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
         nacionalidad: p.nacionalidad || ''
       }))
     ],
+    hospedaje: data.hospedaje || [],
     precios: {
       moneda: 'USD',
       precio_unitario: ((data.precio_total || 0) / (data.num_pasajeros || 1)).toLocaleString('es-UY', { minimumFractionDigits: 2 }),

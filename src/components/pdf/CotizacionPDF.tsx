@@ -1,6 +1,6 @@
 'use client';
 
-import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image, Font, Link } from '@react-pdf/renderer';
 
 // ============================================
 // COLORES DE MARCA TRIP CONECTA
@@ -384,6 +384,43 @@ const styles = StyleSheet.create({
     color: COLORS.dark,
     lineHeight: 1.4,
   },
+  
+  // Hoteles
+  hotelCard: {
+    backgroundColor: COLORS.background,
+    borderRadius: 6,
+    padding: 10,
+    marginBottom: 8,
+    borderLeft: `3px solid ${COLORS.primary}`,
+  },
+  hotelHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  hotelName: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: COLORS.dark,
+    flex: 1,
+  },
+  hotelButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  hotelButtonText: {
+    color: 'white',
+    fontSize: 8,
+    fontWeight: 'bold',
+  },
+  hotelInfo: {
+    fontSize: 9,
+    color: COLORS.textLight,
+    marginTop: 2,
+  },
 });
 
 // ============================================
@@ -431,6 +468,15 @@ interface CotizacionPDFProps {
       fecha_nacimiento?: string;
       nacionalidad?: string;
     }>;
+    hospedaje?: Array<{
+      nombre_hotel: string;
+      link_hotel?: string;
+      ciudad: string;
+      fecha_checkin?: string;
+      fecha_checkout?: string;
+      tipo_habitacion?: string;
+      regimen?: string;
+    }>;
     precios: {
       moneda: string;
       precio_unitario: string;
@@ -455,7 +501,7 @@ interface CotizacionPDFProps {
 // COMPONENTE PDF
 // ============================================
 export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
-  const { cotizacion, cliente, paquete, pasajeros, precios, vendedor } = data;
+  const { cotizacion, cliente, paquete, pasajeros, hospedaje, precios, vendedor } = data;
 
   return (
     <Document>
@@ -628,9 +674,42 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
       </Page>
 
       {/* ============================================
-          PÁGINA 2: ITINERARIO
+          PÁGINA 2: HOSPEDAJE E ITINERARIO
           ============================================ */}
       <Page size="A4" style={styles.page}>
+        {/* Sección de Hospedaje */}
+        {hospedaje && hospedaje.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Hospedaje</Text>
+            {hospedaje.map((hotel, idx) => (
+              <View key={idx} style={styles.hotelCard}>
+                <View style={styles.hotelHeader}>
+                  <Text style={styles.hotelName}>{hotel.nombre_hotel}</Text>
+                  {hotel.link_hotel && (
+                    <Link src={hotel.link_hotel}>
+                      <View style={styles.hotelButton}>
+                        <Text style={styles.hotelButtonText}>Ver Hotel</Text>
+                      </View>
+                    </Link>
+                  )}
+                </View>
+                <Text style={styles.hotelInfo}>📍 {hotel.ciudad}</Text>
+                {hotel.tipo_habitacion && (
+                  <Text style={styles.hotelInfo}>🛏️ Habitación: {hotel.tipo_habitacion}</Text>
+                )}
+                {hotel.regimen && (
+                  <Text style={styles.hotelInfo}>🍽️ Régimen: {hotel.regimen}</Text>
+                )}
+                {(hotel.fecha_checkin || hotel.fecha_checkout) && (
+                  <Text style={styles.hotelInfo}>
+                    📅 {hotel.fecha_checkin || 'N/A'} → {hotel.fecha_checkout || 'N/A'}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+
         <Text style={styles.sectionTitle}>Itinerario Detallado</Text>
 
         {/* Itinerario - puede ser array o string */}
