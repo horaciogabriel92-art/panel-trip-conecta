@@ -420,7 +420,7 @@ interface CotizacionPDFProps {
         titulo: string;
         descripcion: string;
         actividades?: string[];
-      }>;
+      }> | string;
       incluye?: string[];
       no_incluye?: string[];
     };
