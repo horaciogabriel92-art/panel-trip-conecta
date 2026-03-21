@@ -421,6 +421,80 @@ const styles = StyleSheet.create({
     color: COLORS.textLight,
     marginTop: 2,
   },
+  
+  // Vuelos
+  flightCard: {
+    backgroundColor: COLORS.background,
+    borderRadius: 6,
+    padding: 10,
+    marginBottom: 8,
+    borderLeft: `3px solid ${COLORS.primary}`,
+  },
+  flightHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  flightRoute: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: COLORS.dark,
+  },
+  flightNumber: {
+    backgroundColor: COLORS.primary,
+    color: 'white',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    fontSize: 9,
+    fontWeight: 'bold',
+  },
+  flightDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  flightTime: {
+    alignItems: 'center',
+  },
+  flightTimeText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.dark,
+  },
+  flightDate: {
+    fontSize: 8,
+    color: COLORS.textLight,
+    marginTop: 2,
+  },
+  flightArrow: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flightArrowLine: {
+    width: 60,
+    height: 1,
+    backgroundColor: COLORS.primary,
+    position: 'relative',
+  },
+  flightArrowText: {
+    fontSize: 8,
+    color: COLORS.textLight,
+    marginTop: 4,
+  },
+  flightMeta: {
+    flexDirection: 'row',
+    gap: 15,
+    marginTop: 6,
+    paddingTop: 6,
+    borderTop: `1px dashed ${COLORS.primaryLight}`,
+  },
+  flightMetaItem: {
+    fontSize: 8,
+    color: COLORS.textLight,
+  },
 });
 
 // ============================================
@@ -437,6 +511,11 @@ interface CotizacionPDFProps {
       tipo_habitacion?: string;
       fecha_salida?: string;
       dias_validez: number;
+      tipo_cotizacion?: 'paquete' | 'manual';
+      nombre_cotizacion?: string;
+      itinerario_manual?: string;
+      incluye?: string[];
+      no_incluye?: string[];
     };
     cliente: {
       nombre: string;
@@ -477,6 +556,21 @@ interface CotizacionPDFProps {
       tipo_habitacion?: string;
       regimen?: string;
     }>;
+    vuelos?: Array<{
+      linea: number;
+      aerolinea_codigo: string;
+      aerolinea_nombre: string;
+      numero_vuelo: string;
+      clase_codigo: string;
+      fecha_salida: string;
+      fecha_llegada: string;
+      hora_salida: string;
+      hora_llegada: string;
+      origen_codigo: string;
+      origen_ciudad: string;
+      destino_codigo: string;
+      destino_ciudad: string;
+    }>;
     precios: {
       moneda: string;
       precio_unitario: string;
@@ -501,7 +595,33 @@ interface CotizacionPDFProps {
 // COMPONENTE PDF
 // ============================================
 export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
-  const { cotizacion, cliente, paquete, pasajeros, hospedaje, precios, vendedor } = data;
+  const { cotizacion, cliente, paquete, pasajeros, hospedaje, vuelos, precios, vendedor } = data;
+  
+  // Calcular duración del viaje
+  const calcularDuracion = () => {
+    if (hospedaje && hospedaje.length > 0) {
+      const checkin = new Date(hospedaje[0].fecha_checkin || '');
+      const checkout = new Date(hospedaje[0].fecha_checkout || '');
+      if (checkin && checkout) {
+        const diff = Math.ceil((checkout.getTime() - checkin.getTime()) / (1000 * 60 * 60 * 24));
+        return diff;
+      }
+    }
+    if (vuelos && vuelos.length >= 2) {
+      const salida = new Date(vuelos[0].fecha_salida);
+      const llegada = new Date(vuelos[vuelos.length - 1].fecha_llegada);
+      if (salida && llegada) {
+        const diff = Math.ceil((llegada.getTime() - salida.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        return diff;
+      }
+    }
+    return paquete.duracion_dias || 0;
+  };
+  
+  const duracionDias = calcularDuracion();
+  const esCotizacionManual = cotizacion.tipo_cotizacion === 'manual';
+  const tituloCotizacion = cotizacion.nombre_cotizacion || paquete.titulo;
+  const destino = hospedaje?.[0]?.ciudad || vuelos?.[vuelos.length - 1]?.destino_ciudad || paquete.destino;
 
   return (
     <Document>
@@ -575,31 +695,72 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         </View>
 
-        {/* Paquete - Imagen real si existe */}
+        {/* Paquete / Cotización */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Paquete Turístico</Text>
+          <Text style={styles.sectionTitle}>
+            {esCotizacionManual ? 'Cotización Personalizada' : 'Paquete Turístico'}
+          </Text>
           <View style={styles.packageCard}>
             {paquete.imagen_principal ? (
               <Image src={paquete.imagen_principal} style={styles.packageImage} />
             ) : null}
             <View style={styles.packageDetails}>
-              <Text style={styles.packageTitle}>{paquete.titulo}</Text>
+              <Text style={styles.packageTitle}>{tituloCotizacion}</Text>
               <View style={styles.packageMeta}>
                 <Text style={styles.metaItem}>
-                  <Text style={styles.metaBold}>Destino:</Text> {paquete.destino}
+                  <Text style={styles.metaBold}>Destino:</Text> {destino}
                 </Text>
                 <Text style={styles.metaItem}>
-                  <Text style={styles.metaBold}>Duración:</Text> {paquete.duracion_dias} días
+                  <Text style={styles.metaBold}>Duración:</Text> {duracionDias > 0 ? `${duracionDias} días` : 'No especificada'}
                 </Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* Tabla de Pasajeros adicionales (desde el pasajero 2) */}
-        {pasajeros.length > 1 && (
+        {/* Vuelos - Solo para cotizaciones manuales con vuelos */}
+        {vuelos && vuelos.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Pasajeros Adicionales ({pasajeros.length - 1})</Text>
+            <Text style={styles.sectionTitle}>Vuelos</Text>
+            {vuelos.map((vuelo, idx) => (
+              <View key={idx} style={styles.flightCard}>
+                <View style={styles.flightHeader}>
+                  <Text style={styles.flightRoute}>
+                    {vuelo.origen_ciudad} → {vuelo.destino_ciudad}
+                  </Text>
+                  <Text style={styles.flightNumber}>
+                    {vuelo.aerolinea_codigo} {vuelo.numero_vuelo}
+                  </Text>
+                </View>
+                <View style={styles.flightDetails}>
+                  <View style={styles.flightTime}>
+                    <Text style={styles.flightTimeText}>{vuelo.hora_salida}</Text>
+                    <Text style={styles.flightDate}>{vuelo.origen_codigo}</Text>
+                    <Text style={styles.flightDate}>{vuelo.fecha_salida}</Text>
+                  </View>
+                  <View style={styles.flightArrow}>
+                    <View style={styles.flightArrowLine} />
+                    <Text style={styles.flightArrowText}>{vuelo.clase_codigo}</Text>
+                  </View>
+                  <View style={styles.flightTime}>
+                    <Text style={styles.flightTimeText}>{vuelo.hora_llegada}</Text>
+                    <Text style={styles.flightDate}>{vuelo.destino_codigo}</Text>
+                    <Text style={styles.flightDate}>{vuelo.fecha_llegada}</Text>
+                  </View>
+                </View>
+                <View style={styles.flightMeta}>
+                  <Text style={styles.flightMetaItem}>Aerolínea: {vuelo.aerolinea_nombre}</Text>
+                  <Text style={styles.flightMetaItem}>Clase: {vuelo.clase_codigo}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Tabla de Todos los Pasajeros */}
+        {pasajeros.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Pasajeros ({pasajeros.length})</Text>
             <View style={styles.pricingTable}>
               <View style={styles.tableHeader}>
                 <Text style={styles.tableCell}>#</Text>
@@ -608,9 +769,9 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
                 <Text style={styles.tableCell}>Fecha Nac.</Text>
                 <Text style={styles.tableCell}>Nacionalidad</Text>
               </View>
-              {pasajeros.slice(1).map((p, idx) => (
+              {pasajeros.map((p, idx) => (
                 <View key={idx} style={styles.tableRow}>
-                  <Text style={styles.tableCell}>{idx + 2}</Text>
+                  <Text style={styles.tableCell}>{idx + 1}</Text>
                   <Text style={styles.tableCell}>{p.nombre} {p.apellido}</Text>
                   <Text style={styles.tableCell}>{p.documento || '-'}</Text>
                   <Text style={styles.tableCell}>{p.fecha_nacimiento || '-'}</Text>
@@ -693,16 +854,16 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
                     </Link>
                   )}
                 </View>
-                <Text style={styles.hotelInfo}>📍 {hotel.ciudad}</Text>
+                <Text style={styles.hotelInfo}>Ciudad: {hotel.ciudad}</Text>
                 {hotel.tipo_habitacion && (
-                  <Text style={styles.hotelInfo}>🛏️ Habitación: {hotel.tipo_habitacion}</Text>
+                  <Text style={styles.hotelInfo}>Habitacion: {hotel.tipo_habitacion}</Text>
                 )}
                 {hotel.regimen && (
-                  <Text style={styles.hotelInfo}>🍽️ Régimen: {hotel.regimen}</Text>
+                  <Text style={styles.hotelInfo}>Regimen: {hotel.regimen}</Text>
                 )}
                 {(hotel.fecha_checkin || hotel.fecha_checkout) && (
                   <Text style={styles.hotelInfo}>
-                    📅 {hotel.fecha_checkin || 'N/A'} → {hotel.fecha_checkout || 'N/A'}
+                    Check-in: {hotel.fecha_checkin || 'N/A'} / Check-out: {hotel.fecha_checkout || 'N/A'}
                   </Text>
                 )}
               </View>
@@ -712,10 +873,17 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
 
         <Text style={styles.sectionTitle}>Itinerario Detallado</Text>
 
-        {/* Itinerario - puede ser array o string */}
+        {/* Itinerario Manual (desde cotización manual) */}
+        {cotizacion.itinerario_manual && (
+          <View style={styles.dayCard}>
+            <Text style={styles.dayContent}>{cotizacion.itinerario_manual}</Text>
+          </View>
+        )}
+
+        {/* Itinerario del Paquete (desde catálogo) */}
         {(() => {
           const itin = paquete.itinerario;
-          if (!itin) return null;
+          if (!itin || cotizacion.itinerario_manual) return null;
           
           // Si es string, mostrarlo como texto
           if (typeof itin === 'string') {
@@ -736,14 +904,14 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
             return itin.map((dia, idx) => (
               <View key={idx} style={styles.dayCard}>
                 <View style={styles.dayHeader}>
-                  <Text style={styles.dayBadge}>Día {dia.dia || idx + 1}</Text>
+                  <Text style={styles.dayBadge}>Dia {dia.dia || idx + 1}</Text>
                   <Text style={styles.dayTitle}>{dia.titulo}</Text>
                 </View>
                 <Text style={styles.dayContent}>{dia.descripcion}</Text>
                 {dia.actividades && dia.actividades.length > 0 && (
                   <View style={{ marginTop: 6 }}>
                     {dia.actividades.map((act: string, actIdx: number) => (
-                      <Text key={actIdx} style={styles.dayContent}>• {act}</Text>
+                      <Text key={actIdx} style={styles.dayContent}>- {act}</Text>
                     ))}
                   </View>
                 )}
@@ -755,29 +923,36 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
         })()}
 
         {/* Incluye / No Incluye */}
-        {(!!paquete.incluye?.length || !!paquete.no_incluye?.length) && (
-          <View style={styles.includesSection}>
-            <View style={styles.includesGrid}>
-              {!!paquete.incluye?.length && (
-                <View style={[styles.includesBox, styles.includesBoxIncluye]}>
-                  <Text style={[styles.includesTitle, styles.includesTitleGreen]}>El paquete incluye</Text>
-                  {paquete.incluye.map((item, idx) => (
-                    <Text key={idx} style={[styles.includesItem, styles.checkGreen]}>✓ {item}</Text>
-                  ))}
-                </View>
-              )}
+        {(() => {
+          const incluye = cotizacion.incluye || paquete.incluye || [];
+          const noIncluye = cotizacion.no_incluye || paquete.no_incluye || [];
+          
+          if (incluye.length === 0 && noIncluye.length === 0) return null;
+          
+          return (
+            <View style={styles.includesSection}>
+              <View style={styles.includesGrid}>
+                {incluye.length > 0 && (
+                  <View style={[styles.includesBox, styles.includesBoxIncluye]}>
+                    <Text style={[styles.includesTitle, styles.includesTitleGreen]}>El paquete incluye</Text>
+                    {incluye.map((item, idx) => (
+                      <Text key={idx} style={[styles.includesItem, styles.checkGreen]}>+ {item}</Text>
+                    ))}
+                  </View>
+                )}
 
-              {!!paquete.no_incluye?.length && (
-                <View style={[styles.includesBox, styles.includesBoxNoIncluye]}>
-                  <Text style={[styles.includesTitle, styles.includesTitleRed]}>El paquete NO incluye</Text>
-                  {paquete.no_incluye.map((item, idx) => (
-                    <Text key={idx} style={[styles.includesItem, styles.checkRed]}>✗ {item}</Text>
-                  ))}
-                </View>
-              )}
+                {noIncluye.length > 0 && (
+                  <View style={[styles.includesBox, styles.includesBoxNoIncluye]}>
+                    <Text style={[styles.includesTitle, styles.includesTitleRed]}>El paquete NO incluye</Text>
+                    {noIncluye.map((item, idx) => (
+                      <Text key={idx} style={[styles.includesItem, styles.checkRed]}>- {item}</Text>
+                    ))}
+                  </View>
+                )}
+              </View>
             </View>
-          </View>
-        )}
+          );
+        })()}
 
         {/* Políticas de Cancelación */}
         {paquete.politicas_cancelacion && (
