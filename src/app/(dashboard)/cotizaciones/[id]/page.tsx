@@ -55,8 +55,14 @@ interface Paquete {
   nombre: string;
   titulo: string;
   destino: string;
+  descripcion?: string;
+  duracion_dias?: number;
   imagen_url?: string;
   imagen_principal?: string;
+  itinerario?: any[] | string;
+  incluye?: string[];
+  no_incluye?: string[];
+  politicas_cancelacion?: string;
 }
 
 export default function CotizacionDetalle() {
@@ -283,7 +289,13 @@ export default function CotizacionDetalle() {
               paquete: paquete ? {
                 titulo: paquete.titulo || paquete.nombre,
                 destino: paquete.destino,
-                imagen_principal: paquete.imagen_principal || paquete.imagen_url
+                descripcion: paquete.descripcion,
+                duracion_dias: paquete.duracion_dias,
+                imagen_principal: paquete.imagen_principal || paquete.imagen_url,
+                itinerario: paquete.itinerario,
+                incluye: paquete.incluye,
+                no_incluye: paquete.no_incluye,
+                politicas_cancelacion: paquete.politicas_cancelacion
               } : undefined,
               vendedor: user ? {
                 nombre: user.nombre,
