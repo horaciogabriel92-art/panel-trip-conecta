@@ -546,9 +546,6 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
                   <Text style={styles.metaBold}>Duración:</Text> {paquete.duracion_dias} días
                 </Text>
               </View>
-              {paquete.descripcion && (
-                <Text style={styles.packageDescription}>{paquete.descripcion}</Text>
-              )}
             </View>
           </View>
         </View>
