@@ -166,7 +166,6 @@ export const AIRLINES: Record<string, Airline> = {
   'NH': { iata: 'NH', name: 'All Nippon Airways', country: 'Japan' },
   'QF': { iata: 'QF', name: 'Qantas', country: 'Australia' },
   'NZ': { iata: 'NZ', name: 'Air New Zealand', country: 'New Zealand' },
-  'QF': { iata: 'QF', name: 'Qantas', country: 'Australia' },
   'WS': { iata: 'WS', name: 'WestJet', country: 'Canada' },
   'TS': { iata: 'TS', name: 'Air Transat', country: 'Canada' },
   'AM': { iata: 'AM', name: 'Aeroméxico', country: 'Mexico' },
