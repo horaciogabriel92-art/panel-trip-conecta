@@ -194,7 +194,6 @@ export default function NuevaCotizacionManual() {
         pasajeros,
         vuelos: useAmadeus ? parsedFlights : vuelosManuales,
         hospedaje: hospedajes,
-        traslados: [],
         itinerario_manual: itinerario,
         incluye: incluye.filter(i => i.trim() !== ''),
         no_incluye: noIncluye.filter(i => i.trim() !== ''),

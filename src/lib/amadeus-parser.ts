@@ -42,10 +42,10 @@ export interface ParseResult {
 // Regex para línea de vuelo Amadeus
 // Ejemplo: "  1  UX 046 T 16MAY 6 MVDMAD DK1  1220 0510  17MAY  E  0 789 M"
 // Ejemplo: "  3  G31697 Y 27APR 1 SSAGRU DK1  0420 0705  27APR  E  0 7M8"
-const FLIGHT_LINE_REGEX = /^\s*(\d+)\s+([A-Z0-9]{2})\s+(\d{1,4})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+(\d)\s+([A-Z]{6})\s+([A-Z]{2}\d+)\s+(\d{4})\s+(\d{4})\s+(\d{1,2}[A-Z]{3})(?:\s+([A-Z]))?(?:\s+(\d))?\s*([A-Z0-9]{2,4})?\s*([A-Z])?/i;
+const FLIGHT_LINE_REGEX = /^\s*(\d+)\s+([A-Z0-9]{2})\s+(\d{1,5})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+(\d)\s+([A-Z]{6})\s+([A-Z]{2}\d+)\s+(\d{4})\s+(\d{4})\s+(\d{1,2}[A-Z]{3})(?:\s+([A-Z]))?(?:\s+(\d))?\s*([A-Z0-9]{2,4})?\s*([A-Z])?/i;
 
 // Regex alternativo más flexible para diferentes formatos
-const FLIGHT_LINE_REGEX_ALT = /^\s*(\d+)\s+([A-Z0-9]{2})\s+(\d{1,4})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+(\d)\s+([A-Z]{6})\s+([A-Z]{2}\d+)\s+(\d{4})\s+(\d{4})/i;
+const FLIGHT_LINE_REGEX_ALT = /^\s*(\d+)\s+([A-Z0-9]{2})\s+(\d{1,5})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+(\d)\s+([A-Z]{6})\s+([A-Z]{2}\d+)\s+(\d{4})\s+(\d{4})/i;
 
 // Mapeo de meses
 const MONTHS: Record<string, number> = {
