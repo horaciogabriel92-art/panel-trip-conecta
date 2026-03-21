@@ -277,14 +277,22 @@ const styles = StyleSheet.create({
     borderTop: `1px solid ${COLORS.primaryLight}`,
     textAlign: 'center',
   },
+  footer: {
+    marginTop: 15,
+    paddingTop: 8,
+    borderTop: `1px solid ${COLORS.primaryLight}`,
+    alignItems: 'center',
+  },
   footerText: {
     fontSize: 7,
     color: COLORS.textLight,
+    textAlign: 'center',
   },
   footerLogo: {
     width: 40,
     height: 40,
     marginBottom: 5,
+    alignSelf: 'center',
   },
 
   // Página 2 - Itinerario
@@ -634,30 +642,55 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
       <Page size="A4" style={styles.page}>
         <Text style={styles.sectionTitle}>Itinerario Detallado</Text>
 
-        {paquete.itinerario && paquete.itinerario.length > 0 ? (
-          paquete.itinerario.map((dia, idx) => (
-            <View key={idx} style={styles.dayCard}>
-              <View style={styles.dayHeader}>
-                <Text style={styles.dayBadge}>Día {dia.dia || idx + 1}</Text>
-                <Text style={styles.dayTitle}>{dia.titulo}</Text>
-              </View>
-              <Text style={styles.dayContent}>{dia.descripcion}</Text>
-              {dia.actividades && dia.actividades.length > 0 && (
-                <View style={{ marginTop: 6 }}>
-                  {dia.actividades.map((act, actIdx) => (
-                    <Text key={actIdx} style={styles.dayContent}>• {act}</Text>
-                  ))}
-                </View>
-              )}
+        {/* Itinerario - puede ser array o string */}
+        {(() => {
+          const itin = paquete.itinerario;
+          if (!itin) return (
+            <View style={styles.dayCard}>
+              <Text style={styles.dayContent}>Consultar itinerario con el vendedor.</Text>
             </View>
-          ))
-        ) : (
-          <View style={styles.dayCard}>
-            <Text style={styles.dayContent}>
-              Itinerario disponible próximamente.
-            </Text>
-          </View>
-        )}
+          );
+          
+          // Si es string, mostrarlo como texto
+          if (typeof itin === 'string') {
+            return (
+              <View style={styles.dayCard}>
+                <Text style={styles.dayContent}>{itin}</Text>
+              </View>
+            );
+          }
+          
+          // Si es array vacío
+          if (Array.isArray(itin) && itin.length === 0) {
+            return (
+              <View style={styles.dayCard}>
+                <Text style={styles.dayContent}>Consultar itinerario con el vendedor.</Text>
+              </View>
+            );
+          }
+          
+          // Si es array con datos
+          if (Array.isArray(itin) && itin.length > 0) {
+            return itin.map((dia, idx) => (
+              <View key={idx} style={styles.dayCard}>
+                <View style={styles.dayHeader}>
+                  <Text style={styles.dayBadge}>Día {dia.dia || idx + 1}</Text>
+                  <Text style={styles.dayTitle}>{dia.titulo}</Text>
+                </View>
+                <Text style={styles.dayContent}>{dia.descripcion}</Text>
+                {dia.actividades && dia.actividades.length > 0 && (
+                  <View style={{ marginTop: 6 }}>
+                    {dia.actividades.map((act: string, actIdx: number) => (
+                      <Text key={actIdx} style={styles.dayContent}>• {act}</Text>
+                    ))}
+                  </View>
+                )}
+              </View>
+            ));
+          }
+          
+          return null;
+        })()}
 
         {/* Incluye / No Incluye */}
         {(!!paquete.incluye?.length || !!paquete.no_incluye?.length) && (
