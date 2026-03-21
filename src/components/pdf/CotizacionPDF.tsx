@@ -639,11 +639,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
         {/* Itinerario - puede ser array o string */}
         {(() => {
           const itin = paquete.itinerario;
-          if (!itin) return (
-            <View style={styles.dayCard}>
-              <Text style={styles.dayContent}>Consultar itinerario con el vendedor.</Text>
-            </View>
-          );
+          if (!itin) return null;
           
           // Si es string, mostrarlo como texto
           if (typeof itin === 'string') {
@@ -654,13 +650,9 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
             );
           }
           
-          // Si es array vacío
+          // Si es array vacío, no mostrar nada
           if (Array.isArray(itin) && itin.length === 0) {
-            return (
-              <View style={styles.dayCard}>
-                <Text style={styles.dayContent}>Consultar itinerario con el vendedor.</Text>
-              </View>
-            );
+            return null;
           }
           
           // Si es array con datos
