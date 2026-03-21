@@ -105,15 +105,28 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
       incluye: paqueteDesdeNotas?.incluye || data.paquete?.incluye || [],
       no_incluye: paqueteDesdeNotas?.no_incluye || data.paquete?.no_incluye || []
     },
-    pasajeros: (datosCompletos.pasajeros || []).map((p: any) => ({
-      nombre: p.nombre || '',
-      apellido: p.apellido || '',
-      documento: p.documento || '',
-      fecha_nacimiento: p.fecha_nacimiento 
-        ? new Date(p.fecha_nacimiento).toLocaleDateString('es-UY')
-        : '',
-      nacionalidad: p.nacionalidad || ''
-    })),
+    pasajeros: [
+      // Pasajero 1 (titular)
+      {
+        nombre: datosCompletos.cliente?.nombre || '',
+        apellido: datosCompletos.cliente?.apellido || '',
+        documento: datosCompletos.cliente?.documento || '',
+        fecha_nacimiento: datosCompletos.cliente?.fecha_nacimiento
+          ? new Date(datosCompletos.cliente.fecha_nacimiento).toLocaleDateString('es-UY')
+          : '',
+        nacionalidad: datosCompletos.cliente?.nacionalidad || ''
+      },
+      // Pasajeros adicionales (2 en adelante)
+      ...(datosCompletos.pasajeros || []).map((p: any) => ({
+        nombre: p.nombre || '',
+        apellido: p.apellido || '',
+        documento: p.documento || '',
+        fecha_nacimiento: p.fecha_nacimiento 
+          ? new Date(p.fecha_nacimiento).toLocaleDateString('es-UY')
+          : '',
+        nacionalidad: p.nacionalidad || ''
+      }))
+    ],
     precios: {
       moneda: 'USD',
       precio_unitario: ((data.precio_total || 0) / (data.num_pasajeros || 1)).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
