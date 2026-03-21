@@ -476,11 +476,11 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         </View>
 
-        {/* Datos del Cliente y Configuración */}
+        {/* Datos del Cliente (Pasajero 1 - Titular) y Configuración */}
         <View style={styles.section}>
           <View style={styles.infoGrid}>
             <View style={styles.infoCard}>
-              <Text style={styles.sectionTitle}>Cliente</Text>
+              <Text style={styles.sectionTitle}>Pasajero 1 (Titular)</Text>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Nombre:</Text>
                 <Text style={styles.infoValue}>{cliente.nombre} {cliente.apellido}</Text>
@@ -551,10 +551,10 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         </View>
 
-        {/* Tabla de Pasajeros */}
-        {pasajeros.length > 0 && (
+        {/* Tabla de Pasajeros adicionales (desde el pasajero 2) */}
+        {pasajeros.length > 1 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Pasajeros ({pasajeros.length})</Text>
+            <Text style={styles.sectionTitle}>Pasajeros Adicionales ({pasajeros.length - 1})</Text>
             <View style={styles.pricingTable}>
               <View style={styles.tableHeader}>
                 <Text style={styles.tableCell}>#</Text>
@@ -563,9 +563,9 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
                 <Text style={styles.tableCell}>Fecha Nac.</Text>
                 <Text style={styles.tableCell}>Nacionalidad</Text>
               </View>
-              {pasajeros.map((p, idx) => (
+              {pasajeros.slice(1).map((p, idx) => (
                 <View key={idx} style={styles.tableRow}>
-                  <Text style={styles.tableCell}>{idx + 1}</Text>
+                  <Text style={styles.tableCell}>{idx + 2}</Text>
                   <Text style={styles.tableCell}>{p.nombre} {p.apellido}</Text>
                   <Text style={styles.tableCell}>{p.documento || '-'}</Text>
                   <Text style={styles.tableCell}>{p.fecha_nacimiento || '-'}</Text>
@@ -598,29 +598,6 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={styles.totalText}>TOTAL A PAGAR</Text>
               <Text style={styles.totalAmount}>${precios.total} {precios.moneda}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Info de Pago */}
-        <View style={styles.paymentSection}>
-          <Text style={styles.sectionTitle}>Información de Pago</Text>
-          <View style={styles.paymentGrid}>
-            <View style={styles.paymentItem}>
-              <Text style={styles.paymentLabel}>Anticipo requerido (30%):</Text>
-              <Text style={styles.paymentValue}>${precios.anticipo}</Text>
-            </View>
-            <View style={styles.paymentItem}>
-              <Text style={styles.paymentLabel}>Saldo a pagar:</Text>
-              <Text style={styles.paymentValue}>${precios.saldo}</Text>
-            </View>
-            <View style={styles.paymentItem}>
-              <Text style={styles.paymentLabel}>Métodos de pago:</Text>
-              <Text style={styles.paymentValue}>Transferencia / Depósito / Tarjeta</Text>
-            </View>
-            <View style={styles.paymentItem}>
-              <Text style={styles.paymentLabel}>Moneda:</Text>
-              <Text style={styles.paymentValue}>USD (Dólares Americanos)</Text>
             </View>
           </View>
         </View>
