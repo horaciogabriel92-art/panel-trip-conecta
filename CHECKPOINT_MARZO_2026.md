@@ -36,23 +36,23 @@
 ### ✅ COMPLETADO - Layout del PDF (2 Páginas)
 
 **PÁGINA 1 - Resumen y Precio:**
-- [x] Header con logo Trip Conecta (teal #0d9488)
-- [x] Nombre del vendedor (seller header)
+- [x] Header con nombre del vendedor (seller header) + código de cotización
 - [x] Info del cliente: nombre completo, documento, email, teléfono
 - [x] Configuración del viaje: pasajeros, habitación, fecha salida
 - [x] Paquete: foto principal + título + destino + duración
 - [x] **Tabla de Pasajeros Adicionales** (pasajero 2 en adelante)
 - [x] Detalle de precios: unitario × cantidad = subtotal
-- [x] Total, anticipo (30%), saldo (70%)
-- [x] Nota de validez: "Cotización válida por 7 días"
-- [x] Footer con dirección y fecha de emisión
+- [x] **TOTAL A PAGAR** (único monto mostrado)
+- [x] Nota de validez: "24 horas si no está pagada"
+- [x] Sección del vendedor con iniciales
+- [x] Footer con logo Trip Conecta
 
 **PÁGINA 2 - Detalles del Paquete:**
 - [x] Itinerario (del campo `descripcion` del paquete)
-- [x] Lista "Incluye" con checkmarks
-- [x] Lista "No Incluye" con X marks
+- [x] Lista "Incluye" con checkmarks (✓)
+- [x] Lista "No Incluye" con X marks (✗)
 - [x] Políticas de cancelación
-- [x] Instrucciones de pago
+- [x] Footer con instrucciones de contacto
 
 ### ✅ COMPLETADO - Fixes Recientes (Commit `183559b`)
 
@@ -82,7 +82,8 @@
 - [x] **FIX: Branding consistente**
   - Color primario: teal (#0d9488)
   - Sin referencias "B2B" en textos consumer-facing
-  - Logo Trip Conecta en header
+  - Logo Trip Conecta en footer (no en header)
+  - Header personalizado con nombre del vendedor
 
 ---
 
@@ -266,9 +267,9 @@ if (data.notas) {
 
 ### Sobre Precios
 - Moneda: USD (Uruguay)
-- Anticipo: 30% del total
-- Saldo: 70% del total
-- Todos los precios formateados con `toLocaleString('es-UY')`
+- **En el PDF solo se muestra el TOTAL A PAGAR** (no se desglosa anticipo/saldo actualmente)
+- Precios calculados: unitario = total / pasajeros
+- Formato: separador de miles con punto, decimales con coma (es-UY)
 
 ---
 
