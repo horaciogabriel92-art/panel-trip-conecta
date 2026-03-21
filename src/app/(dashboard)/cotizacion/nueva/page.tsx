@@ -36,6 +36,7 @@ interface Pasajero {
 interface Hospedaje {
   id: number;
   nombre_hotel: string;
+  link_hotel?: string;
   ciudad: string;
   fecha_checkin: string;
   fecha_checkout: string;
