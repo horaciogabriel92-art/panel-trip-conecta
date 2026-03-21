@@ -130,6 +130,8 @@ export default function CotizacionesCRM() {
     }
   };
 
+  const [showModal, setShowModal] = useState(false);
+
   const getDiasRestantes = (fechaVencimiento?: string) => {
     if (!fechaVencimiento) return null;
     const dias = Math.ceil((new Date(fechaVencimiento).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -143,8 +145,6 @@ export default function CotizacionesCRM() {
       </div>
     );
   }
-
-  const [showModal, setShowModal] = useState(false);
 
   return (
     <div className="h-full flex flex-col animate-in fade-in duration-700">
