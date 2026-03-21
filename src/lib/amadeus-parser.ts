@@ -41,7 +41,8 @@ export interface ParseResult {
 
 // Regex para línea de vuelo Amadeus
 // Ejemplo: "  1  UX 046 T 16MAY 6 MVDMAD DK1  1220 0510  17MAY  E  0 789 M"
-const FLIGHT_LINE_REGEX = /^\s*(\d+)\s+([A-Z0-9]{2})\s+(\d{1,4})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+(\d)\s+([A-Z]{6})\s+([A-Z]{2}\d+)\s+(\d{4})\s+(\d{4})\s+(\d{1,2}[A-Z]{3})(?:\s+([A-Z]))?(?:\s+(\d))?\s*(\d{3}|\d{2}[A-Z]\d|\d[A-Z]\d{2})?\s*([A-Z])?/i;
+// Ejemplo: "  3  G31697 Y 27APR 1 SSAGRU DK1  0420 0705  27APR  E  0 7M8"
+const FLIGHT_LINE_REGEX = /^\s*(\d+)\s+([A-Z0-9]{2})\s+(\d{1,4})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+(\d)\s+([A-Z]{6})\s+([A-Z]{2}\d+)\s+(\d{4})\s+(\d{4})\s+(\d{1,2}[A-Z]{3})(?:\s+([A-Z]))?(?:\s+(\d))?\s*([A-Z0-9]{2,4})?\s*([A-Z])?/i;
 
 // Regex alternativo más flexible para diferentes formatos
 const FLIGHT_LINE_REGEX_ALT = /^\s*(\d+)\s+([A-Z0-9]{2})\s+(\d{1,4})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+(\d)\s+([A-Z]{6})\s+([A-Z]{2}\d+)\s+(\d{4})\s+(\d{4})/i;
@@ -193,6 +194,7 @@ function parseFlightLine(line: string, year?: number): ParsedFlight | null {
 
 /**
  * Función principal: Parsea texto completo de Amadeus
+ * Maneja formatos complejos con códigos de marketing y múltiples líneas
  */
 export function parseAmadeusPNR(text: string): ParseResult {
   const result: ParseResult = {
@@ -210,19 +212,21 @@ export function parseAmadeusPNR(text: string): ParseResult {
   // Limpiar el texto
   const cleanText = text.trim();
   
-  // Detectar año (usar año actual o extraer del texto si tiene fecha completa)
+  // Detectar año
   const year = new Date().getFullYear();
   
   // Dividir en líneas y procesar cada una
-  const lines = cleanText.split('\n');
-  result.rawLines = lines.map(l => l.trim()).filter(l => l.length > 0);
+  const lines = cleanText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  result.rawLines = lines;
   
-  // Procesar cada línea buscando segmentos de vuelo
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+  // Procesar líneas buscando segmentos de vuelo
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
     
     // Saltar líneas vacías o headers
     if (!line || line.startsWith('RP/') || line.startsWith('---')) {
+      i++;
       continue;
     }
     
@@ -230,18 +234,53 @@ export function parseAmadeusPNR(text: string): ParseResult {
     if (isFlightLine(line)) {
       const flight = parseFlightLine(line, year);
       if (flight) {
-        // Buscar notas adicionales en la siguiente línea (SEE RTSVC, etc.)
-        const nextLine = lines[i + 1]?.trim();
-        if (nextLine && !isFlightLine(nextLine) && !nextLine.startsWith('RP/')) {
-          flight.notas = nextLine;
-          i++; // Saltar la línea de notas
+        // Buscar notas adicionales en las siguientes líneas
+        // Saltar: códigos de marketing (010 XX XXXX), líneas en blanco, y capturar SEE RTSVC
+        let j = i + 1;
+        const notasPartes: string[] = [];
+        
+        while (j < lines.length) {
+          const nextLine = lines[j];
+          
+          // Si es otra línea de vuelo o RP/, terminar
+          if (isFlightLine(nextLine) || nextLine.startsWith('RP/')) {
+            break;
+          }
+          
+          // Saltar códigos de marketing (010 XX XXXX o formatos similares)
+          if (/^\d{3}\s+[A-Z]{2}/.test(nextLine) || 
+              nextLine.includes('/AM ') || 
+              nextLine.includes('/AR ') || 
+              nextLine.includes('/AF ') ||
+              nextLine.includes('/KL ') ||
+              nextLine.includes('/EK ')) {
+            j++;
+            continue;
+          }
+          
+          // Capturar SEE RTSVC u otras notas
+          if (nextLine.includes('SEE RTSVC') || 
+              nextLine.includes('OPERATED BY') ||
+              (!isFlightLine(nextLine) && !nextLine.match(/^\d{3}\s/))) {
+            notasPartes.push(nextLine);
+          }
+          
+          j++;
+        }
+        
+        if (notasPartes.length > 0) {
+          flight.notas = notasPartes.join(' ');
         }
         
         result.flights.push(flight);
+        i = j; // Saltar todas las líneas procesadas
+        continue;
       } else {
         result.errors.push(`No se pudo parsear línea ${i + 1}: ${line.substring(0, 50)}...`);
       }
     }
+    
+    i++;
   }
   
   result.success = result.flights.length > 0;
