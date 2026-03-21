@@ -1,6 +1,7 @@
 /**
- * Parser de PNR Amadeus
+ * Parser de PNR Amadeus - Versión Ultra-Robusta
  * Convierte texto de Amadeus RP/Itinerary a estructura de vuelos
+ * Soporta múltiples formatos: AM/PM, 24h, espacios variables, códigos marketing
  */
 
 import { getAirportByIATA, getAirlineByIATA, getAirportDisplay, getAirlineDisplay } from './airports';
@@ -23,13 +24,14 @@ export interface ParsedFlight {
   destino_ciudad: string;
   estado_codigo: string;
   asientos: number;
-  hora_salida: string; // HHMM
-  hora_llegada: string; // HHMM
+  hora_salida: string; // HH:MM
+  hora_llegada: string; // HH:MM
   fecha_llegada: string; // ISO format
   aeronave?: string;
   terminal?: string;
   equipaje?: string;
   notas?: string;
+  dias_adicionales?: number; // +1, +2 en la llegada
 }
 
 export interface ParseResult {
@@ -37,15 +39,8 @@ export interface ParseResult {
   flights: ParsedFlight[];
   errors: string[];
   rawLines: string[];
+  debug?: any; // Para debugging
 }
-
-// Regex para línea de vuelo Amadeus
-// Ejemplo: "  1  UX 046 T 16MAY 6 MVDMAD DK1  1220 0510  17MAY  E  0 789 M"
-// Ejemplo: "  3  G31697 Y 27APR 1 SSAGRU DK1  0420 0705  27APR  E  0 7M8"
-const FLIGHT_LINE_REGEX = /^\s*(\d+)\s+([A-Z0-9]{2})\s+(\d{1,5})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+(\d)\s+([A-Z]{6})\s+([A-Z]{2}\d+)\s+(\d{4})\s+(\d{4})\s+(\d{1,2}[A-Z]{3})(?:\s+([A-Z]))?(?:\s+(\d))?\s*([A-Z0-9]{2,4})?\s*([A-Z])?/i;
-
-// Regex alternativo más flexible para diferentes formatos
-const FLIGHT_LINE_REGEX_ALT = /^\s*(\d+)\s+([A-Z0-9]{2})\s+(\d{1,5})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+(\d)\s+([A-Z]{6})\s+([A-Z]{2}\d+)\s+(\d{4})\s+(\d{4})/i;
 
 // Mapeo de meses
 const MONTHS: Record<string, number> = {
@@ -53,24 +48,77 @@ const MONTHS: Record<string, number> = {
   'JUL': 6, 'AUG': 7, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DEC': 11
 };
 
-// Mapeo de códigos de estado
+// Status codes
 const STATUS_CODES: Record<string, string> = {
-  'HK': 'Confirmed',
-  'HL': 'Waitlist',
-  'HN': 'Need',
-  'HX': 'Cancelled',
-  'DK': 'Confirmed',
-  'NN': 'Need',
-  'UC': 'Unable to Confirm',
-  'UN': 'Unable',
-  'WL': 'Waitlist',
-  'KL': 'Confirmed from Waitlist',
-  'TK': 'Ticketed',
-  'XL': 'Cancelled'
+  'HK': 'Confirmed', 'HL': 'Waitlist', 'HN': 'Need', 'HX': 'Cancelled',
+  'DK': 'Confirmed', 'NN': 'Need', 'UC': 'Unable to Confirm', 'UN': 'Unable',
+  'WL': 'Waitlist', 'KL': 'Confirmed from Waitlist', 'TK': 'Ticketed',
+  'XL': 'Cancelled', 'RR': 'Waitlist', 'RQ': 'Request'
 };
 
 /**
- * Parsea una fecha en formato Amadeus (16MAY) a objeto Date
+ * Convierte hora AM/PM a formato 24h
+ * Ej: "620P" -> "18:20", "950A" -> "09:50"
+ */
+function convertAmPmTo24h(timeStr: string): string | null {
+  const match = timeStr.match(/^(\d{1,2})(\d{2})([AP])$/i);
+  if (!match) return null;
+  
+  let hours = parseInt(match[1]);
+  const minutes = match[2];
+  const ampm = match[3].toUpperCase();
+  
+  if (ampm === 'P' && hours !== 12) {
+    hours += 12;
+  } else if (ampm === 'A' && hours === 12) {
+    hours = 0;
+  }
+  
+  return `${hours.toString().padStart(2, '0')}:${minutes}`;
+}
+
+/**
+ * Convierte hora 24h (HHMM) a formato HH:MM
+ */
+function convert24hToStandard(timeStr: string): string | null {
+  if (timeStr.length !== 4) return null;
+  const hours = timeStr.substring(0, 2);
+  const minutes = timeStr.substring(2, 4);
+  return `${hours}:${minutes}`;
+}
+
+/**
+ * Parsea cualquier formato de hora
+ */
+function parseTime(timeStr: string): { time: string; isAmPm: boolean } | null {
+  // Limpiar la hora (puede tener +1, +2 adjunto)
+  const cleanTime = timeStr.replace(/\+\d+$/, '');
+  
+  // Intentar formato AM/PM (ej: 620P, 950A, 125P)
+  if (/^\d{1,2}\d{2}[AP]$/i.test(cleanTime)) {
+    const converted = convertAmPmTo24h(cleanTime);
+    if (converted) return { time: converted, isAmPm: true };
+  }
+  
+  // Intentar formato 24h (ej: 2100, 0250)
+  if (/^\d{4}$/.test(cleanTime)) {
+    const converted = convert24hToStandard(cleanTime);
+    if (converted) return { time: converted, isAmPm: false };
+  }
+  
+  return null;
+}
+
+/**
+ * Extrae días adicionales de la hora de llegada (+1, +2)
+ */
+function extractDaysOffset(timeStr: string): number {
+  const match = timeStr.match(/\+(\d+)$/);
+  return match ? parseInt(match[1]) : 0;
+}
+
+/**
+ * Parsea fecha Amadeus a Date
  */
 function parseAmadeusDate(dateStr: string, year?: number): Date | null {
   const match = dateStr.match(/^(\d{1,2})([A-Z]{3})$/i);
@@ -81,8 +129,6 @@ function parseAmadeusDate(dateStr: string, year?: number): Date | null {
   
   if (month === undefined) return null;
   
-  // Si no se proporciona año, usar el año actual
-  // Si el mes ya pasó, asumir año siguiente
   const currentYear = year || new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   
@@ -94,74 +140,140 @@ function parseAmadeusDate(dateStr: string, year?: number): Date | null {
   return new Date(flightYear, month, day);
 }
 
-/**
- * Formatea fecha a ISO (YYYY-MM-DD)
- */
 function formatISODate(date: Date): string {
   return date.toISOString().split('T')[0];
 }
 
 /**
- * Formatea hora Amadeus (1220) a formato legible (12:20)
+ * Normaliza el texto del PNR antes de parsear
+ * - Une líneas quebradas de marketing codes
+ * - Normaliza espacios
  */
-function formatTime(timeStr: string): string {
-  if (timeStr.length !== 4) return timeStr;
-  const hours = timeStr.substring(0, 2);
-  const minutes = timeStr.substring(2, 4);
-  return `${hours}:${minutes}`;
+function normalizePNRText(text: string): string {
+  // Reemplazar múltiples espacios con un solo espacio
+  let normalized = text.replace(/\s+/g, ' ');
+  
+  // Pero preservar saltos de línea entre segmentos de vuelo
+  normalized = text.replace(/[ \t]+/g, ' ');
+  
+  return normalized;
 }
 
 /**
- * Detecta si una línea es un segmento de vuelo válido
+ * PATRÓN 1: Formato estándar con espacio entre aerolínea y número
+ * Ej: "  2  UA 978 E 18JUL 4 GRUIAH HK1       1  2100 0510+1 *1A/E*"
+ * Ej: "  3  BA 190 Q 14JUN 3 AUSLHR HK2          620P 950A+1 *1A/E*"
+ */
+const PATTERN_STANDARD = /^(\s*\d+)\s+([A-Z0-9]{2})\s+(\d{1,5})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+(\d)\s+([A-Z]{6})\s+([A-Z]{2}\d+)\s+(\d{1,2}\d{2}[AP]?|\d{4})\s+(\d{1,2}\d{2}[AP]?|\d{4})(?:\+(\d+))?/i;
+
+/**
+ * PATRÓN 2: Formato compacto (sin espacio entre aerolínea y número)
+ * Ej: "  4  UA1239 E 19JUL 5 IAHLAX HK1       C  0620 0750   *1A/E*"
+ * Ej: "G37683 Y 20APR 1 MVDGIG DK1  0250 0530  20APR  E  0 738 M"
+ */
+const PATTERN_COMPACT = /^(\s*\d+)?\s*([A-Z0-9]{2})(\d{1,5})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+(\d)\s+([A-Z]{6})\s+([A-Z]{2}\d+)\s+(\d{1,2}\d{2}[AP]?|\d{4})\s+(\d{1,2}\d{2}[AP]?|\d{4})/i;
+
+/**
+ * PATRÓN 3: Formato alternativo con campos adicionales
+ * Ej: "  2  AF 023 T 06AUG 2 JTKCDG HK1  1425P 550A+1 *1A/E*"
+ */
+const PATTERN_ALT = /^(\s*\d+)\s+([A-Z0-9]{2})\s+(\d{1,5})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+(\d)\s+([A-Z]{6})\s+([A-Z]{2}\d{1,3})\s+(\d{1,2}\d{2}[AP]?|\d{4})\s+(\d{1,2}\d{2}[AP]?|\d{4})(?:\+(\d+))?/i;
+
+/**
+ * Detecta si una línea es un segmento de vuelo
  */
 function isFlightLine(line: string): boolean {
-  return FLIGHT_LINE_REGEX_ALT.test(line);
+  // Debe comenzar con número de línea o código de aerolínea
+  // y contener elementos clave: fecha, aeropuertos, horas
+  
+  // Limpiar la línea
+  const clean = line.trim();
+  
+  // Debe tener al menos: número/aerolínea, clase, fecha, origen-destino, status, 2 horas
+  const hasDate = /\d{1,2}[A-Z]{3}/.test(clean);
+  const hasAirports = /[A-Z]{6}/.test(clean);
+  const hasStatus = /\s(HK|DK|NN|HL|HX|UC|UN|WL|KL|TK|XL|RR|RQ)\d*/.test(clean);
+  const hasTimes = /(\d{4}|\d{1,2}\d{2}[AP])\s+(\d{4}|\d{1,2}\d{2}[AP])/.test(clean);
+  
+  return hasDate && hasAirports && hasStatus && hasTimes;
 }
 
 /**
- * Parsea una línea individual de vuelo
+ * Intenta parsear una línea con múltiples patrones
  */
-function parseFlightLine(line: string, year?: number): ParsedFlight | null {
-  const match = line.match(FLIGHT_LINE_REGEX) || line.match(FLIGHT_LINE_REGEX_ALT);
+function parseFlightLineWithPatterns(line: string, year?: number): ParsedFlight | null {
+  const patterns = [
+    { name: 'STANDARD', regex: PATTERN_STANDARD },
+    { name: 'COMPACT', regex: PATTERN_COMPACT },
+    { name: 'ALT', regex: PATTERN_ALT }
+  ];
   
-  if (!match) return null;
+  for (const { name, regex } of patterns) {
+    const match = line.match(regex);
+    if (match) {
+      console.log(`✅ Patrón ${name} matched:`, match.slice(0, 10));
+      const result = buildFlightFromMatch(match, line, year);
+      if (result) return result;
+    }
+  }
   
+  return null;
+}
+
+/**
+ * Construye objeto flight desde match de regex
+ */
+function buildFlightFromMatch(match: RegExpMatchArray, originalLine: string, year?: number): ParsedFlight | null {
   try {
-    const linea = parseInt(match[1]);
-    const aerolinea_codigo = match[2].toUpperCase();
-    const numero_vuelo = match[3];
-    const clase_codigo = match[4].toUpperCase();
-    const fecha_salida_str = match[5].toUpperCase();
-    const dia_salida = parseInt(match[6]);
-    const origen_destino = match[7].toUpperCase();
-    const estado_codigo = match[8].substring(0, 2).toUpperCase();
-    const asientos = parseInt(match[8].substring(2)) || 1;
-    const hora_salida = match[9];
-    const hora_llegada = match[10];
-    const fecha_llegada_str = match[11]?.toUpperCase();
+    // Determinar índices según el patrón
+    // Patrón STANDARD y ALT: 1=linea, 2=aerolinea, 3=vuelo, 4=clase, 5=fecha, 6=dia, 7=origen-destino, 8=status, 9=hora_salida, 10=hora_llegada
+    // Patrón COMPACT: puede no tener línea al inicio
     
-    // Extraer origen y destino (primeros 3 y últimos 3 caracteres)
+    let idx = 1;
+    const linea = parseInt(match[idx++]);
+    const aerolinea_codigo = match[idx++].toUpperCase();
+    const numero_vuelo = match[idx++];
+    const clase_codigo = match[idx++].toUpperCase();
+    const fecha_salida_str = match[idx++].toUpperCase();
+    const dia_salida = parseInt(match[idx++]);
+    const origen_destino = match[idx++].toUpperCase();
+    const status_full = match[idx++];
+    const hora_salida_raw = match[idx++];
+    const hora_llegada_raw = match[idx++];
+    const dias_adicionales = match[idx] ? parseInt(match[idx]) : 0;
+    
+    // Extraer status y asientos
+    const status_match = status_full.match(/^([A-Z]{2})(\d+)?/i);
+    const estado_codigo = status_match ? status_match[1].toUpperCase() : 'HK';
+    const asientos = status_match && status_match[2] ? parseInt(status_match[2]) : 1;
+    
+    // Extraer origen y destino
     const origen_codigo = origen_destino.substring(0, 3);
     const destino_codigo = origen_destino.substring(3, 6);
     
+    // Parsear horas
+    const hora_salida_parsed = parseTime(hora_salida_raw);
+    const hora_llegada_parsed = parseTime(hora_llegada_raw);
+    
+    if (!hora_salida_parsed || !hora_llegada_parsed) {
+      throw new Error(`No se pudieron parsear las horas: ${hora_salida_raw}, ${hora_llegada_raw}`);
+    }
+    
     // Parsear fechas
     const fecha_salida_date = parseAmadeusDate(fecha_salida_str, year);
-    const fecha_llegada_date = fecha_llegada_str 
-      ? parseAmadeusDate(fecha_llegada_str, year)
-      : fecha_salida_date;
-    
     if (!fecha_salida_date) {
       throw new Error(`Fecha inválida: ${fecha_salida_str}`);
     }
+    
+    // Calcular fecha de llegada (considerando +1, +2)
+    const diasOffset = dias_adicionales || extractDaysOffset(hora_llegada_raw);
+    const fecha_llegada_date = new Date(fecha_salida_date);
+    fecha_llegada_date.setDate(fecha_llegada_date.getDate() + diasOffset);
     
     // Obtener info de aeropuertos y aerolíneas
     const origen = getAirportByIATA(origen_codigo);
     const destino = getAirportByIATA(destino_codigo);
     const aerolinea = getAirlineByIATA(aerolinea_codigo);
-    
-    // Extraer información adicional si existe (aeronave, terminal, etc.)
-    const aeronave = match[13] || undefined;
-    const equipaje = match[14] || undefined;
     
     return {
       linea,
@@ -180,28 +292,27 @@ function parseFlightLine(line: string, year?: number): ParsedFlight | null {
       destino_ciudad: destino?.city || destino_codigo,
       estado_codigo,
       asientos,
-      hora_salida: formatTime(hora_salida),
-      hora_llegada: formatTime(hora_llegada),
-      fecha_llegada: fecha_llegada_date ? formatISODate(fecha_llegada_date) : formatISODate(fecha_salida_date),
-      aeronave,
-      equipaje,
+      hora_salida: hora_salida_parsed.time,
+      hora_llegada: hora_llegada_parsed.time,
+      fecha_llegada: formatISODate(fecha_llegada_date),
+      dias_adicionales: diasOffset,
     };
   } catch (error) {
-    console.error('Error parseando línea de vuelo:', error);
+    console.error('Error construyendo flight:', error);
     return null;
   }
 }
 
 /**
  * Función principal: Parsea texto completo de Amadeus
- * Maneja formatos complejos con códigos de marketing y múltiples líneas
  */
 export function parseAmadeusPNR(text: string): ParseResult {
   const result: ParseResult = {
     success: false,
     flights: [],
     errors: [],
-    rawLines: []
+    rawLines: [],
+    debug: { patterns: [] }
   };
   
   if (!text || text.trim().length === 0) {
@@ -209,33 +320,41 @@ export function parseAmadeusPNR(text: string): ParseResult {
     return result;
   }
   
-  // Limpiar el texto
-  const cleanText = text.trim();
-  
-  // Detectar año
   const year = new Date().getFullYear();
-  
-  // Dividir en líneas y procesar cada una
-  const lines = cleanText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   result.rawLines = lines;
   
-  // Procesar líneas buscando segmentos de vuelo
+  console.log('🛫 Parseando PNR con', lines.length, 'líneas');
+  
   let i = 0;
   while (i < lines.length) {
     const line = lines[i];
     
-    // Saltar líneas vacías o headers
-    if (!line || line.startsWith('RP/') || line.startsWith('---')) {
+    // Saltar líneas que no son vuelos
+    if (!line || 
+        line.startsWith('RP/') || 
+        line.startsWith('---') ||
+        line.startsWith('1.') || // Nombres de pasajeros
+        line.startsWith('AP ') || // Teléfonos
+        line.startsWith('TK ') || // Ticketing
+        line.startsWith('SSR ') ||
+        line.startsWith('OSI ') ||
+        line.startsWith('FE ') ||
+        line.startsWith('FV ') ||
+        line.startsWith('RM ') ||
+        line.startsWith('RC ') ||
+        line.startsWith('END') ||
+        line.startsWith('  ')) { // Líneas de nombres con indentación
       i++;
       continue;
     }
     
-    // Intentar parsear como línea de vuelo
+    // Intentar parsear como vuelo
     if (isFlightLine(line)) {
-      const flight = parseFlightLine(line, year);
+      const flight = parseFlightLineWithPatterns(line, year);
+      
       if (flight) {
-        // Buscar notas adicionales en las siguientes líneas
-        // Saltar: códigos de marketing (010 XX XXXX), líneas en blanco, y capturar SEE RTSVC
+        // Buscar notas en líneas siguientes
         let j = i + 1;
         const notasPartes: string[] = [];
         
@@ -247,36 +366,33 @@ export function parseAmadeusPNR(text: string): ParseResult {
             break;
           }
           
-          // Saltar códigos de marketing (010 XX XXXX o formatos similares)
+          // Saltar códigos de marketing
           if (/^\d{3}\s+[A-Z]{2}/.test(nextLine) || 
-              nextLine.includes('/AM ') || 
-              nextLine.includes('/AR ') || 
-              nextLine.includes('/AF ') ||
-              nextLine.includes('/KL ') ||
-              nextLine.includes('/EK ')) {
+              /\/(AM|AR|AF|KL|EK|AA|UA|BA|LH|AF|DL)\s+\d+/.test(nextLine)) {
             j++;
             continue;
           }
           
-          // Capturar SEE RTSVC u otras notas
+          // Capturar notas útiles
           if (nextLine.includes('SEE RTSVC') || 
               nextLine.includes('OPERATED BY') ||
+              nextLine.includes('AIRCRAFT') ||
               (!isFlightLine(nextLine) && !nextLine.match(/^\d{3}\s/))) {
-            notasPartes.push(nextLine);
+            notasPartes.push(nextLine.trim());
           }
           
           j++;
         }
         
         if (notasPartes.length > 0) {
-          flight.notas = notasPartes.join(' ');
+          flight.notas = notasPartes.join(' | ');
         }
         
         result.flights.push(flight);
-        i = j; // Saltar todas las líneas procesadas
+        i = j;
         continue;
       } else {
-        result.errors.push(`No se pudo parsear línea ${i + 1}: ${line.substring(0, 50)}...`);
+        result.errors.push(`Línea ${i + 1} parece ser vuelo pero no se pudo parsear: ${line.substring(0, 60)}`);
       }
     }
     
@@ -286,9 +402,10 @@ export function parseAmadeusPNR(text: string): ParseResult {
   result.success = result.flights.length > 0;
   
   if (result.flights.length === 0 && result.errors.length === 0) {
-    result.errors.push('No se encontraron segmentos de vuelo válidos en el texto');
+    result.errors.push('No se encontraron segmentos de vuelo válidos. Asegúrate de pegar el texto completo del PNR.');
   }
   
+  console.log('✅ Parseo completado:', result.flights.length, 'vuelos encontrados');
   return result;
 }
 
@@ -298,15 +415,16 @@ export function parseAmadeusPNR(text: string): ParseResult {
 export function isValidAmadeusText(text: string): boolean {
   if (!text) return false;
   
-  // Buscar patrones típicos de Amadeus
-  const hasFlightPattern = /\d{1,2}\s+[A-Z0-9]{2}\s+\d{1,4}\s+[A-Z]\s+\d{1,2}[A-Z]{3}/.test(text);
+  // Buscar patrones típicos
+  const hasFlightPattern = /\d+\s+[A-Z0-9]{2}\s*\d{1,5}\s+[A-Z]\s+\d{1,2}[A-Z]{3}/.test(text);
   const hasRPLine = text.includes('RP/');
+  const hasStatusCode = /\s(HK|DK|NN|HL|HX|UC|UN)\d*/.test(text);
   
-  return hasFlightPattern || hasRPLine;
+  return hasFlightPattern || hasRPLine || hasStatusCode;
 }
 
 /**
- * Obtiene un resumen de los vuelos parseados
+ * Obtiene resumen de vuelos
  */
 export function getFlightSummary(flights: ParsedFlight[]): string {
   if (flights.length === 0) return 'No hay vuelos';
@@ -330,7 +448,9 @@ export function calculateFlightDuration(flight: ParsedFlight): number | null {
     let arrTotal = arrHours * 60 + arrMinutes;
     
     // Si la llegada es al día siguiente
-    if (flight.fecha_llegada !== flight.fecha_salida) {
+    if (flight.dias_adicionales && flight.dias_adicionales > 0) {
+      arrTotal += flight.dias_adicionales * 24 * 60;
+    } else if (flight.fecha_llegada !== flight.fecha_salida) {
       arrTotal += 24 * 60;
     }
     
@@ -340,16 +460,12 @@ export function calculateFlightDuration(flight: ParsedFlight): number | null {
   }
 }
 
-/**
- * Formatea duración en horas y minutos
- */
 export function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   return `${hours}h ${mins}m`;
 }
 
-// Exportar todo
 export default {
   parseAmadeusPNR,
   isValidAmadeusText,
