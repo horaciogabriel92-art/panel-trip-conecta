@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
+import { NuevaCotizacionModal } from '@/components/cotizaciones/NuevaCotizacionModal';
 
 interface Cotizacion {
   id: string;
@@ -140,21 +141,29 @@ export default function CotizacionesCRM() {
     );
   }
 
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <div className="h-full flex flex-col animate-in fade-in duration-700">
+      {/* Modal Nueva Cotización */}
+      <NuevaCotizacionModal 
+        isOpen={showModal} 
+        onClose={() => setShowModal(false)} 
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-3xl font-black text-white">Mis Cotizaciones</h2>
           <p className="text-slate-400">Pipeline de ventas: Nueva → Enviada → Vendida/Perdida</p>
         </div>
-        <Link 
-          href="/paquetes"
+        <button
+          onClick={() => setShowModal(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition-all flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Nueva Cotización
-        </Link>
+        </button>
       </div>
 
       {/* Kanban Board - 4 columnas */}
