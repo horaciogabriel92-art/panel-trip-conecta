@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { parseAmadeusPNR, isValidAmadeusText, ParsedFlight } from '@/lib/amadeus-parser';
 import { getAirportDisplay, getAirlineDisplay } from '@/lib/airports';
+import api from '@/lib/api';
 
 // ============================================
 // TIPOS
@@ -184,24 +185,38 @@ export default function NuevaCotizacionManual() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    // TODO: Implementar envío a API
-    console.log({
-      cliente,
-      pasajeros,
-      vuelos: useAmadeus ? parsedFlights : vuelosManuales,
-      hospedajes,
-      itinerario,
-      incluye,
-      noIncluye,
-      politicasCancelacion,
-      precios,
-    });
     
-    // Simular delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    alert('Cotización creada exitosamente');
-    router.push('/cotizaciones');
+    try {
+      const cotizacionData = {
+        cliente,
+        pasajeros,
+        vuelos: useAmadeus ? parsedFlights : vuelosManuales,
+        hospedaje: hospedajes,
+        traslados: [],
+        itinerario_manual: itinerario,
+        incluye: incluye.filter(i => i.trim() !== ''),
+        no_incluye: noIncluye.filter(i => i.trim() !== ''),
+        politicas_cancelacion: politicasCancelacion,
+        precios: {
+          moneda: precios.moneda,
+          subtotal: parseFloat(precios.subtotal) || 0,
+          impuestos: parseFloat(precios.impuestos) || 0,
+          total: parseFloat(precios.total) || 0,
+        },
+        origen_datos: useAmadeus && amadeusText ? 'amadeus' : 'manual',
+        amadeus_pnr_raw: useAmadeus ? amadeusText : null,
+      };
+
+      const response = await api.post('/cotizaciones/manual', cotizacionData);
+      
+      alert('Cotización creada exitosamente');
+      router.push('/cotizaciones');
+    } catch (error: any) {
+      console.error('Error creando cotización:', error);
+      alert(error.response?.data?.error || 'Error al crear cotización');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // ============================================
