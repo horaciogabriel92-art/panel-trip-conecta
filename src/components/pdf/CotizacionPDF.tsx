@@ -275,12 +275,6 @@ const styles = StyleSheet.create({
     marginTop: 15,
     paddingTop: 8,
     borderTop: `1px solid ${COLORS.primaryLight}`,
-    textAlign: 'center',
-  },
-  footer: {
-    marginTop: 15,
-    paddingTop: 8,
-    borderTop: `1px solid ${COLORS.primaryLight}`,
     alignItems: 'center',
   },
   footerText: {
