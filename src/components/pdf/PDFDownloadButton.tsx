@@ -25,7 +25,7 @@ interface CotizacionData {
     duracion_dias?: number;
     imagen_principal?: string;
     politicas_cancelacion?: string;
-    itinerario?: any[];
+    itinerario?: any[] | string;
     incluye?: string[];
     no_incluye?: string[];
   };
