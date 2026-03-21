@@ -207,13 +207,17 @@ export default function NuevaCotizacionManual() {
         amadeus_pnr_raw: useAmadeus ? amadeusText : null,
       };
 
+      console.log('Enviando datos:', cotizacionData);
       const response = await api.post('/cotizaciones/manual', cotizacionData);
       
+      console.log('Respuesta:', response.data);
       alert('Cotización creada exitosamente');
       router.push('/cotizaciones');
     } catch (error: any) {
-      console.error('Error creando cotización:', error);
-      alert(error.response?.data?.error || 'Error al crear cotización');
+      console.error('Error completo:', error);
+      console.error('Response:', error.response);
+      const errorMsg = error.response?.data?.details || error.response?.data?.error || error.message || 'Error desconocido';
+      alert('Error al crear cotización: ' + errorMsg);
     } finally {
       setIsSubmitting(false);
     }
