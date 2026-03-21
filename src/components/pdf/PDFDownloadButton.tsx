@@ -56,6 +56,57 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
     }
   }
 
+  // Parsear itinerario desde notas formateadas
+  function parsearItinerarioDesdeNotas(notas: string): any[] | string | null {
+    if (!notas) return null;
+    
+    // Buscar sección de itinerario
+    const itinerarioMatch = notas.match(/--- ITINERARIO ---\n([\s\S]*?)(?:\n--- |$)/);
+    if (!itinerarioMatch) return null;
+    
+    const textoItinerario = itinerarioMatch[1].trim();
+    if (!textoItinerario) return null;
+    
+    // Intentar parsear como array de días
+    const dias: any[] = [];
+    const lineas = textoItinerario.split('\n');
+    let diaActual: any = null;
+    
+    for (const linea of lineas) {
+      const matchDia = linea.match(/^Día (\d+):\s*(.+)$/);
+      if (matchDia) {
+        if (diaActual) dias.push(diaActual);
+        diaActual = {
+          dia: parseInt(matchDia[1]),
+          titulo: matchDia[2].trim(),
+          descripcion: ''
+        };
+      } else if (diaActual && linea.trim().startsWith('  ')) {
+        diaActual.descripcion += linea.trim() + ' ';
+      } else if (linea.trim() && !diaActual) {
+        // Si no hay estructura de días, devolver como texto plano
+        return textoItinerario;
+      }
+    }
+    
+    if (diaActual) dias.push(diaActual);
+    return dias.length > 0 ? dias : textoItinerario;
+  }
+  
+  // Parsear incluye/no incluye desde notas
+  function parsearListaDesdeNotas(notas: string, seccion: string): string[] {
+    if (!notas) return [];
+    const regex = new RegExp(`--- ${seccion} ---\\n([\\s\\S]*?)(?:\\n--- |$)`);
+    const match = notas.match(regex);
+    if (!match) return [];
+    
+    return match[1]
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l.startsWith('✓') || l.startsWith('✗'))
+      .map(l => l.substring(1).trim());
+  }
+
   // Preparar datos para el PDF
   const pdfData = {
     cotizacion: {
@@ -86,9 +137,13 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
       duracion_dias: data.paquete?.duracion_dias || 0,
       imagen_principal: data.paquete?.imagen_principal,
       politicas_cancelacion: data.paquete?.politicas_cancelacion,
-      itinerario: data.paquete?.itinerario || [],
-      incluye: data.paquete?.incluye || [],
-      no_incluye: data.paquete?.no_incluye || []
+      itinerario: parsearItinerarioDesdeNotas(data.notas || '') || data.paquete?.itinerario || [],
+      incluye: parsearListaDesdeNotas(data.notas || '', 'INCLUYE').length > 0 
+        ? parsearListaDesdeNotas(data.notas || '', 'INCLUYE')
+        : data.paquete?.incluye || [],
+      no_incluye: parsearListaDesdeNotas(data.notas || '', 'NO INCLUYE').length > 0
+        ? parsearListaDesdeNotas(data.notas || '', 'NO INCLUYE')
+        : data.paquete?.no_incluye || []
     },
     pasajeros: (datosCompletos.pasajeros || []).map((p: any) => ({
       nombre: p.nombre || '',
