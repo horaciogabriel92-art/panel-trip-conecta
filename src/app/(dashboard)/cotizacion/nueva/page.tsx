@@ -76,6 +76,9 @@ export default function NuevaCotizacionManual() {
   // Hospedaje
   const [hospedajes, setHospedajes] = useState<Hospedaje[]>([]);
 
+  // Datos de la cotización
+  const [nombreCotizacion, setNombreCotizacion] = useState('');
+  
   // Itinerario y condiciones
   const [itinerario, setItinerario] = useState('');
   const [incluye, setIncluye] = useState<string[]>(['Traslados aeropuerto-hotel-aeropuerto']);
@@ -190,6 +193,7 @@ export default function NuevaCotizacionManual() {
     
     try {
       const cotizacionData = {
+        nombre_cotizacion: nombreCotizacion || `Viaje a ${hospedajes[0]?.ciudad || parsedFlights[0]?.destino_ciudad || 'Destino'}`,
         cliente,
         pasajeros,
         vuelos: useAmadeus ? parsedFlights : vuelosManuales,
@@ -229,6 +233,29 @@ export default function NuevaCotizacionManual() {
   // ============================================
   const renderStep1 = () => (
     <div className="space-y-6">
+      {/* Nombre de la Cotización */}
+      <div className="glass-card rounded-2xl p-6 border border-blue-500/30">
+        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-blue-400" />
+          Nombre de la Cotización
+        </h3>
+        <div>
+          <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
+            Nombre del viaje *
+          </label>
+          <input
+            type="text"
+            value={nombreCotizacion}
+            onChange={(e) => setNombreCotizacion(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+            placeholder="Ej: Viaje a Madrid - Semana Santa"
+          />
+          <p className="text-xs text-slate-500 mt-1">
+            Este nombre aparecerá en el PDF y en la lista de cotizaciones
+          </p>
+        </div>
+      </div>
+
       {/* Cliente Titular */}
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
