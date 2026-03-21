@@ -144,6 +144,7 @@ export default function NuevaCotizacionManual() {
     setHospedajes([...hospedajes, {
       id: newId,
       nombre_hotel: '',
+      link_hotel: '',
       ciudad: '',
       fecha_checkin: '',
       fecha_checkout: '',
@@ -552,6 +553,17 @@ RP/DZOUY2100/
                     }}
                     className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-purple-500"
                     placeholder="Nombre del hotel"
+                  />
+                  <input
+                    type="url"
+                    value={hotel.link_hotel || ''}
+                    onChange={(e) => {
+                      const updated = [...hospedajes];
+                      updated[index].link_hotel = e.target.value;
+                      setHospedajes(updated);
+                    }}
+                    className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-purple-500"
+                    placeholder="Link web del hotel (opcional)"
                   />
                   <input
                     type="text"
