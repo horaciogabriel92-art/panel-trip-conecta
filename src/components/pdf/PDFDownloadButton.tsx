@@ -18,6 +18,12 @@ interface CotizacionData {
   cliente_telefono?: string;
   precio_total: number;
   notas?: string;
+  // Campos para cotizaciones manuales
+  tipo_cotizacion?: 'paquete' | 'manual';
+  nombre_cotizacion?: string;
+  itinerario_manual?: string;
+  incluye?: string[];
+  no_incluye?: string[];
   paquete?: {
     titulo?: string;
     destino?: string;
@@ -35,6 +41,13 @@ interface CotizacionData {
     email?: string;
     telefono?: string;
   };
+  pasajeros?: Array<{
+    nombre: string;
+    apellido: string;
+    documento?: string;
+    fecha_nacimiento?: string;
+    nacionalidad?: string;
+  }>;
   hospedaje?: Array<{
     nombre_hotel: string;
     link_hotel?: string;
@@ -43,6 +56,21 @@ interface CotizacionData {
     fecha_checkout?: string;
     tipo_habitacion?: string;
     regimen?: string;
+  }>;
+  vuelos?: Array<{
+    linea: number;
+    aerolinea_codigo: string;
+    aerolinea_nombre: string;
+    numero_vuelo: string;
+    clase_codigo: string;
+    fecha_salida: string;
+    fecha_llegada: string;
+    hora_salida: string;
+    hora_llegada: string;
+    origen_codigo: string;
+    origen_ciudad: string;
+    destino_codigo: string;
+    destino_ciudad: string;
   }>;
 }
 

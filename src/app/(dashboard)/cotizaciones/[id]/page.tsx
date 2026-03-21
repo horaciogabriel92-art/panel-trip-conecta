@@ -25,7 +25,8 @@ import {
   ArrowRight,
   Edit,
   Printer,
-  CreditCard
+  CreditCard,
+  Plane
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -48,6 +49,32 @@ interface Cotizacion {
   notas?: string;
   fecha_creacion: string;
   fecha_expiracion?: string;
+  // Campos para cotizaciones manuales
+  tipo_cotizacion?: 'paquete' | 'manual';
+  nombre_cotizacion?: string;
+  vuelos?: any[];
+  hospedaje?: any[];
+  datos_completos?: {
+    cliente?: {
+      nombre: string;
+      apellido: string;
+      documento?: string;
+      email?: string;
+      telefono?: string;
+      fecha_nacimiento?: string;
+      nacionalidad?: string;
+    };
+    pasajeros?: Array<{
+      nombre: string;
+      apellido: string;
+      documento?: string;
+      fecha_nacimiento?: string;
+      nacionalidad?: string;
+    }>;
+  };
+  itinerario_manual?: string;
+  incluye?: string[];
+  no_incluye?: string[];
 }
 
 interface Paquete {
@@ -285,7 +312,22 @@ export default function CotizacionDetalle() {
         <div className="flex gap-2">
           <PDFDownloadButton 
             data={{
-              ...cotizacion,
+              id: cotizacion.id,
+              codigo: cotizacion.codigo,
+              fecha_creacion: cotizacion.fecha_creacion,
+              fecha_expiracion: cotizacion.fecha_expiracion,
+              num_pasajeros: cotizacion.num_pasajeros,
+              tipo_habitacion: cotizacion.tipo_habitacion,
+              fecha_salida: cotizacion.fecha_salida,
+              cliente_nombre: cotizacion.cliente_nombre,
+              cliente_email: cotizacion.cliente_email,
+              cliente_telefono: cotizacion.cliente_telefono,
+              precio_total: cotizacion.precio_total,
+              tipo_cotizacion: cotizacion.tipo_cotizacion,
+              nombre_cotizacion: cotizacion.nombre_cotizacion,
+              itinerario_manual: cotizacion.itinerario_manual,
+              incluye: cotizacion.incluye,
+              no_incluye: cotizacion.no_incluye,
               paquete: paquete ? {
                 titulo: paquete.titulo || paquete.nombre,
                 destino: paquete.destino,
@@ -296,7 +338,14 @@ export default function CotizacionDetalle() {
                 incluye: paquete.incluye,
                 no_incluye: paquete.no_incluye,
                 politicas_cancelacion: paquete.politicas_cancelacion
-              } : undefined,
+              } : {
+                titulo: cotizacion.nombre_cotizacion || 'Cotización Personalizada',
+                destino: cotizacion.hospedaje?.[0]?.ciudad || cotizacion.vuelos?.[cotizacion.vuelos?.length - 1]?.destino_ciudad || 'Destino no especificado',
+                duracion_dias: 0,
+              },
+              pasajeros: cotizacion.datos_completos?.pasajeros || [],
+              hospedaje: cotizacion.hospedaje,
+              vuelos: cotizacion.vuelos,
               vendedor: user ? {
                 nombre: user.nombre,
                 apellido: user.apellido,
@@ -326,16 +375,22 @@ export default function CotizacionDetalle() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Columna izquierda - Info del paquete */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Paquete */}
+          {/* Paquete / Nombre de Cotización */}
           <div className="glass-card rounded-2xl overflow-hidden">
             <div className="relative h-48">
-              <img src={imagen} alt={paquete?.nombre} className="w-full h-full object-cover" />
+              <img src={imagen} alt={paquete?.nombre || cotizacion.nombre_cotizacion} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
               <div className="absolute bottom-4 left-6">
-                <p className="text-xs text-blue-300 uppercase font-black mb-1">Paquete</p>
-                <h3 className="text-xl font-black text-white">{paquete?.nombre || paquete?.titulo || 'Paquete no disponible'}</h3>
-                {paquete?.destino && (
-                  <p className="text-slate-300 text-sm">{paquete.destino}</p>
+                <p className="text-xs text-blue-300 uppercase font-black mb-1">
+                  {cotizacion.tipo_cotizacion === 'manual' ? 'Cotización Personalizada' : 'Paquete'}
+                </p>
+                <h3 className="text-xl font-black text-white">
+                  {cotizacion.nombre_cotizacion || paquete?.nombre || paquete?.titulo || 'Cotización no disponible'}
+                </h3>
+                {(paquete?.destino || cotizacion.hospedaje?.[0]?.ciudad) && (
+                  <p className="text-slate-300 text-sm">
+                    {paquete?.destino || cotizacion.hospedaje?.[0]?.ciudad}
+                  </p>
                 )}
               </div>
             </div>
@@ -371,6 +426,137 @@ export default function CotizacionDetalle() {
               </div>
             </div>
           </div>
+
+          {/* Vuelos (cotización manual) */}
+          {cotizacion.vuelos && cotizacion.vuelos.length > 0 && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <Plane className="w-5 h-5 text-blue-400" />
+                Vuelos ({cotizacion.vuelos.length})
+              </h3>
+              <div className="space-y-3">
+                {cotizacion.vuelos.map((vuelo: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-white/5 rounded-xl">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-white font-bold">
+                        {vuelo.origen_ciudad} → {vuelo.destino_ciudad}
+                      </span>
+                      <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
+                        {vuelo.aerolinea_codigo} {vuelo.numero_vuelo}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <p className="text-slate-500 text-xs">Salida</p>
+                        <p className="text-white">{vuelo.hora_salida}</p>
+                        <p className="text-slate-400 text-xs">{vuelo.fecha_salida}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-slate-500 text-xs">Clase</p>
+                        <p className="text-blue-400">{vuelo.clase_codigo}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-slate-500 text-xs">Llegada</p>
+                        <p className="text-white">{vuelo.hora_llegada}</p>
+                        <p className="text-slate-400 text-xs">{vuelo.fecha_llegada}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Hospedaje (cotización manual) */}
+          {cotizacion.hospedaje && cotizacion.hospedaje.length > 0 && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <BedDouble className="w-5 h-5 text-blue-400" />
+                Hospedaje
+              </h3>
+              <div className="space-y-3">
+                {cotizacion.hospedaje.map((hotel: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-white/5 rounded-xl">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="text-white font-bold">{hotel.nombre_hotel}</p>
+                        <p className="text-slate-400 text-sm">{hotel.ciudad}</p>
+                      </div>
+                      {hotel.link_hotel && (
+                        <a 
+                          href={hotel.link_hotel} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-lg text-xs font-bold hover:bg-blue-500/30 transition-colors"
+                        >
+                          Ver Hotel
+                        </a>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 text-sm mt-3">
+                      <div>
+                        <p className="text-slate-500 text-xs">Check-in</p>
+                        <p className="text-white">{hotel.fecha_checkin || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-500 text-xs">Check-out</p>
+                        <p className="text-white">{hotel.fecha_checkout || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-500 text-xs">Regimen</p>
+                        <p className="text-white capitalize">{hotel.regimen?.replace('_', ' ')}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Itinerario (cotización manual) */}
+          {cotizacion.itinerario_manual && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-blue-400" />
+                Itinerario
+              </h3>
+              <div className="p-4 bg-white/5 rounded-xl">
+                <p className="text-slate-300 whitespace-pre-line">{cotizacion.itinerario_manual}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Incluye / No incluye */}
+          {(cotizacion.incluye?.length || cotizacion.no_incluye?.length) && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-blue-400" />
+                Detalles del Servicio
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {cotizacion.incluye && cotizacion.incluye.length > 0 && (
+                  <div className="p-4 bg-green-500/10 rounded-xl border border-green-500/20">
+                    <p className="text-green-400 font-bold mb-2">Incluye</p>
+                    <ul className="space-y-1">
+                      {cotizacion.incluye.map((item: string, idx: number) => (
+                        <li key={idx} className="text-slate-300 text-sm">+ {item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {cotizacion.no_incluye && cotizacion.no_incluye.length > 0 && (
+                  <div className="p-4 bg-red-500/10 rounded-xl border border-red-500/20">
+                    <p className="text-red-400 font-bold mb-2">No incluye</p>
+                    <ul className="space-y-1">
+                      {cotizacion.no_incluye.map((item: string, idx: number) => (
+                        <li key={idx} className="text-slate-300 text-sm">- {item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Datos del cliente */}
           <div className="glass-card rounded-2xl p-6">
