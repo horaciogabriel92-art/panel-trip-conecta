@@ -177,8 +177,8 @@ export default function PaqueteDetalle() {
                         if (typeof paquete.itinerario === 'string' && paquete.itinerario) {
                           return paquete.itinerario;
                         }
-                        if (paquete.itinerario && typeof paquete.itinerario === 'object') {
-                          return paquete.itinerario.texto || '';
+                        if (paquete.itinerario && typeof paquete.itinerario === 'object' && !Array.isArray(paquete.itinerario)) {
+                          return (paquete.itinerario as { texto?: string }).texto || '';
                         }
                         // Fallback a descripcion (legacy)
                         return paquete.descripcion || "Sin itinerario disponible.";
