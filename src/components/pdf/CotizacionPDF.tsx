@@ -896,20 +896,21 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           
           // Si es objeto con formato { texto, dias }
           if (typeof itin === 'object' && !Array.isArray(itin)) {
-            const tieneTexto = itin.texto && itin.texto.trim().length > 0;
-            const tieneDias = Array.isArray(itin.dias) && itin.dias.length > 0;
+            const itinObj = itin as { texto?: string; dias?: any[] };
+            const tieneTexto = itinObj.texto && itinObj.texto.trim().length > 0;
+            const tieneDias = Array.isArray(itinObj.dias) && itinObj.dias.length > 0;
             
             return (
               <>
                 {/* Mostrar texto del itinerario si existe */}
                 {tieneTexto && (
                   <View style={styles.dayCard}>
-                    <Text style={styles.dayContent}>{itin.texto}</Text>
+                    <Text style={styles.dayContent}>{itinObj.texto}</Text>
                   </View>
                 )}
                 
                 {/* Mostrar días estructurados si existen */}
-                {tieneDias && itin.dias.map((dia: any, idx: number) => (
+                {tieneDias && itinObj.dias!.map((dia: any, idx: number) => (
                   <View key={idx} style={styles.dayCard}>
                     <View style={styles.dayHeader}>
                       <Text style={styles.dayBadge}>Dia {dia.dia || idx + 1}</Text>
