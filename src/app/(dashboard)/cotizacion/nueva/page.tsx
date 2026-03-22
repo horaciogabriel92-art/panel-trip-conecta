@@ -368,7 +368,7 @@ export default function NuevaCotizacionManual() {
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <input
                     type="text"
                     value={pasajero.nombre}
@@ -378,7 +378,7 @@ export default function NuevaCotizacionManual() {
                       setPasajeros(updated);
                     }}
                     className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500"
-                    placeholder="Nombre"
+                    placeholder="Nombre *"
                   />
                   <input
                     type="text"
@@ -389,7 +389,7 @@ export default function NuevaCotizacionManual() {
                       setPasajeros(updated);
                     }}
                     className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500"
-                    placeholder="Apellido"
+                    placeholder="Apellido *"
                   />
                   <input
                     type="text"
@@ -400,8 +400,38 @@ export default function NuevaCotizacionManual() {
                       setPasajeros(updated);
                     }}
                     className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500"
-                    placeholder="Documento"
+                    placeholder="Documento *"
                   />
+                  <input
+                    type="date"
+                    value={pasajero.fecha_nacimiento}
+                    onChange={(e) => {
+                      const updated = [...pasajeros];
+                      updated[index].fecha_nacimiento = e.target.value;
+                      setPasajeros(updated);
+                    }}
+                    className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div className="mt-3">
+                  <select
+                    value={pasajero.nacionalidad}
+                    onChange={(e) => {
+                      const updated = [...pasajeros];
+                      updated[index].nacionalidad = e.target.value;
+                      setPasajeros(updated);
+                    }}
+                    className="w-full md:w-1/2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500"
+                  >
+                    <option value="Uruguay" className="bg-slate-900">Uruguay</option>
+                    <option value="Argentina" className="bg-slate-900">Argentina</option>
+                    <option value="Brasil" className="bg-slate-900">Brasil</option>
+                    <option value="Chile" className="bg-slate-900">Chile</option>
+                    <option value="Paraguay" className="bg-slate-900">Paraguay</option>
+                    <option value="Estados Unidos" className="bg-slate-900">Estados Unidos</option>
+                    <option value="España" className="bg-slate-900">España</option>
+                    <option value="Otro" className="bg-slate-900">Otro</option>
+                  </select>
                 </div>
               </div>
             ))}
