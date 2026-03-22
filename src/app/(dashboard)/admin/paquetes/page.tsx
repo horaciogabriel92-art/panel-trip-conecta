@@ -340,6 +340,59 @@ export default function PaquetesAdmin() {
     });
   };
 
+  // Helper functions para manejar vuelos
+  const updateVueloIda = (field: keyof Vuelo, value: string) => {
+    const vuelos = formData.vuelos || [];
+    const vueloIda = vuelos.find(v => v.tipo === 'ida');
+    const vueloVuelta = vuelos.find(v => v.tipo === 'vuelta');
+    
+    const updatedVuelo: Vuelo = {
+      tipo: 'ida',
+      origen_codigo: vueloIda?.origen_codigo || '',
+      origen_nombre: vueloIda?.origen_nombre || '',
+      destino_codigo: vueloIda?.destino_codigo || '',
+      destino_nombre: vueloIda?.destino_nombre || '',
+      fecha_salida: vueloIda?.fecha_salida || '',
+      hora_salida: vueloIda?.hora_salida || '',
+      hora_llegada: vueloIda?.hora_llegada || '',
+      aerolinea_codigo: vueloIda?.aerolinea_codigo || '',
+      aerolinea_nombre: vueloIda?.aerolinea_nombre || '',
+      numero_vuelo: vueloIda?.numero_vuelo || '',
+      escalas: vueloIda?.escalas || 0,
+      ...vueloIda,
+      [field]: value
+    };
+
+    const otrosVuelos = vuelos.filter(v => v.tipo !== 'ida');
+    setFormData({ ...formData, vuelos: [...otrosVuelos, updatedVuelo] });
+  };
+
+  const updateVueloVuelta = (field: keyof Vuelo, value: string) => {
+    const vuelos = formData.vuelos || [];
+    const vueloVuelta = vuelos.find(v => v.tipo === 'vuelta');
+    const vueloIda = vuelos.find(v => v.tipo === 'ida');
+    
+    const updatedVuelo: Vuelo = {
+      tipo: 'vuelta',
+      origen_codigo: vueloVuelta?.origen_codigo || '',
+      origen_nombre: vueloVuelta?.origen_nombre || '',
+      destino_codigo: vueloVuelta?.destino_codigo || '',
+      destino_nombre: vueloVuelta?.destino_nombre || '',
+      fecha_salida: vueloVuelta?.fecha_salida || '',
+      hora_salida: vueloVuelta?.hora_salida || '',
+      hora_llegada: vueloVuelta?.hora_llegada || '',
+      aerolinea_codigo: vueloVuelta?.aerolinea_codigo || '',
+      aerolinea_nombre: vueloVuelta?.aerolinea_nombre || '',
+      numero_vuelo: vueloVuelta?.numero_vuelo || '',
+      escalas: vueloVuelta?.escalas || 0,
+      ...vueloVuelta,
+      [field]: value
+    };
+
+    const otrosVuelos = vuelos.filter(v => v.tipo !== 'vuelta');
+    setFormData({ ...formData, vuelos: [...otrosVuelos, updatedVuelo] });
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex items-center justify-between">
@@ -728,19 +781,7 @@ Ejemplo:
                           <input
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'ida')?.origen_codigo || ''}
-                            onChange={(e) => {
-                              const vuelos = formData.vuelos?.filter(v => v.tipo !== 'ida') || [];
-                              const updatedVuelo: Vuelo = {
-                                tipo: 'ida',
-                                origen_codigo: e.target.value.toUpperCase(),
-                                origen_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_nombre || '',
-                                destino_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_codigo || '',
-                                destino_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_nombre || '',
-                                fecha_salida: formData.vuelos?.find(v => v.tipo === 'ida')?.fecha_salida || '',
-                                ...(formData.vuelos?.find(v => v.tipo === 'ida') || {})
-                              };
-                              setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                            }}
+                            onChange={(e) => updateVueloIda('origen_codigo', e.target.value.toUpperCase())}
                             className="w-20 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500 uppercase"
                             placeholder="MVD"
                             maxLength={3}
@@ -748,19 +789,7 @@ Ejemplo:
                           <input
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'ida')?.origen_nombre || ''}
-                            onChange={(e) => {
-                              const vuelos = formData.vuelos?.filter(v => v.tipo !== 'ida') || [];
-                              const updatedVuelo: Vuelo = {
-                                tipo: 'ida',
-                                origen_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_codigo || '',
-                                origen_nombre: e.target.value,
-                                destino_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_codigo || '',
-                                destino_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_nombre || '',
-                                fecha_salida: formData.vuelos?.find(v => v.tipo === 'ida')?.fecha_salida || '',
-                                ...(formData.vuelos?.find(v => v.tipo === 'ida') || {})
-                              };
-                              setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                            }}
+                            onChange={(e) => updateVueloIda('origen_nombre', e.target.value)}
                             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
                             placeholder="Montevideo"
                           />
@@ -772,18 +801,7 @@ Ejemplo:
                           <input
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'ida')?.destino_codigo || ''}
-                            onChange={(e) => {
-                              const vuelos = formData.vuelos?.filter(v => v.tipo !== 'ida') || [];
-                              const updatedVuelo: Vuelo = {
-                                tipo: 'ida',
-                                origen_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_codigo || '',
-                                origen_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_nombre || '',
-                                destino_codigo: e.target.value.toUpperCase(),
-                                destino_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_nombre || '',
-                                fecha_salida: formData.vuelos?.find(v => v.tipo === 'ida')?.fecha_salida || '',
-                                ...(formData.vuelos?.find(v => v.tipo === 'ida') || {})
-                              };
-                              setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
+                            onChange={(e) => updateVueloIda('destino_codigo', e.target.value.toUpperCase())
                             }}
                             className="w-20 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500 uppercase"
                             placeholder="MAD"
@@ -792,19 +810,7 @@ Ejemplo:
                           <input
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'ida')?.destino_nombre || ''}
-                            onChange={(e) => {
-                              const vuelos = formData.vuelos?.filter(v => v.tipo !== 'ida') || [];
-                              const updatedVuelo: Vuelo = {
-                                tipo: 'ida',
-                                origen_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_codigo || '',
-                                origen_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_nombre || '',
-                                destino_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_codigo || '',
-                                destino_nombre: e.target.value,
-                                fecha_salida: formData.vuelos?.find(v => v.tipo === 'ida')?.fecha_salida || '',
-                                ...(formData.vuelos?.find(v => v.tipo === 'ida') || {})
-                              };
-                              setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                            }}
+                            onChange={(e) => updateVueloIda('destino_nombre', e.target.value)}
                             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
                             placeholder="Madrid"
                           />
@@ -815,19 +821,7 @@ Ejemplo:
                         <input
                           type="date"
                           value={formData.vuelos?.find(v => v.tipo === 'ida')?.fecha_salida || ''}
-                          onChange={(e) => {
-                            const vuelos = formData.vuelos?.filter(v => v.tipo !== 'ida') || [];
-                            const updatedVuelo: Vuelo = {
-                              tipo: 'ida',
-                              origen_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_codigo || '',
-                              origen_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_nombre || '',
-                              destino_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_codigo || '',
-                              destino_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_nombre || '',
-                              fecha_salida: e.target.value,
-                              ...(formData.vuelos?.find(v => v.tipo === 'ida') || {})
-                            };
-                            setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                          }}
+                          onChange={(e) => updateVueloIda('fecha_salida', e.target.value)}
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
                         />
                       </div>
@@ -836,20 +830,7 @@ Ejemplo:
                         <input
                           type="text"
                           value={formData.vuelos?.find(v => v.tipo === 'ida')?.aerolinea_nombre || ''}
-                          onChange={(e) => {
-                            const vuelos = formData.vuelos?.filter(v => v.tipo !== 'ida') || [];
-                            const updatedVuelo: Vuelo = {
-                              tipo: 'ida',
-                              origen_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_codigo || '',
-                              origen_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_nombre || '',
-                              destino_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_codigo || '',
-                              destino_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_nombre || '',
-                              fecha_salida: formData.vuelos?.find(v => v.tipo === 'ida')?.fecha_salida || '',
-                              aerolinea_nombre: e.target.value,
-                              ...(formData.vuelos?.find(v => v.tipo === 'ida') || {})
-                            };
-                            setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                          }}
+                          onChange={(e) => updateVueloIda('aerolinea_nombre', e.target.value)}
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
                           placeholder="Ej: Air Europa"
                         />
@@ -859,20 +840,7 @@ Ejemplo:
                         <input
                           type="time"
                           value={formData.vuelos?.find(v => v.tipo === 'ida')?.hora_salida || ''}
-                          onChange={(e) => {
-                            const vuelos = formData.vuelos?.filter(v => v.tipo !== 'ida') || [];
-                            const updatedVuelo: Vuelo = {
-                              tipo: 'ida',
-                              origen_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_codigo || '',
-                              origen_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_nombre || '',
-                              destino_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_codigo || '',
-                              destino_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_nombre || '',
-                              fecha_salida: formData.vuelos?.find(v => v.tipo === 'ida')?.fecha_salida || '',
-                              hora_salida: e.target.value,
-                              ...(formData.vuelos?.find(v => v.tipo === 'ida') || {})
-                            };
-                            setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                          }}
+                          onChange={(e) => updateVueloIda('hora_salida', e.target.value)}
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
                         />
                       </div>
@@ -881,20 +849,7 @@ Ejemplo:
                         <input
                           type="time"
                           value={formData.vuelos?.find(v => v.tipo === 'ida')?.hora_llegada || ''}
-                          onChange={(e) => {
-                            const vuelos = formData.vuelos?.filter(v => v.tipo !== 'ida') || [];
-                            const updatedVuelo: Vuelo = {
-                              tipo: 'ida',
-                              origen_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_codigo || '',
-                              origen_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_nombre || '',
-                              destino_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_codigo || '',
-                              destino_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_nombre || '',
-                              fecha_salida: formData.vuelos?.find(v => v.tipo === 'ida')?.fecha_salida || '',
-                              hora_llegada: e.target.value,
-                              ...(formData.vuelos?.find(v => v.tipo === 'ida') || {})
-                            };
-                            setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                          }}
+                          onChange={(e) => updateVueloIda('hora_llegada', e.target.value)}
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
                         />
                       </div>
@@ -903,20 +858,7 @@ Ejemplo:
                         <input
                           type="text"
                           value={formData.vuelos?.find(v => v.tipo === 'ida')?.numero_vuelo || ''}
-                          onChange={(e) => {
-                            const vuelos = formData.vuelos?.filter(v => v.tipo !== 'ida') || [];
-                            const updatedVuelo: Vuelo = {
-                              tipo: 'ida',
-                              origen_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_codigo || '',
-                              origen_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_nombre || '',
-                              destino_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_codigo || '',
-                              destino_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_nombre || '',
-                              fecha_salida: formData.vuelos?.find(v => v.tipo === 'ida')?.fecha_salida || '',
-                              numero_vuelo: e.target.value,
-                              ...(formData.vuelos?.find(v => v.tipo === 'ida') || {})
-                            };
-                            setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                          }}
+                          onChange={(e) => updateVueloIda('numero_vuelo', e.target.value)}
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
                           placeholder="UX046"
                         />
@@ -925,20 +867,7 @@ Ejemplo:
                         <label className="text-xs text-slate-400 mb-1 block">Escalas</label>
                         <select
                           value={formData.vuelos?.find(v => v.tipo === 'ida')?.escalas || 0}
-                          onChange={(e) => {
-                            const vuelos = formData.vuelos?.filter(v => v.tipo !== 'ida') || [];
-                            const updatedVuelo: Vuelo = {
-                              tipo: 'ida',
-                              origen_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_codigo || '',
-                              origen_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.origen_nombre || '',
-                              destino_codigo: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_codigo || '',
-                              destino_nombre: formData.vuelos?.find(v => v.tipo === 'ida')?.destino_nombre || '',
-                              fecha_salida: formData.vuelos?.find(v => v.tipo === 'ida')?.fecha_salida || '',
-                              escalas: parseInt(e.target.value),
-                              ...(formData.vuelos?.find(v => v.tipo === 'ida') || {})
-                            };
-                            setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                          }}
+                          onChange={(e) => updateVueloIda('escalas', e.target.value)}
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
                         >
                           <option value={0} className="bg-slate-900">Directo</option>
@@ -960,19 +889,7 @@ Ejemplo:
                           <input
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_codigo || ''}
-                            onChange={(e) => {
-                              const vuelos = formData.vuelos?.filter(v => v.tipo !== 'vuelta') || [];
-                              const updatedVuelo: Vuelo = {
-                                tipo: 'vuelta',
-                                origen_codigo: e.target.value.toUpperCase(),
-                                origen_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_nombre || '',
-                                destino_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_codigo || '',
-                                destino_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_nombre || '',
-                                fecha_salida: formData.vuelos?.find(v => v.tipo === 'vuelta')?.fecha_salida || '',
-                                ...(formData.vuelos?.find(v => v.tipo === 'vuelta') || {})
-                              };
-                              setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                            }}
+                            onChange={(e) => updateVueloVuelta('origen_codigo', e.target.value.toUpperCase())}
                             className="w-20 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500 uppercase"
                             placeholder="MAD"
                             maxLength={3}
@@ -980,19 +897,7 @@ Ejemplo:
                           <input
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_nombre || ''}
-                            onChange={(e) => {
-                              const vuelos = formData.vuelos?.filter(v => v.tipo !== 'vuelta') || [];
-                              const updatedVuelo: Vuelo = {
-                                tipo: 'vuelta',
-                                origen_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_codigo || '',
-                                origen_nombre: e.target.value,
-                                destino_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_codigo || '',
-                                destino_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_nombre || '',
-                                fecha_salida: formData.vuelos?.find(v => v.tipo === 'vuelta')?.fecha_salida || '',
-                                ...(formData.vuelos?.find(v => v.tipo === 'vuelta') || {})
-                              };
-                              setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                            }}
+                            onChange={(e) => updateVueloVuelta('origen_nombre', e.target.value)}
                             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
                             placeholder="Madrid"
                           />
@@ -1004,19 +909,7 @@ Ejemplo:
                           <input
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_codigo || ''}
-                            onChange={(e) => {
-                              const vuelos = formData.vuelos?.filter(v => v.tipo !== 'vuelta') || [];
-                              const updatedVuelo: Vuelo = {
-                                tipo: 'vuelta',
-                                origen_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_codigo || '',
-                                origen_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_nombre || '',
-                                destino_codigo: e.target.value.toUpperCase(),
-                                destino_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_nombre || '',
-                                fecha_salida: formData.vuelos?.find(v => v.tipo === 'vuelta')?.fecha_salida || '',
-                                ...(formData.vuelos?.find(v => v.tipo === 'vuelta') || {})
-                              };
-                              setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                            }}
+                            onChange={(e) => updateVueloVuelta('destino_codigo', e.target.value.toUpperCase())}
                             className="w-20 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500 uppercase"
                             placeholder="MVD"
                             maxLength={3}
@@ -1024,19 +917,7 @@ Ejemplo:
                           <input
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_nombre || ''}
-                            onChange={(e) => {
-                              const vuelos = formData.vuelos?.filter(v => v.tipo !== 'vuelta') || [];
-                              const updatedVuelo: Vuelo = {
-                                tipo: 'vuelta',
-                                origen_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_codigo || '',
-                                origen_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_nombre || '',
-                                destino_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_codigo || '',
-                                destino_nombre: e.target.value,
-                                fecha_salida: formData.vuelos?.find(v => v.tipo === 'vuelta')?.fecha_salida || '',
-                                ...(formData.vuelos?.find(v => v.tipo === 'vuelta') || {})
-                              };
-                              setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                            }}
+                            onChange={(e) => updateVueloVuelta('destino_nombre', e.target.value)}
                             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
                             placeholder="Montevideo"
                           />
@@ -1047,19 +928,7 @@ Ejemplo:
                         <input
                           type="date"
                           value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.fecha_salida || ''}
-                          onChange={(e) => {
-                            const vuelos = formData.vuelos?.filter(v => v.tipo !== 'vuelta') || [];
-                            const updatedVuelo: Vuelo = {
-                              tipo: 'vuelta',
-                              origen_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_codigo || '',
-                              origen_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_nombre || '',
-                              destino_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_codigo || '',
-                              destino_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_nombre || '',
-                              fecha_salida: e.target.value,
-                              ...(formData.vuelos?.find(v => v.tipo === 'vuelta') || {})
-                            };
-                            setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                          }}
+                          onChange={(e) => updateVueloVuelta('fecha_salida', e.target.value)}
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
                         />
                       </div>
@@ -1068,20 +937,7 @@ Ejemplo:
                         <input
                           type="text"
                           value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.aerolinea_nombre || ''}
-                          onChange={(e) => {
-                            const vuelos = formData.vuelos?.filter(v => v.tipo !== 'vuelta') || [];
-                            const updatedVuelo: Vuelo = {
-                              tipo: 'vuelta',
-                              origen_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_codigo || '',
-                              origen_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_nombre || '',
-                              destino_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_codigo || '',
-                              destino_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_nombre || '',
-                              fecha_salida: formData.vuelos?.find(v => v.tipo === 'vuelta')?.fecha_salida || '',
-                              aerolinea_nombre: e.target.value,
-                              ...(formData.vuelos?.find(v => v.tipo === 'vuelta') || {})
-                            };
-                            setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                          }}
+                          onChange={(e) => updateVueloVuelta('aerolinea_nombre', e.target.value)}
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
                           placeholder="Ej: Air Europa"
                         />
@@ -1091,20 +947,7 @@ Ejemplo:
                         <input
                           type="time"
                           value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.hora_salida || ''}
-                          onChange={(e) => {
-                            const vuelos = formData.vuelos?.filter(v => v.tipo !== 'vuelta') || [];
-                            const updatedVuelo: Vuelo = {
-                              tipo: 'vuelta',
-                              origen_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_codigo || '',
-                              origen_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_nombre || '',
-                              destino_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_codigo || '',
-                              destino_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_nombre || '',
-                              fecha_salida: formData.vuelos?.find(v => v.tipo === 'vuelta')?.fecha_salida || '',
-                              hora_salida: e.target.value,
-                              ...(formData.vuelos?.find(v => v.tipo === 'vuelta') || {})
-                            };
-                            setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                          }}
+                          onChange={(e) => updateVueloVuelta('hora_salida', e.target.value)}
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
                         />
                       </div>
@@ -1113,20 +956,7 @@ Ejemplo:
                         <input
                           type="time"
                           value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.hora_llegada || ''}
-                          onChange={(e) => {
-                            const vuelos = formData.vuelos?.filter(v => v.tipo !== 'vuelta') || [];
-                            const updatedVuelo: Vuelo = {
-                              tipo: 'vuelta',
-                              origen_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_codigo || '',
-                              origen_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_nombre || '',
-                              destino_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_codigo || '',
-                              destino_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_nombre || '',
-                              fecha_salida: formData.vuelos?.find(v => v.tipo === 'vuelta')?.fecha_salida || '',
-                              hora_llegada: e.target.value,
-                              ...(formData.vuelos?.find(v => v.tipo === 'vuelta') || {})
-                            };
-                            setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                          }}
+                          onChange={(e) => updateVueloVuelta('hora_llegada', e.target.value)}
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
                         />
                       </div>
@@ -1135,20 +965,7 @@ Ejemplo:
                         <input
                           type="text"
                           value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.numero_vuelo || ''}
-                          onChange={(e) => {
-                            const vuelos = formData.vuelos?.filter(v => v.tipo !== 'vuelta') || [];
-                            const updatedVuelo: Vuelo = {
-                              tipo: 'vuelta',
-                              origen_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_codigo || '',
-                              origen_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_nombre || '',
-                              destino_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_codigo || '',
-                              destino_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_nombre || '',
-                              fecha_salida: formData.vuelos?.find(v => v.tipo === 'vuelta')?.fecha_salida || '',
-                              numero_vuelo: e.target.value,
-                              ...(formData.vuelos?.find(v => v.tipo === 'vuelta') || {})
-                            };
-                            setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                          }}
+                          onChange={(e) => updateVueloVuelta('numero_vuelo', e.target.value)}
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
                           placeholder="UX047"
                         />
@@ -1157,20 +974,7 @@ Ejemplo:
                         <label className="text-xs text-slate-400 mb-1 block">Escalas</label>
                         <select
                           value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.escalas || 0}
-                          onChange={(e) => {
-                            const vuelos = formData.vuelos?.filter(v => v.tipo !== 'vuelta') || [];
-                            const updatedVuelo: Vuelo = {
-                              tipo: 'vuelta',
-                              origen_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_codigo || '',
-                              origen_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_nombre || '',
-                              destino_codigo: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_codigo || '',
-                              destino_nombre: formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_nombre || '',
-                                fecha_salida: formData.vuelos?.find(v => v.tipo === 'vuelta')?.fecha_salida || '',
-                              escalas: parseInt(e.target.value),
-                              ...(formData.vuelos?.find(v => v.tipo === 'vuelta') || {})
-                            };
-                            setFormData({...formData, vuelos: [...vuelos, updatedVuelo]});
-                          }}
+                          onChange={(e) => updateVueloVuelta('escalas', e.target.value)}
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
                         >
                           <option value={0} className="bg-slate-900">Directo</option>
