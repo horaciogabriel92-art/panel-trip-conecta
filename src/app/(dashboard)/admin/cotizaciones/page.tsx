@@ -13,7 +13,8 @@ import {
   ArrowRight,
   User,
   DollarSign,
-  Calendar
+  Calendar,
+  Trash2
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
@@ -37,6 +38,11 @@ export default function AdminCotizaciones() {
   const [isLoading, setIsLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState<string>('todos');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Estados para modal de eliminación
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [cotizacionToDelete, setCotizacionToDelete] = useState<Cotizacion | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchCotizaciones();
@@ -78,6 +84,29 @@ export default function AdminCotizaciones() {
     pendientes: cotizaciones.filter(c => c.estado === 'pendiente').length,
     convertidas: cotizaciones.filter(c => c.estado === 'convertida').length,
     montoTotal: cotizaciones.reduce((sum, c) => sum + (c.precio_total || 0), 0)
+  };
+
+  // Funciones para eliminar cotización
+  const abrirModalEliminar = (c: Cotizacion) => {
+    setCotizacionToDelete(c);
+    setShowDeleteModal(true);
+  };
+
+  const eliminarCotizacion = async () => {
+    if (!cotizacionToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await api.delete(`/cotizaciones/${cotizacionToDelete.id}`);
+      setShowDeleteModal(false);
+      setCotizacionToDelete(null);
+      fetchCotizaciones();
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Error al eliminar la cotización';
+      alert(errorMsg);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -191,12 +220,23 @@ export default function AdminCotizaciones() {
                     {new Date(c.fecha_creacion).toLocaleDateString('es-AR')}
                   </td>
                   <td className="p-4">
-                    <Link 
-                      href={`/admin/cotizaciones/${c.id}`}
-                      className="p-2 bg-white/5 rounded-lg hover:bg-blue-600 transition-all inline-flex"
-                    >
-                      <Eye className="w-4 h-4 text-slate-300" />
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link 
+                        href={`/admin/cotizaciones/${c.id}`}
+                        className="p-2 bg-white/5 rounded-lg hover:bg-blue-600 transition-all inline-flex"
+                      >
+                        <Eye className="w-4 h-4 text-slate-300" />
+                      </Link>
+                      {c.estado !== 'convertida' && (
+                        <button
+                          onClick={() => abrirModalEliminar(c)}
+                          className="p-2 bg-white/5 rounded-lg hover:bg-red-600 transition-all inline-flex"
+                          title="Eliminar cotización"
+                        >
+                          <Trash2 className="w-4 h-4 text-slate-300" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -211,6 +251,85 @@ export default function AdminCotizaciones() {
           </div>
         )}
       </div>
+
+      {/* Modal Eliminar Cotización */}
+      {showDeleteModal && cotizacionToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="glass-card w-full max-w-md rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-white">¿Eliminar Cotización?</h3>
+                <p className="text-sm text-slate-400">{cotizacionToDelete.codigo}</p>
+              </div>
+            </div>
+
+            <div className="mb-4 p-3 bg-white/5 rounded-lg">
+              <p className="text-sm text-slate-300">
+                <strong>Cliente:</strong> {cotizacionToDelete.cliente_nombre}
+              </p>
+              <p className="text-sm text-slate-300">
+                <strong>Vendedor:</strong> {cotizacionToDelete.vendedor_nombre || '-'}
+              </p>
+              <p className="text-sm text-slate-300">
+                <strong>Total:</strong> ${formatCurrency(cotizacionToDelete.precio_total)}
+              </p>
+              <p className="text-sm text-slate-300">
+                <strong>Estado:</strong> {cotizacionToDelete.estado}
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                <p className="text-sm text-red-300 font-medium mb-2">
+                  ⚠️ Advertencia de eliminación permanente
+                </p>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Si eliminas esta cotización, <strong>todos los datos serán permanentemente eliminados</strong> de la base de datos. 
+                  Esta acción <strong>no se puede deshacer</strong>. Los datos del cliente, vuelos, hospedaje y 
+                  cualquier información relacionada se perderán definitivamente.
+                </p>
+              </div>
+              
+              <p className="text-xs text-slate-500 text-center">
+                ¿Estás seguro de que deseas continuar?
+              </p>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setCotizacionToDelete(null);
+                }}
+                disabled={isDeleting}
+                className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-50 text-white font-medium transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={eliminarCotizacion}
+                disabled={isDeleting}
+                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold transition-all flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Sí, Eliminar
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

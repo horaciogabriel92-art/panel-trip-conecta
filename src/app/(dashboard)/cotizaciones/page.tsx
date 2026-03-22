@@ -12,7 +12,8 @@ import {
   DollarSign,
   Send,
   RotateCcw,
-  AlertTriangle
+  AlertTriangle,
+  Trash2
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
@@ -73,6 +74,11 @@ export default function CotizacionesCRM() {
   const [showPerdidaModal, setShowPerdidaModal] = useState(false);
   const [cotizacionPerdida, setCotizacionPerdida] = useState<Cotizacion | null>(null);
   const [motivoPerdida, setMotivoPerdida] = useState('');
+  
+  // Estados para modal de eliminación
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [cotizacionToDelete, setCotizacionToDelete] = useState<Cotizacion | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchCotizaciones();
@@ -127,6 +133,29 @@ export default function CotizacionesCRM() {
       fetchCotizaciones();
     } catch (err) {
       alert('Error al marcar como perdida');
+    }
+  };
+
+  // Funciones para eliminar cotización
+  const abrirModalEliminar = (c: Cotizacion) => {
+    setCotizacionToDelete(c);
+    setShowDeleteModal(true);
+  };
+
+  const eliminarCotizacion = async () => {
+    if (!cotizacionToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await api.delete(`/cotizaciones/${cotizacionToDelete.id}`);
+      setShowDeleteModal(false);
+      setCotizacionToDelete(null);
+      fetchCotizaciones();
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Error al eliminar la cotización';
+      alert(errorMsg);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -304,6 +333,17 @@ export default function CotizacionesCRM() {
                           </div>
                         )}
 
+                        {/* Botón Eliminar - disponible para cotizaciones no vendidas */}
+                        {columna.id !== 'vendida' && (
+                          <button
+                            onClick={() => abrirModalEliminar(c)}
+                            className="w-full py-2 bg-slate-600/20 hover:bg-red-600/30 text-slate-400 hover:text-red-400 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            ELIMINAR
+                          </button>
+                        )}
+
                         {/* Ver detalle siempre disponible */}
                         <Link
                           href={`/cotizaciones/${c.id}`}
@@ -378,6 +418,82 @@ export default function CotizacionesCRM() {
                 className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-slate-600 text-white font-bold transition-all"
               >
                 Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Eliminar Cotización */}
+      {showDeleteModal && cotizacionToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="glass-card w-full max-w-md rounded-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-white">¿Eliminar Cotización?</h3>
+                <p className="text-sm text-slate-400">{cotizacionToDelete.codigo}</p>
+              </div>
+            </div>
+
+            <div className="mb-4 p-3 bg-white/5 rounded-lg">
+              <p className="text-sm text-slate-300">
+                <strong>Cliente:</strong> {cotizacionToDelete.cliente_nombre}
+              </p>
+              <p className="text-sm text-slate-300">
+                <strong>Total:</strong> ${formatCurrency(cotizacionToDelete.precio_total)}
+              </p>
+              <p className="text-sm text-slate-300">
+                <strong>Estado:</strong> {cotizacionToDelete.estado}
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                <p className="text-sm text-red-300 font-medium mb-2">
+                  ⚠️ Advertencia de eliminación permanente
+                </p>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Si eliminas esta cotización, <strong>todos los datos serán permanentemente eliminados</strong> de la base de datos. 
+                  Esta acción <strong>no se puede deshacer</strong>. Los datos del cliente, vuelos, hospedaje y 
+                  cualquier información relacionada se perderán definitivamente.
+                </p>
+              </div>
+              
+              <p className="text-xs text-slate-500 text-center">
+                ¿Estás seguro de que deseas continuar?
+              </p>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setCotizacionToDelete(null);
+                }}
+                disabled={isDeleting}
+                className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-50 text-white font-medium transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={eliminarCotizacion}
+                disabled={isDeleting}
+                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold transition-all flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Sí, Eliminar
+                  </>
+                )}
               </button>
             </div>
           </div>

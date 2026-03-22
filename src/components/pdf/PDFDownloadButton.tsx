@@ -138,7 +138,9 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
       duracion_dias: paqueteDesdeNotas?.duracion_dias || data.paquete?.duracion_dias || 0,
       imagen_principal: paqueteDesdeNotas?.imagen_principal || data.paquete?.imagen_principal,
       politicas_cancelacion: paqueteDesdeNotas?.politicas_cancelacion || data.paquete?.politicas_cancelacion,
-      itinerario: paqueteDesdeNotas?.itinerario || data.paquete?.itinerario || [],
+      itinerario: paqueteDesdeNotas?.itinerario || data.paquete?.itinerario || 
+                  (paqueteDesdeNotas?.descripcion ? { texto: paqueteDesdeNotas.descripcion, dias: [] } : 
+                   data.paquete?.descripcion ? { texto: data.paquete.descripcion, dias: [] } : { texto: '', dias: [] }),
       incluye: paqueteDesdeNotas?.incluye || data.paquete?.incluye || [],
       no_incluye: paqueteDesdeNotas?.no_incluye || data.paquete?.no_incluye || []
     },

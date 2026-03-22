@@ -38,7 +38,7 @@ interface Paquete {
   imagen_principal?: string;
   incluye: string[];
   no_incluye: string[];
-  itinerario?: any[];
+  itinerario?: { texto?: string; dias?: any[] } | any[];
   galeria?: any[];
   recursos_vendedores?: any[];
   status: string;
@@ -170,10 +170,20 @@ export default function PaqueteDetalle() {
               {activeTab === 'itinerario' && (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-bold text-white mb-3">Descripción</h3>
-                    <p className="text-slate-300 leading-relaxed">
-                      {paquete.descripcion || "Sin descripción disponible."}
-                    </p>
+                    <h3 className="text-lg font-bold text-white mb-3">Itinerario</h3>
+                    <div className="text-slate-300 leading-relaxed whitespace-pre-line">
+                      {(() => {
+                        // Extraer texto de itinerario (puede ser string o objeto)
+                        if (typeof paquete.itinerario === 'string' && paquete.itinerario) {
+                          return paquete.itinerario;
+                        }
+                        if (paquete.itinerario && typeof paquete.itinerario === 'object') {
+                          return paquete.itinerario.texto || '';
+                        }
+                        // Fallback a descripcion (legacy)
+                        return paquete.descripcion || "Sin itinerario disponible.";
+                      })()}
+                    </div>
                   </div>
 
                   {paquete.incluye && paquete.incluye.length > 0 && (

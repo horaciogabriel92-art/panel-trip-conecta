@@ -894,12 +894,47 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
             );
           }
           
+          // Si es objeto con formato { texto, dias }
+          if (typeof itin === 'object' && !Array.isArray(itin)) {
+            const tieneTexto = itin.texto && itin.texto.trim().length > 0;
+            const tieneDias = Array.isArray(itin.dias) && itin.dias.length > 0;
+            
+            return (
+              <>
+                {/* Mostrar texto del itinerario si existe */}
+                {tieneTexto && (
+                  <View style={styles.dayCard}>
+                    <Text style={styles.dayContent}>{itin.texto}</Text>
+                  </View>
+                )}
+                
+                {/* Mostrar días estructurados si existen */}
+                {tieneDias && itin.dias.map((dia: any, idx: number) => (
+                  <View key={idx} style={styles.dayCard}>
+                    <View style={styles.dayHeader}>
+                      <Text style={styles.dayBadge}>Dia {dia.dia || idx + 1}</Text>
+                      <Text style={styles.dayTitle}>{dia.titulo}</Text>
+                    </View>
+                    <Text style={styles.dayContent}>{dia.descripcion}</Text>
+                    {dia.actividades && dia.actividades.length > 0 && (
+                      <View style={{ marginTop: 6 }}>
+                        {dia.actividades.map((act: string, actIdx: number) => (
+                          <Text key={actIdx} style={styles.dayContent}>- {act}</Text>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </>
+            );
+          }
+          
           // Si es array vacío, no mostrar nada
           if (Array.isArray(itin) && itin.length === 0) {
             return null;
           }
           
-          // Si es array con datos
+          // Si es array con datos (formato legacy)
           if (Array.isArray(itin) && itin.length > 0) {
             return itin.map((dia, idx) => (
               <View key={idx} style={styles.dayCard}>
