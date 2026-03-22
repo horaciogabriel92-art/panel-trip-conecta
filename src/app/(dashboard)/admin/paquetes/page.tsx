@@ -801,8 +801,7 @@ Ejemplo:
                           <input
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'ida')?.destino_codigo || ''}
-                            onChange={(e) => updateVueloIda('destino_codigo', e.target.value.toUpperCase())
-                            }}
+                            onChange={(e) => updateVueloIda('destino_codigo', e.target.value.toUpperCase())}
                             className="w-20 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500 uppercase"
                             placeholder="MAD"
                             maxLength={3}
