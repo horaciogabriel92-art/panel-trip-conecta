@@ -122,22 +122,47 @@ export default function CotizacionDetalle() {
   const [comprobantes, setComprobantes] = useState<File[]>([]);
   const [comprobantesPreview, setComprobantesPreview] = useState<{name: string, type: string}[]>([]);
   const [isUploadingComprobantes, setIsUploadingComprobantes] = useState(false);
+  
+  // Estado para datos parseados de notas (cotizaciones de catálogo)
+  const [datosPaqueteDesdeNotas, setDatosPaqueteDesdeNotas] = useState<{
+    itinerario?: any[];
+    incluye?: string[];
+    no_incluye?: string[];
+  } | null>(null);
 
   useEffect(() => {
     const fetchCotizacion = async () => {
       try {
         const res = await api.get(`/cotizaciones/${params.id}`);
-        setCotizacion(res.data);
-        setEditData(res.data);
+        const cotizacionData = res.data;
+        setCotizacion(cotizacionData);
+        setEditData(cotizacionData);
+        
+        // Parsear notas si contienen JSON de paquete (cotizaciones antiguas de catálogo)
+        if (cotizacionData.notas && cotizacionData.notas.includes('--- PAQUETE JSON ---')) {
+          try {
+            const paqueteMatch = cotizacionData.notas.match(/--- PAQUETE JSON ---\n([\s\S]+?)(?:\n--- |$)/);
+            if (paqueteMatch) {
+              const paqueteJson = JSON.parse(paqueteMatch[1]);
+              setDatosPaqueteDesdeNotas({
+                itinerario: paqueteJson.itinerario,
+                incluye: paqueteJson.incluye,
+                no_incluye: paqueteJson.no_incluye
+              });
+            }
+          } catch (e) {
+            console.error('Error parseando notas:', e);
+          }
+        }
         
         // Cargar datos del paquete
-        if (res.data.paquete_id) {
-          const paqueteRes = await api.get(`/paquetes/${res.data.paquete_id}`);
+        if (cotizacionData.paquete_id) {
+          const paqueteRes = await api.get(`/paquetes/${cotizacionData.paquete_id}`);
           setPaquete(paqueteRes.data);
         }
         
         // Si venimos del kanban con accion=cerrar, abrir modal automáticamente
-        if (accion === 'cerrar' && res.data.estado === 'respondida') {
+        if (accion === 'cerrar' && cotizacionData.estado === 'respondida') {
           setShowVentaModal(true);
         }
       } catch (err) {
@@ -427,6 +452,80 @@ export default function CotizacionDetalle() {
             </div>
           </div>
 
+          {/* Itinerario - Cotizaciones de catálogo (desde paquete o notas parseadas) */}
+          {(paquete?.itinerario || datosPaqueteDesdeNotas?.itinerario) && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-blue-400" />
+                Itinerario
+              </h3>
+              {(() => {
+                const itin = paquete?.itinerario || datosPaqueteDesdeNotas?.itinerario;
+                if (typeof itin === 'string') {
+                  return <p className="text-slate-300 whitespace-pre-line">{itin}</p>;
+                }
+                if (Array.isArray(itin) && itin.length > 0) {
+                  return (
+                    <div className="space-y-3">
+                      {itin.map((dia: any, idx: number) => (
+                        <div key={idx} className="p-4 bg-white/5 rounded-xl border-l-2 border-blue-500">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
+                              Día {dia.dia || idx + 1}
+                            </span>
+                            <span className="font-medium text-white">{dia.titulo}</span>
+                          </div>
+                          <p className="text-slate-300 text-sm">{dia.descripcion}</p>
+                          {dia.actividades && dia.actividades.length > 0 && (
+                            <ul className="mt-2 space-y-1">
+                              {dia.actividades.map((act: string, actIdx: number) => (
+                                <li key={actIdx} className="text-slate-400 text-sm">• {act}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </div>
+          )}
+
+          {/* Incluye / No incluye - Cotizaciones de catálogo */}
+          {(paquete?.incluye?.length || paquete?.no_incluye?.length || 
+            datosPaqueteDesdeNotas?.incluye?.length || datosPaqueteDesdeNotas?.no_incluye?.length) && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-blue-400" />
+                Detalles del Servicio
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(paquete?.incluye?.length || datosPaqueteDesdeNotas?.incluye?.length) && (
+                  <div className="p-4 bg-green-500/10 rounded-xl border border-green-500/20">
+                    <p className="text-green-400 font-bold mb-2">Incluye</p>
+                    <ul className="space-y-1">
+                      {(paquete?.incluye || datosPaqueteDesdeNotas?.incluye || []).map((item: string, idx: number) => (
+                        <li key={idx} className="text-slate-300 text-sm">+ {item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {(paquete?.no_incluye?.length || datosPaqueteDesdeNotas?.no_incluye?.length) && (
+                  <div className="p-4 bg-red-500/10 rounded-xl border border-red-500/20">
+                    <p className="text-red-400 font-bold mb-2">No incluye</p>
+                    <ul className="space-y-1">
+                      {(paquete?.no_incluye || datosPaqueteDesdeNotas?.no_incluye || []).map((item: string, idx: number) => (
+                        <li key={idx} className="text-slate-300 text-sm">- {item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Vuelos (cotización manual) */}
           {cotizacion.vuelos && cotizacion.vuelos.length > 0 && (
             <div className="glass-card rounded-2xl p-6">
@@ -593,8 +692,57 @@ export default function CotizacionDetalle() {
             </div>
           </div>
 
-          {/* Notas */}
-          {cotizacion.notas && (
+          {/* Pasajeros (titular + acompañantes) */}
+          {cotizacion.datos_completos?.pasajeros && cotizacion.datos_completos.pasajeros.length > 0 && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-400" />
+                Pasajeros ({cotizacion.datos_completos.pasajeros.length})
+              </h3>
+              <div className="space-y-3">
+                {cotizacion.datos_completos.pasajeros.map((pasajero: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-white/5 rounded-xl">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">
+                          {idx + 1}
+                        </span>
+                        <span className="font-medium text-white">
+                          {pasajero.nombre} {pasajero.apellido}
+                          {pasajero.es_titular && (
+                            <span className="ml-2 text-xs text-blue-400">(Titular)</span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      {pasajero.documento && (
+                        <div>
+                          <p className="text-xs text-slate-500">Documento</p>
+                          <p className="text-slate-300">{pasajero.documento}</p>
+                        </div>
+                      )}
+                      {pasajero.fecha_nacimiento && (
+                        <div>
+                          <p className="text-xs text-slate-500">Fecha Nac.</p>
+                          <p className="text-slate-300">{pasajero.fecha_nacimiento}</p>
+                        </div>
+                      )}
+                      {pasajero.nacionalidad && (
+                        <div>
+                          <p className="text-xs text-slate-500">Nacionalidad</p>
+                          <p className="text-slate-300">{pasajero.nacionalidad}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Notas - solo si no es cotización de catálogo o si hay notas reales */}
+          {cotizacion.notas && !cotizacion.notas.includes('--- PAQUETE JSON ---') && (
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-white mb-4">Notas</h3>
               <p className="text-slate-300 whitespace-pre-wrap">{cotizacion.notas}</p>
