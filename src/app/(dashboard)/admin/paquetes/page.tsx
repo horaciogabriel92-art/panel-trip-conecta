@@ -183,15 +183,14 @@ const emptyPaquete: Paquete = {
   itinerario: { texto: '', dias: [] }
 };
 
-// Función para parsear PNR de Amadeus
-function parseAmadeusPNR(pnrText: string): { texto: string; dias: any[] } {
+// Función para parsear PNR de Amadeus y extraer vuelos
+function parseAmadeusPNRToVuelos(pnrText: string): Vuelo[] {
   if (!pnrText.trim()) {
-    return { texto: '', dias: [] };
+    return [];
   }
 
   const lineas = pnrText.split('\n').filter(l => l.trim());
-  const vuelos: any[] = [];
-  let textoFormateado = '';
+  const vuelos: Vuelo[] = [];
 
   // Regex para detectar líneas de vuelo (formato común de Amadeus)
   // Ej: 1. AA1234 Y 15JAN 1 BUEEZE HK1  1030 1300  777 J
@@ -205,42 +204,22 @@ function parseAmadeusPNR(pnrText: string): { texto: string; dias: any[] } {
       vuelos.push({
         tipo: idx === 0 ? 'ida' : 'vuelta',
         aerolinea_codigo: aerolinea,
+        aerolinea_nombre: aerolinea,
         numero_vuelo: `${aerolinea}${numeroVuelo}`,
         origen_codigo: origen,
+        origen_nombre: origen,
         destino_codigo: destino,
+        destino_nombre: destino,
         fecha_salida: fecha,
         hora_salida: `${horaSalida.slice(0, 2)}:${horaSalida.slice(2)}`,
         hora_llegada: `${horaLlegada.slice(0, 2)}:${horaLlegada.slice(2)}`,
-        clase
+        clase,
+        escalas: 0
       });
-
-      // Agregar al texto formateado
-      textoFormateado += `Vuelo ${numeroVuelo} (${aerolinea}): ${origen} → ${destino} | ${fecha} | Salida: ${horaSalida.slice(0, 2)}:${horaSalida.slice(2)} - Llegada: ${horaLlegada.slice(0, 2)}:${horaLlegada.slice(2)}\n`;
-    } else {
-      // Línea que no es vuelo, agregar al texto
-      textoFormateado += linea + '\n';
     }
   });
 
-  // Si no se detectaron vuelos con regex, usar el texto completo como fallback
-  if (vuelos.length === 0) {
-    textoFormateado = pnrText;
-  }
-
-  return {
-    texto: textoFormateado.trim(),
-    dias: vuelos.map((v, i) => ({
-      dia: i + 1,
-      titulo: `Vuelo ${v.tipo === 'ida' ? 'de Ida' : 'de Vuelta'}`,
-      descripcion: `Vuelo ${v.numero_vuelo} desde ${v.origen_codigo} hasta ${v.destino_codigo}`,
-      actividades: [
-        `Aerolínea: ${v.aerolinea_codigo}`,
-        `Fecha: ${v.fecha_salida}`,
-        `Horario: ${v.hora_salida} - ${v.hora_llegada}`,
-        `Clase: ${v.clase}`
-      ]
-    }))
-  };
+  return vuelos;
 }
 
 export default function PaquetesAdmin() {
@@ -587,90 +566,19 @@ export default function PaquetesAdmin() {
                   </div>
                 </div>
 
-                {/* Selector de Modo de Itinerario */}
                 <div className="md:col-span-2">
-                  <label className="text-sm text-slate-400 mb-2 block">Modo de Itinerario</label>
-                  <div className="flex gap-4 mb-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        value="manual"
-                        checked={modoItinerario === 'manual'}
-                        onChange={() => setModoItinerario('manual')}
-                        className="w-4 h-4 accent-blue-500"
-                      />
-                      <span className="text-white">✏️ Escribir / Pegar itinerario</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        value="amadeus"
-                        checked={modoItinerario === 'amadeus'}
-                        onChange={() => setModoItinerario('amadeus')}
-                        className="w-4 h-4 accent-blue-500"
-                      />
-                      <span className="text-white">📋 Parsear PNR de Amadeus</span>
-                    </label>
-                  </div>
-
-                  {modoItinerario === 'amadeus' ? (
-                    <div className="space-y-3">
-                      <textarea
-                        rows={6}
-                        value={pnrRaw}
-                        onChange={(e) => setPnrRaw(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none font-mono text-sm"
-                        placeholder="Pega aquí el texto del PNR de Amadeus...
-
-Ejemplo:
-1. AA1234 Y 15JAN 1 BUEEZE HK1  1030 1300  777 J
-2. AA5678 Y 20JAN 2 MIAEZE HK1  1500 0430  777 J"
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const parsed = parseAmadeusPNR(pnrRaw);
-                            setFormData({
-                              ...formData,
-                              itinerario: parsed,
-                              descripcion: parsed.texto
-                            });
-                            alert('PNR parseado correctamente. Los datos se guardarán al crear/editar el paquete.');
-                          }}
-                          disabled={!pnrRaw.trim()}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 rounded-xl text-white font-medium text-sm flex items-center gap-2"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                          Procesar PNR
-                        </button>
-                        {formData.itinerario && typeof formData.itinerario === 'object' && formData.itinerario.texto && (
-                          <span className="text-green-400 text-sm flex items-center gap-1">
-                            <CheckCircle className="w-4 h-4" />
-                            Itinerario parseado listo para guardar
-                          </span>
-                        )}
-                      </div>
-                      {formData.itinerario && typeof formData.itinerario === 'object' && formData.itinerario.texto && (
-                        <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                          <p className="text-xs text-slate-400 mb-1">Vista previa:</p>
-                          <p className="text-sm text-white line-clamp-3">{formData.itinerario.texto}</p>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <textarea
-                      rows={5}
-                      value={typeof formData.itinerario === 'string' ? formData.itinerario : formData.itinerario?.texto || ''}
-                      onChange={(e) => setFormData({
-                        ...formData, 
-                        itinerario: { texto: e.target.value, dias: [] },
-                        descripcion: e.target.value
-                      })}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none"
-                      placeholder="Describe el itinerario día por día..."
-                    />
-                  )}
+                  <label className="text-sm text-slate-400 mb-1 block">Itinerario / Descripción del Viaje</label>
+                  <textarea
+                    rows={5}
+                    value={typeof formData.itinerario === 'string' ? formData.itinerario : formData.itinerario?.texto || ''}
+                    onChange={(e) => setFormData({
+                      ...formData, 
+                      itinerario: { texto: e.target.value, dias: [] },
+                      descripcion: e.target.value // Mantener sincronizado por compatibilidad
+                    })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none"
+                    placeholder="Describe el itinerario día por día..."
+                  />
                 </div>
 
                 {/* Incluye */}
@@ -735,9 +643,80 @@ Ejemplo:
 
                 {/* Información de Vuelos */}
                 <div className="md:col-span-2 border-t border-white/10 pt-6 mt-2">
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
                     ✈️ Información de Vuelos
                   </h3>
+                  
+                  {/* Selector de Modo de Vuelos */}
+                  <div className="mb-4">
+                    <label className="text-sm text-slate-400 mb-2 block">Modo de ingreso</label>
+                    <div className="flex gap-4 mb-3">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          value="manual"
+                          checked={modoItinerario === 'manual'}
+                          onChange={() => setModoItinerario('manual')}
+                          className="w-4 h-4 accent-blue-500"
+                        />
+                        <span className="text-white">✏️ Completar manualmente</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          value="amadeus"
+                          checked={modoItinerario === 'amadeus'}
+                          onChange={() => setModoItinerario('amadeus')}
+                          className="w-4 h-4 accent-blue-500"
+                        />
+                        <span className="text-white">📋 Parsear PNR de Amadeus</span>
+                      </label>
+                    </div>
+
+                    {modoItinerario === 'amadeus' && (
+                      <div className="space-y-3 mb-4 p-4 bg-blue-500/5 rounded-xl border border-blue-500/20">
+                        <textarea
+                          rows={5}
+                          value={pnrRaw}
+                          onChange={(e) => setPnrRaw(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none font-mono text-sm"
+                          placeholder="Pega aquí el texto del PNR de Amadeus...
+
+Ejemplo:
+1. AA1234 Y 15JAN 1 BUEEZE HK1  1030 1300  777 J
+2. AA5678 Y 20JAN 2 MIAEZE HK1  1500 0430  777 J"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const vuelosParseados = parseAmadeusPNRToVuelos(pnrRaw);
+                              if (vuelosParseados.length === 0) {
+                                alert('No se detectaron vuelos en el PNR. Verifica el formato.');
+                                return;
+                              }
+                              setFormData({
+                                ...formData,
+                                vuelos: vuelosParseados
+                              });
+                              alert(`${vuelosParseados.length} vuelo(s) parseado(s) correctamente. Revisa los campos de Vuelo de Ida y Vuelta.`);
+                            }}
+                            disabled={!pnrRaw.trim()}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 rounded-xl text-white font-medium text-sm flex items-center gap-2"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                            Procesar PNR
+                          </button>
+                          {formData.vuelos && formData.vuelos.length > 0 && (
+                            <span className="text-green-400 text-sm flex items-center gap-1">
+                              <CheckCircle className="w-4 h-4" />
+                              {formData.vuelos.length} vuelo(s) cargado(s)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   
                   {/* Vuelo de IDA */}
                   <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/20 mb-4">
