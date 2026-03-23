@@ -86,9 +86,10 @@ interface Paquete {
   duracion_dias?: number;
   imagen_url?: string;
   imagen_principal?: string;
-  itinerario?: any[] | string;
+  itinerario?: { texto?: string; dias?: any[] } | any[] | string;
   incluye?: string[];
   no_incluye?: string[];
+  vuelos?: any[];
   politicas_cancelacion?: string;
 }
 
@@ -125,9 +126,10 @@ export default function CotizacionDetalle() {
   
   // Estado para datos parseados de notas (cotizaciones de catálogo)
   const [datosPaqueteDesdeNotas, setDatosPaqueteDesdeNotas] = useState<{
-    itinerario?: any[];
+    itinerario?: { texto?: string; dias?: any[] } | any[] | string;
     incluye?: string[];
     no_incluye?: string[];
+    vuelos?: any[];
   } | null>(null);
 
   useEffect(() => {
@@ -359,7 +361,7 @@ export default function CotizacionDetalle() {
                 descripcion: paquete.descripcion,
                 duracion_dias: paquete.duracion_dias,
                 imagen_principal: paquete.imagen_principal || paquete.imagen_url,
-                itinerario: paquete.itinerario,
+                itinerario: paquete.itinerario as any,
                 incluye: paquete.incluye,
                 no_incluye: paquete.no_incluye,
                 politicas_cancelacion: paquete.politicas_cancelacion
@@ -467,14 +469,15 @@ export default function CotizacionDetalle() {
                 }
                 // Formato {texto, dias} (nuevo formato)
                 if (itin && typeof itin === 'object' && !Array.isArray(itin) && 'texto' in itin) {
+                  const itinObj = itin as { texto?: string; dias?: any[] };
                   return (
                     <div className="space-y-4">
-                      {itin.texto && (
-                        <p className="text-slate-300 whitespace-pre-line">{itin.texto}</p>
+                      {itinObj.texto && (
+                        <p className="text-slate-300 whitespace-pre-line">{itinObj.texto}</p>
                       )}
-                      {Array.isArray(itin.dias) && itin.dias.length > 0 && (
+                      {Array.isArray(itinObj.dias) && itinObj.dias.length > 0 && (
                         <div className="space-y-3">
-                          {itin.dias.map((dia: any, idx: number) => (
+                          {itinObj.dias.map((dia: any, idx: number) => (
                             <div key={idx} className="p-4 bg-white/5 rounded-xl border-l-2 border-blue-500">
                               <div className="flex items-center gap-2 mb-2">
                                 <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
