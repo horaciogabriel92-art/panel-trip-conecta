@@ -15,7 +15,8 @@ import {
   FileText,
   Download,
   ArrowRight,
-  Package
+  Package,
+  Plane
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -41,6 +42,7 @@ interface Paquete {
   itinerario?: { texto?: string; dias?: any[] } | any[];
   galeria?: any[];
   recursos_vendedores?: any[];
+  vuelos?: any[];
   status: string;
   estado: string;
 }
@@ -217,6 +219,60 @@ export default function PaqueteDetalle() {
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  )}
+
+                  {/* Vuelos */}
+                  {paquete.vuelos && paquete.vuelos.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                        <Plane className="w-5 h-5 text-blue-400" />
+                        Vuelos
+                      </h3>
+                      <div className="space-y-3">
+                        {paquete.vuelos.map((vuelo: any, i: number) => (
+                          <div key={i} className="p-4 bg-white/5 rounded-xl border border-white/10">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold uppercase">
+                                {vuelo.tipo === 'ida' ? 'Vuelo de Ida' : 'Vuelo de Vuelta'}
+                              </span>
+                              {vuelo.numero_vuelo && (
+                                <span className="text-sm text-slate-400">{vuelo.numero_vuelo}</span>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="text-slate-500 text-xs">Origen</p>
+                                <p className="text-white font-medium">{vuelo.origen_nombre || vuelo.origen_codigo || '-'}</p>
+                              </div>
+                              <div>
+                                <p className="text-slate-500 text-xs">Destino</p>
+                                <p className="text-white font-medium">{vuelo.destino_nombre || vuelo.destino_codigo || '-'}</p>
+                              </div>
+                              <div>
+                                <p className="text-slate-500 text-xs">Fecha</p>
+                                <p className="text-white">{vuelo.fecha_salida || '-'}</p>
+                              </div>
+                              <div>
+                                <p className="text-slate-500 text-xs">Horario</p>
+                                <p className="text-white">{vuelo.hora_salida || '--:--'} - {vuelo.hora_llegada || '--:--'}</p>
+                              </div>
+                              {vuelo.aerolinea_nombre && (
+                                <div>
+                                  <p className="text-slate-500 text-xs">Aerolínea</p>
+                                  <p className="text-white">{vuelo.aerolinea_nombre}</p>
+                                </div>
+                              )}
+                              {vuelo.clase && (
+                                <div>
+                                  <p className="text-slate-500 text-xs">Clase</p>
+                                  <p className="text-white">{vuelo.clase}</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>

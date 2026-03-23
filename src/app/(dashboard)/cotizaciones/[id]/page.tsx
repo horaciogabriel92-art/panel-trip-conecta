@@ -461,9 +461,43 @@ export default function CotizacionDetalle() {
               </h3>
               {(() => {
                 const itin = paquete?.itinerario || datosPaqueteDesdeNotas?.itinerario;
+                // Formato string (legacy)
                 if (typeof itin === 'string') {
                   return <p className="text-slate-300 whitespace-pre-line">{itin}</p>;
                 }
+                // Formato {texto, dias} (nuevo formato)
+                if (itin && typeof itin === 'object' && !Array.isArray(itin) && 'texto' in itin) {
+                  return (
+                    <div className="space-y-4">
+                      {itin.texto && (
+                        <p className="text-slate-300 whitespace-pre-line">{itin.texto}</p>
+                      )}
+                      {Array.isArray(itin.dias) && itin.dias.length > 0 && (
+                        <div className="space-y-3">
+                          {itin.dias.map((dia: any, idx: number) => (
+                            <div key={idx} className="p-4 bg-white/5 rounded-xl border-l-2 border-blue-500">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
+                                  Día {dia.dia || idx + 1}
+                                </span>
+                                <span className="font-medium text-white">{dia.titulo}</span>
+                              </div>
+                              <p className="text-slate-300 text-sm">{dia.descripcion}</p>
+                              {dia.actividades && dia.actividades.length > 0 && (
+                                <ul className="mt-2 space-y-1">
+                                  {dia.actividades.map((act: string, actIdx: number) => (
+                                    <li key={actIdx} className="text-slate-400 text-sm">• {act}</li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                // Formato array (legacy)
                 if (Array.isArray(itin) && itin.length > 0) {
                   return (
                     <div className="space-y-3">
@@ -490,6 +524,64 @@ export default function CotizacionDetalle() {
                 }
                 return null;
               })()}
+            </div>
+          )}
+
+          {/* Vuelos - Cotizaciones de catálogo (desde paquete) */}
+          {(paquete?.vuelos?.length || datosPaqueteDesdeNotas?.vuelos?.length) && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <Plane className="w-5 h-5 text-blue-400" />
+                Vuelos
+              </h3>
+              <div className="space-y-3">
+                {(paquete?.vuelos || datosPaqueteDesdeNotas?.vuelos || []).map((vuelo: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-white/5 rounded-xl border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold uppercase">
+                        {vuelo.tipo === 'ida' ? 'Vuelo de Ida' : 'Vuelo de Vuelta'}
+                      </span>
+                      {vuelo.numero_vuelo && (
+                        <span className="text-sm text-slate-400">{vuelo.numero_vuelo}</span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="text-slate-500 text-xs">Origen</p>
+                        <p className="text-white font-medium">{vuelo.origen_nombre || vuelo.origen_codigo || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-500 text-xs">Destino</p>
+                        <p className="text-white font-medium">{vuelo.destino_nombre || vuelo.destino_codigo || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-500 text-xs">Fecha</p>
+                        <p className="text-white">{vuelo.fecha_salida || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-500 text-xs">Horario</p>
+                        <p className="text-white">{vuelo.hora_salida || '--:--'} - {vuelo.hora_llegada || '--:--'}</p>
+                      </div>
+                    </div>
+                    {(vuelo.aerolinea_nombre || vuelo.clase) && (
+                      <div className="grid grid-cols-2 gap-4 text-sm mt-2 pt-2 border-t border-white/10">
+                        {vuelo.aerolinea_nombre && (
+                          <div>
+                            <p className="text-slate-500 text-xs">Aerolínea</p>
+                            <p className="text-white">{vuelo.aerolinea_nombre}</p>
+                          </div>
+                        )}
+                        {vuelo.clase && (
+                          <div>
+                            <p className="text-slate-500 text-xs">Clase</p>
+                            <p className="text-white">{vuelo.clase}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
