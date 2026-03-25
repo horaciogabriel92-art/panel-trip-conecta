@@ -149,11 +149,32 @@ export default function CotizacionDetalle() {
               setDatosPaqueteDesdeNotas({
                 itinerario: paqueteJson.itinerario,
                 incluye: paqueteJson.incluye,
-                no_incluye: paqueteJson.no_incluye
+                no_incluye: paqueteJson.no_incluye,
+                vuelos: paqueteJson.vuelos
               });
             }
           } catch (e) {
             console.error('Error parseando notas:', e);
+          }
+        }
+        
+        // Parsear datos completos de pasajeros desde notas
+        if (cotizacionData.notas && cotizacionData.notas.includes('--- DATOS COMPLETOS ---')) {
+          try {
+            const datosMatch = cotizacionData.notas.match(/--- DATOS COMPLETOS ---\n([\s\S]+?)(?:\n--- |$)/);
+            if (datosMatch) {
+              const datosJson = JSON.parse(datosMatch[1]);
+              // Mergear con datos_completos existente o crear nuevo
+              setCotizacion((prev: any) => ({
+                ...prev,
+                datos_completos: {
+                  ...prev?.datos_completos,
+                  ...datosJson
+                }
+              }));
+            }
+          } catch (e) {
+            console.error('Error parseando datos completos:', e);
           }
         }
         
@@ -788,51 +809,65 @@ export default function CotizacionDetalle() {
           </div>
 
           {/* Pasajeros (titular + acompañantes) */}
-          {cotizacion.datos_completos?.pasajeros && cotizacion.datos_completos.pasajeros.length > 0 && (
+          {(cotizacion.datos_completos?.cliente || (cotizacion.datos_completos?.pasajeros && cotizacion.datos_completos.pasajeros.length > 0)) && (
             <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-400" />
-                Pasajeros ({cotizacion.datos_completos.pasajeros.length})
-              </h3>
-              <div className="space-y-3">
-                {cotizacion.datos_completos.pasajeros.map((pasajero: any, idx: number) => (
-                  <div key={idx} className="p-4 bg-white/5 rounded-xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">
-                          {idx + 1}
-                        </span>
-                        <span className="font-medium text-white">
-                          {pasajero.nombre} {pasajero.apellido}
-                          {pasajero.es_titular && (
-                            <span className="ml-2 text-xs text-blue-400">(Titular)</span>
-                          )}
-                        </span>
-                      </div>
+              {(() => {
+                // Combinar titular + pasajeros en un solo array
+                const titular = cotizacion.datos_completos?.cliente ? {
+                  ...cotizacion.datos_completos.cliente,
+                  es_titular: true
+                } : null;
+                const otrosPasajeros = cotizacion.datos_completos?.pasajeros || [];
+                const todosLosPasajeros = titular ? [titular, ...otrosPasajeros] : otrosPasajeros;
+                
+                return (
+                  <>
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                      <Users className="w-5 h-5 text-blue-400" />
+                      Pasajeros ({todosLosPasajeros.length})
+                    </h3>
+                    <div className="space-y-3">
+                      {todosLosPasajeros.map((pasajero: any, idx: number) => (
+                        <div key={idx} className="p-4 bg-white/5 rounded-xl">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">
+                                {idx + 1}
+                              </span>
+                              <span className="font-medium text-white">
+                                {pasajero.nombre} {pasajero.apellido}
+                                {pasajero.es_titular && (
+                                  <span className="ml-2 text-xs text-blue-400">(Titular)</span>
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            {pasajero.documento && (
+                              <div>
+                                <p className="text-xs text-slate-500">Documento</p>
+                                <p className="text-slate-300">{pasajero.documento}</p>
+                              </div>
+                            )}
+                            {pasajero.fecha_nacimiento && (
+                              <div>
+                                <p className="text-xs text-slate-500">Fecha Nac.</p>
+                                <p className="text-slate-300">{pasajero.fecha_nacimiento}</p>
+                              </div>
+                            )}
+                            {pasajero.nacionalidad && (
+                              <div>
+                                <p className="text-xs text-slate-500">Nacionalidad</p>
+                                <p className="text-slate-300">{pasajero.nacionalidad}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      {pasajero.documento && (
-                        <div>
-                          <p className="text-xs text-slate-500">Documento</p>
-                          <p className="text-slate-300">{pasajero.documento}</p>
-                        </div>
-                      )}
-                      {pasajero.fecha_nacimiento && (
-                        <div>
-                          <p className="text-xs text-slate-500">Fecha Nac.</p>
-                          <p className="text-slate-300">{pasajero.fecha_nacimiento}</p>
-                        </div>
-                      )}
-                      {pasajero.nacionalidad && (
-                        <div>
-                          <p className="text-xs text-slate-500">Nacionalidad</p>
-                          <p className="text-slate-300">{pasajero.nacionalidad}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  </>
+                );
+              })()}
             </div>
           )}
 
