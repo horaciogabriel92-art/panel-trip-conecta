@@ -126,10 +126,17 @@ export default function CotizacionDetalle() {
   
   // Estado para datos parseados de notas (cotizaciones de catálogo)
   const [datosPaqueteDesdeNotas, setDatosPaqueteDesdeNotas] = useState<{
+    titulo?: string;
+    destino?: string;
+    descripcion?: string;
+    duracion_dias?: number;
+    imagen_principal?: string;
+    politicas_cancelacion?: string;
     itinerario?: { texto?: string; dias?: any[] } | any[] | string;
     incluye?: string[];
     no_incluye?: string[];
     vuelos?: any[];
+    hospedaje?: any[];
   } | null>(null);
 
   useEffect(() => {
@@ -147,10 +154,17 @@ export default function CotizacionDetalle() {
             if (paqueteMatch) {
               const paqueteJson = JSON.parse(paqueteMatch[1]);
               setDatosPaqueteDesdeNotas({
+                titulo: paqueteJson.titulo || paqueteJson.nombre,
+                destino: paqueteJson.destino,
+                descripcion: paqueteJson.descripcion,
+                duracion_dias: paqueteJson.duracion_dias,
+                imagen_principal: paqueteJson.imagen_principal || paqueteJson.imagen_url,
+                politicas_cancelacion: paqueteJson.politicas_cancelacion,
                 itinerario: paqueteJson.itinerario,
                 incluye: paqueteJson.incluye,
                 no_incluye: paqueteJson.no_incluye,
-                vuelos: paqueteJson.vuelos
+                vuelos: paqueteJson.vuelos,
+                hospedaje: paqueteJson.hospedaje
               });
             }
           } catch (e) {
@@ -374,24 +388,21 @@ export default function CotizacionDetalle() {
               tipo_cotizacion: cotizacion.tipo_cotizacion,
               nombre_cotizacion: cotizacion.nombre_cotizacion,
               itinerario_manual: cotizacion.itinerario_manual,
-              incluye: cotizacion.incluye,
-              no_incluye: cotizacion.no_incluye,
-              notas: cotizacion.notas,
-              paquete: paquete ? {
-                titulo: paquete.titulo || paquete.nombre,
-                destino: paquete.destino,
-                descripcion: paquete.descripcion,
-                duracion_dias: paquete.duracion_dias,
-                imagen_principal: paquete.imagen_principal || paquete.imagen_url,
-                itinerario: paquete.itinerario as any,
-                incluye: paquete.incluye,
-                no_incluye: paquete.no_incluye,
-                politicas_cancelacion: paquete.politicas_cancelacion
-              } : {
-                titulo: cotizacion.nombre_cotizacion || 'Cotización Personalizada',
-                destino: cotizacion.hospedaje?.[0]?.ciudad || cotizacion.vuelos?.[cotizacion.vuelos?.length - 1]?.destino_ciudad || 'Destino no especificado',
-                duracion_dias: 0,
+              // Paquete: combina datos directos + parseados de notas
+              paquete: {
+                titulo: paquete?.titulo || paquete?.nombre || datosPaqueteDesdeNotas?.titulo || cotizacion.nombre_cotizacion || 'Cotización',
+                destino: paquete?.destino || datosPaqueteDesdeNotas?.destino || cotizacion.hospedaje?.[0]?.ciudad || 'Destino no especificado',
+                descripcion: paquete?.descripcion || datosPaqueteDesdeNotas?.descripcion,
+                duracion_dias: paquete?.duracion_dias || datosPaqueteDesdeNotas?.duracion_dias || 0,
+                imagen_principal: paquete?.imagen_principal || paquete?.imagen_url || datosPaqueteDesdeNotas?.imagen_principal,
+                politicas_cancelacion: paquete?.politicas_cancelacion || datosPaqueteDesdeNotas?.politicas_cancelacion,
+                // Itinerario: del paquete o de los datos parseados
+                itinerario: paquete?.itinerario || datosPaqueteDesdeNotas?.itinerario || { texto: '', dias: [] },
+                // Incluye: del paquete, de los datos parseados, o de la cotización manual
+                incluye: paquete?.incluye || datosPaqueteDesdeNotas?.incluye || cotizacion.incluye || [],
+                no_incluye: paquete?.no_incluye || datosPaqueteDesdeNotas?.no_incluye || cotizacion.no_incluye || []
               },
+              // Pasajeros: titular + extras (del parseo de notas)
               pasajeros: [
                 // Titular como pasajero 1
                 ...(cotizacion.datos_completos?.cliente ? [{
@@ -404,8 +415,10 @@ export default function CotizacionDetalle() {
                 // Pasajeros adicionales
                 ...(cotizacion.datos_completos?.pasajeros || [])
               ],
-              hospedaje: cotizacion.hospedaje,
-              vuelos: cotizacion.vuelos,
+              // Vuelos: de la cotización, del paquete, o de los datos parseados
+              vuelos: cotizacion.vuelos || paquete?.vuelos || datosPaqueteDesdeNotas?.vuelos || [],
+              // Hospedaje: de la cotización o de los datos parseados  
+              hospedaje: cotizacion.hospedaje || datosPaqueteDesdeNotas?.hospedaje || [],
               vendedor: user ? {
                 nombre: user.nombre,
                 apellido: user.apellido,

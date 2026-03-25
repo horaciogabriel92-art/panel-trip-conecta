@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
 import { CotizacionPDFDocument } from './CotizacionPDF';
-import { FileText, Download, RefreshCw, Eye, Loader2, X } from 'lucide-react';
+import { FileText, Download, Eye, X } from 'lucide-react';
 
 interface CotizacionData {
   id: string;
@@ -17,13 +17,11 @@ interface CotizacionData {
   cliente_email?: string;
   cliente_telefono?: string;
   precio_total: number;
-  notas?: string;
-  // Campos para cotizaciones manuales
+  // Campos opcionales para cotizaciones manuales
   tipo_cotizacion?: 'paquete' | 'manual';
   nombre_cotizacion?: string;
   itinerario_manual?: string;
-  incluye?: string[];
-  no_incluye?: string[];
+  // Datos ya estructurados - el componente padre debe proporcionarlos
   paquete?: {
     titulo?: string;
     destino?: string;
@@ -31,15 +29,9 @@ interface CotizacionData {
     duracion_dias?: number;
     imagen_principal?: string;
     politicas_cancelacion?: string;
-    itinerario?: any[] | string;
+    itinerario?: any;
     incluye?: string[];
     no_incluye?: string[];
-  };
-  vendedor?: {
-    nombre?: string;
-    apellido?: string;
-    email?: string;
-    telefono?: string;
   };
   pasajeros?: Array<{
     nombre: string;
@@ -48,30 +40,14 @@ interface CotizacionData {
     fecha_nacimiento?: string;
     nacionalidad?: string;
   }>;
-  hospedaje?: Array<{
-    nombre_hotel: string;
-    link_hotel?: string;
-    ciudad: string;
-    fecha_checkin?: string;
-    fecha_checkout?: string;
-    tipo_habitacion?: string;
-    regimen?: string;
-  }>;
-  vuelos?: Array<{
-    linea: number;
-    aerolinea_codigo: string;
-    aerolinea_nombre: string;
-    numero_vuelo: string;
-    clase_codigo: string;
-    fecha_salida: string;
-    fecha_llegada: string;
-    hora_salida: string;
-    hora_llegada: string;
-    origen_codigo: string;
-    origen_ciudad: string;
-    destino_codigo: string;
-    destino_ciudad: string;
-  }>;
+  hospedaje?: Array<any>;
+  vuelos?: Array<any>;
+  vendedor?: {
+    nombre?: string;
+    apellido?: string;
+    email?: string;
+    telefono?: string;
+  };
 }
 
 interface PDFDownloadButtonProps {
@@ -82,33 +58,8 @@ interface PDFDownloadButtonProps {
 export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonProps) {
   const [showPreview, setShowPreview] = useState(false);
 
-  // Parsear paquete y datos_completos desde notas JSON
-  let paqueteDesdeNotas: any = null;
-  let datosCompletos: any = {};
-  
-  if (data.notas) {
-    // Buscar PAQUETE JSON
-    const paqueteMatch = data.notas.match(/--- PAQUETE JSON ---\n([\s\S]+?)(?:\n--- |$)/);
-    if (paqueteMatch) {
-      try {
-        paqueteDesdeNotas = JSON.parse(paqueteMatch[1]);
-      } catch (e) {
-        console.error('Error parseando paquete JSON:', e);
-      }
-    }
-    
-    // Buscar DATOS COMPLETOS
-    const datosMatch = data.notas.match(/--- DATOS COMPLETOS ---\n([\s\S]+?)(?:\n--- |$)/);
-    if (datosMatch) {
-      try {
-        datosCompletos = JSON.parse(datosMatch[1]);
-      } catch (e) {
-        console.error('Error parseando datos_completos:', e);
-      }
-    }
-  }
-
-  // Preparar datos para el PDF
+  // Preparar datos para el PDF - SIN parsing de notas
+  // El componente padre debe proporcionar todos los datos estructurados
   const pdfData = {
     cotizacion: {
       id: data.id,
@@ -122,52 +73,38 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
       fecha_salida: data.fecha_salida 
         ? new Date(data.fecha_salida).toLocaleDateString('es-UY')
         : undefined,
-      dias_validez: 7
+      dias_validez: 7,
+      itinerario_manual: data.itinerario_manual,
+      tipo_cotizacion: data.tipo_cotizacion,
+      nombre_cotizacion: data.nombre_cotizacion
     },
     cliente: {
-      nombre: datosCompletos.cliente?.nombre || data.cliente_nombre || 'No especificado',
-      apellido: datosCompletos.cliente?.apellido || '',
-      documento: datosCompletos.cliente?.documento || '',
-      email: datosCompletos.cliente?.email || data.cliente_email || '',
-      telefono: datosCompletos.cliente?.telefono || data.cliente_telefono || ''
+      nombre: data.cliente_nombre || 'No especificado',
+      apellido: '',
+      documento: '',
+      email: data.cliente_email || '',
+      telefono: data.cliente_telefono || ''
     },
     paquete: {
-      titulo: paqueteDesdeNotas?.titulo || data.paquete?.titulo || 'Paquete no disponible',
-      destino: paqueteDesdeNotas?.destino || data.paquete?.destino || '',
-      descripcion: paqueteDesdeNotas?.descripcion || data.paquete?.descripcion || '',
-      duracion_dias: paqueteDesdeNotas?.duracion_dias || data.paquete?.duracion_dias || 0,
-      imagen_principal: paqueteDesdeNotas?.imagen_principal || data.paquete?.imagen_principal,
-      politicas_cancelacion: paqueteDesdeNotas?.politicas_cancelacion || data.paquete?.politicas_cancelacion,
-      itinerario: paqueteDesdeNotas?.itinerario || data.paquete?.itinerario || 
-                  (paqueteDesdeNotas?.descripcion ? { texto: paqueteDesdeNotas.descripcion, dias: [] } : 
-                   data.paquete?.descripcion ? { texto: data.paquete.descripcion, dias: [] } : { texto: '', dias: [] }),
-      incluye: paqueteDesdeNotas?.incluye || data.paquete?.incluye || [],
-      no_incluye: paqueteDesdeNotas?.no_incluye || data.paquete?.no_incluye || []
+      titulo: data.paquete?.titulo || data.nombre_cotizacion || 'Cotización',
+      destino: data.paquete?.destino || '',
+      descripcion: data.paquete?.descripcion || '',
+      duracion_dias: data.paquete?.duracion_dias || 0,
+      imagen_principal: data.paquete?.imagen_principal,
+      politicas_cancelacion: data.paquete?.politicas_cancelacion,
+      itinerario: data.paquete?.itinerario || { texto: '', dias: [] },
+      incluye: data.paquete?.incluye || [],
+      no_incluye: data.paquete?.no_incluye || []
     },
-    pasajeros: [
-      // Pasajero 1 (titular)
-      {
-        nombre: datosCompletos.cliente?.nombre || '',
-        apellido: datosCompletos.cliente?.apellido || '',
-        documento: datosCompletos.cliente?.documento || '',
-        fecha_nacimiento: datosCompletos.cliente?.fecha_nacimiento
-          ? new Date(datosCompletos.cliente.fecha_nacimiento).toLocaleDateString('es-UY')
-          : '',
-        nacionalidad: datosCompletos.cliente?.nacionalidad || ''
-      },
-      // Pasajeros adicionales (2 en adelante)
-      ...(datosCompletos.pasajeros || []).map((p: any) => ({
-        nombre: p.nombre || '',
-        apellido: p.apellido || '',
-        documento: p.documento || '',
-        fecha_nacimiento: p.fecha_nacimiento 
-          ? new Date(p.fecha_nacimiento).toLocaleDateString('es-UY')
-          : '',
-        nacionalidad: p.nacionalidad || ''
-      }))
-    ],
-    hospedaje: data.hospedaje || paqueteDesdeNotas?.hospedaje || [],
-    vuelos: paqueteDesdeNotas?.vuelos || data.vuelos || [],
+    pasajeros: (data.pasajeros || []).map((p: any) => ({
+      nombre: p.nombre || '',
+      apellido: p.apellido || '',
+      documento: p.documento || '',
+      fecha_nacimiento: p.fecha_nacimiento || '',
+      nacionalidad: p.nacionalidad || ''
+    })),
+    hospedaje: data.hospedaje || [],
+    vuelos: data.vuelos || [],
     precios: {
       moneda: 'USD',
       precio_unitario: ((data.precio_total || 0) / (data.num_pasajeros || 1)).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
@@ -197,17 +134,22 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
           document={<CotizacionPDFDocument data={pdfData} />}
           fileName={filename}
         >
-          {({ loading, error }) => (
+          {({ loading }) => (
             <button
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors"
             >
               {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <>
+                  <FileText className="w-4 h-4 animate-pulse" />
+                  Generando...
+                </>
               ) : (
-                <FileText className="w-4 h-4" />
+                <>
+                  <Download className="w-4 h-4" />
+                  Descargar PDF
+                </>
               )}
-              {loading ? 'Generando...' : 'Descargar PDF'}
             </button>
           )}
         </PDFDownloadLink>
@@ -215,21 +157,21 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
         {/* Botón Vista Previa */}
         <button
           onClick={() => setShowPreview(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-          title="Ver PDF"
+          className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition-colors"
         >
           <Eye className="w-4 h-4" />
+          Vista Previa
         </button>
       </div>
 
       {/* Modal de Vista Previa */}
       {showPreview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div className="relative w-full max-w-4xl h-[90vh] bg-white rounded-xl overflow-hidden">
+          <div className="relative w-full max-w-4xl h-[90vh] bg-white rounded-lg overflow-hidden flex flex-col">
             {/* Header del modal */}
-            <div className="flex items-center justify-between p-4 bg-gray-100 border-b">
-              <h3 className="font-bold text-gray-800">Vista Previa: {filename}</h3>
-              <div className="flex gap-2">
+            <div className="flex items-center justify-between p-4 bg-slate-900 text-white">
+              <h3 className="font-bold">Vista Previa: {filename}</h3>
+              <div className="flex items-center gap-2">
                 <PDFDownloadLink
                   document={<CotizacionPDFDocument data={pdfData} />}
                   fileName={filename}
@@ -237,25 +179,25 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
                   {({ loading }) => (
                     <button
                       disabled={loading}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50"
+                      className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-sm rounded-lg transition-colors"
                     >
                       <Download className="w-4 h-4" />
-                      Descargar
+                      {loading ? 'Generando...' : 'Descargar'}
                     </button>
                   )}
                 </PDFDownloadLink>
                 <button
                   onClick={() => setShowPreview(false)}
-                  className="p-1.5 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            {/* Viewer */}
-            <div className="h-[calc(90vh-65px)]">
-              <PDFViewer width="100%" height="100%" style={{ border: 'none' }}>
+            {/* PDF Viewer */}
+            <div className="flex-1 bg-slate-100">
+              <PDFViewer width="100%" height="100%" className="border-0">
                 <CotizacionPDFDocument data={pdfData} />
               </PDFViewer>
             </div>
