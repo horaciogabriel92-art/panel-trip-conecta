@@ -376,6 +376,7 @@ export default function CotizacionDetalle() {
               itinerario_manual: cotizacion.itinerario_manual,
               incluye: cotizacion.incluye,
               no_incluye: cotizacion.no_incluye,
+              notas: cotizacion.notas,
               paquete: paquete ? {
                 titulo: paquete.titulo || paquete.nombre,
                 destino: paquete.destino,
@@ -391,7 +392,18 @@ export default function CotizacionDetalle() {
                 destino: cotizacion.hospedaje?.[0]?.ciudad || cotizacion.vuelos?.[cotizacion.vuelos?.length - 1]?.destino_ciudad || 'Destino no especificado',
                 duracion_dias: 0,
               },
-              pasajeros: cotizacion.datos_completos?.pasajeros || [],
+              pasajeros: [
+                // Titular como pasajero 1
+                ...(cotizacion.datos_completos?.cliente ? [{
+                  nombre: cotizacion.datos_completos.cliente.nombre,
+                  apellido: cotizacion.datos_completos.cliente.apellido,
+                  documento: cotizacion.datos_completos.cliente.documento,
+                  fecha_nacimiento: cotizacion.datos_completos.cliente.fecha_nacimiento,
+                  nacionalidad: cotizacion.datos_completos.cliente.nacionalidad
+                }] : []),
+                // Pasajeros adicionales
+                ...(cotizacion.datos_completos?.pasajeros || [])
+              ],
               hospedaje: cotizacion.hospedaje,
               vuelos: cotizacion.vuelos,
               vendedor: user ? {
