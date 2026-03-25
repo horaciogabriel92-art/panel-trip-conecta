@@ -166,7 +166,8 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
         nacionalidad: p.nacionalidad || ''
       }))
     ],
-    hospedaje: data.hospedaje || [],
+    hospedaje: data.hospedaje || paqueteDesdeNotas?.hospedaje || [],
+    vuelos: paqueteDesdeNotas?.vuelos || data.vuelos || [],
     precios: {
       moneda: 'USD',
       precio_unitario: ((data.precio_total || 0) / (data.num_pasajeros || 1)).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
