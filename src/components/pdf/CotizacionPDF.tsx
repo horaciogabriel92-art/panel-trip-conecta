@@ -288,6 +288,30 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     alignSelf: 'center',
   },
+  footerWithLogo: {
+    marginTop: 20,
+    paddingTop: 15,
+    borderTop: `1px solid ${COLORS.textLight}`,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  footerLogoSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  footerLogoImage: {
+    width: 35,
+    height: 35,
+  },
+  footerLogoText: {
+    flexDirection: 'column',
+  },
+  footerVendedorSection: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+  },
 
   // Página 2 - Itinerario
   dayCard: {
@@ -826,11 +850,19 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         </View>
 
-        {/* Footer con Logo */}
-        <View style={styles.footer}>
-          <Image src="/logo-trip-conecta.png" style={styles.footerLogo} />
-          <Text style={styles.footerText}>Trip Conecta - www.tripconecta.com</Text>
-          <Text style={styles.footerText}>soporte@tripconecta.com</Text>
+        {/* Footer con Logo y Vendedor en la misma sección */}
+        <View style={styles.footerWithLogo}>
+          <View style={styles.footerLogoSection}>
+            <Image src="/logo-trip-conecta.png" style={styles.footerLogoImage} />
+            <View style={styles.footerLogoText}>
+              <Text style={styles.footerText}>Trip Conecta - www.tripconecta.com</Text>
+              <Text style={styles.footerText}>soporte@tripconecta.com</Text>
+            </View>
+          </View>
+          <View style={styles.footerVendedorSection}>
+            <Text style={styles.footerText}>Cotización generada por {vendedor.nombre} {vendedor.apellido}</Text>
+            <Text style={styles.footerText}>Para confirmar esta reserva, contacte a su vendedor asignado</Text>
+          </View>
         </View>
       </Page>
 
@@ -998,11 +1030,6 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         )}
 
-        {/* Footer Página 2 */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Cotización generada por Trip Conecta</Text>
-          <Text style={styles.footerText}>Para confirmar esta reserva, contacte a su vendedor asignado</Text>
-        </View>
       </Page>
     </Document>
   );
