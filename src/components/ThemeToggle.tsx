@@ -3,9 +3,23 @@
 import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
   const { theme, toggleTheme, isRippling } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Solo renderizar en cliente para evitar problemas de hidratación
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    // Placeholder mientras carga (evita layout shift)
+    return (
+      <div className="w-14 h-14 rounded-full bg-gray-200 dark:bg-slate-800 animate-pulse" />
+    );
+  }
 
   return (
     <button

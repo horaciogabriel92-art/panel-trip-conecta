@@ -1,21 +1,24 @@
 "use client";
 
-export const dynamic = 'force-dynamic';
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import dynamic from "next/dynamic";
 import { 
   Eye, 
   EyeOff, 
   Mail, 
   Lock, 
   ArrowRight,
-  Sparkles,
   Plane
 } from "lucide-react";
+
+// Import dinámico del ThemeToggle para evitar SSR
+const ThemeToggle = dynamic(() => import("@/components/ThemeToggle").then(mod => mod.ThemeToggle), {
+  ssr: false,
+  loading: () => <div className="w-14 h-14 rounded-full bg-gray-200 animate-pulse" />
+});
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -61,7 +64,7 @@ export default function LoginPage() {
       {/* Elementos decorativos flotantes */}
       <FloatingElements />
 
-      {/* Theme Toggle */}
+      {/* Theme Toggle - Cargado dinámicamente sin SSR */}
       <div className="absolute top-6 right-6 z-50">
         <ThemeToggle />
       </div>

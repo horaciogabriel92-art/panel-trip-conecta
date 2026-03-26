@@ -8,9 +8,15 @@ interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
   isRippling: boolean;
+  mounted: boolean;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType>({
+  theme: "light",
+  toggleTheme: () => {},
+  isRippling: false,
+  mounted: false,
+});
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
@@ -18,24 +24,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    // Check localStorage or system preference
+    // Solo ejecutar en cliente
     const savedTheme = localStorage.getItem("theme") as Theme;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.setAttribute("data-theme", savedTheme);
-    } else {
-      // Default to light
-      document.documentElement.setAttribute("data-theme", "light");
-    }
+    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    const initialTheme = savedTheme || systemTheme;
+    
+    setTheme(initialTheme);
+    document.documentElement.setAttribute("data-theme", initialTheme);
+    setMounted(true);
   }, []);
 
   const toggleTheme = () => {
-    if (isRippling) return;
+    if (isRippling || !mounted) return;
     
     setIsRippling(true);
     
-    // Wait for ripple animation
+    // Esperar para el efecto visual
     setTimeout(() => {
       const newTheme = theme === "light" ? "dark" : "light";
       setTheme(newTheme);
@@ -43,27 +47,26 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("theme", newTheme);
     }, 300);
     
-    // Reset ripple
     setTimeout(() => {
       setIsRippling(false);
     }, 600);
   };
 
-  if (!mounted) {
-    return <>{children}</>;
-  }
+  // Valor por defecto para SSR (siempre light)
+  const value = {
+    theme: mounted ? theme : "light",
+    toggleTheme,
+    isRippling,
+    mounted,
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, isRippling }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
 export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
+  return useContext(ThemeContext);
 }

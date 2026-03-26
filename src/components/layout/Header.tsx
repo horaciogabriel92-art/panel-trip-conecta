@@ -1,8 +1,14 @@
 "use client";
 
 import { Bell, Search, User } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
+
+// Import dinámico del ThemeToggle para evitar SSR
+const ThemeToggle = dynamic(() => import("@/components/ThemeToggle").then(mod => mod.ThemeToggle), {
+  ssr: false,
+  loading: () => <div className="w-14 h-14 rounded-full bg-gray-200 animate-pulse" />
+});
 
 export default function Header({ userName = 'Usuario', userRole = 'Vendedor' }: { userName?: string; userRole?: string }) {
   return (
