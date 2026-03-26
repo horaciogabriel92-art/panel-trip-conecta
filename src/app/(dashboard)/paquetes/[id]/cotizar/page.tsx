@@ -165,7 +165,7 @@ export default function CotizarPaquete() {
   if (!paquete) {
     return (
       <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-white">Paquete no encontrado</h2>
+        <h2 className="text-2xl font-bold text-[var(--foreground)]">Paquete no encontrado</h2>
         <Link href="/paquetes" className="text-blue-400 hover:text-blue-300 mt-4 inline-block">
           ← Volver al catálogo
         </Link>
@@ -181,13 +181,13 @@ export default function CotizarPaquete() {
       <div className="flex items-center gap-4">
         <Link 
           href={`/paquetes/${params.id}`} 
-          className="p-2 bg-white/5 rounded-xl hover:bg-white/10 transition-all"
+          className="p-2 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all"
         >
-          <ArrowLeft className="w-5 h-5 text-slate-400" />
+          <ArrowLeft className="w-5 h-5 text-[var(--muted-foreground)]" />
         </Link>
         <div>
-          <h2 className="text-2xl font-black text-white">Nueva Cotización</h2>
-          <p className="text-slate-400 text-sm">{paquete.nombre || paquete.titulo}</p>
+          <h2 className="text-2xl font-black text-[var(--foreground)]">Nueva Cotización</h2>
+          <p className="text-[var(--muted-foreground)] text-sm">{paquete.nombre || paquete.titulo}</p>
         </div>
       </div>
 
@@ -202,26 +202,26 @@ export default function CotizarPaquete() {
               className="w-20 h-20 rounded-xl object-cover"
             />
             <div className="flex-1">
-              <h3 className="font-bold text-white">{paquete.nombre || paquete.titulo}</h3>
-              <p className="text-slate-400 text-sm">{paquete.destino}</p>
+              <h3 className="font-bold text-[var(--foreground)]">{paquete.nombre || paquete.titulo}</h3>
+              <p className="text-[var(--muted-foreground)] text-sm">{paquete.destino}</p>
             </div>
           </div>
 
           {/* Configuración de la cotización */}
           <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-blue-400" />
               Configuración del Viaje
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">
                   Pasajeros
                 </label>
                 <select
                   value={config.num_pasajeros}
                   onChange={(e) => setConfig({...config, num_pasajeros: parseInt(e.target.value)})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                 >
                   {[1,2,3,4,5,6].map(n => (
                     <option key={n} value={n}>{n} pasajero{n > 1 ? 's' : ''}</option>
@@ -229,13 +229,13 @@ export default function CotizarPaquete() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">
                   Tipo de Habitación
                 </label>
                 <select
                   value={config.tipo_habitacion}
                   onChange={(e) => setConfig({...config, tipo_habitacion: e.target.value as any})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                 >
                   <option value="doble">Doble</option>
                   <option value="triple">Triple</option>
@@ -243,14 +243,14 @@ export default function CotizarPaquete() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">
                   Fecha de Salida
                 </label>
                 <input
                   type="date"
                   value={config.fecha_salida}
                   onChange={(e) => setConfig({...config, fecha_salida: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                 />
               </div>
             </div>
@@ -258,103 +258,103 @@ export default function CotizarPaquete() {
 
           {/* Datos del cliente principal */}
           <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <User className="w-5 h-5 text-blue-400" />
               Datos del Cliente Principal
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Nombre *</label>
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Nombre *</label>
                 <input
                   type="text"
                   required
                   value={cliente.nombre}
                   onChange={(e) => setCliente({...cliente, nombre: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   placeholder="Juan"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Apellido *</label>
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Apellido *</label>
                 <input
                   type="text"
                   required
                   value={cliente.apellido}
                   onChange={(e) => setCliente({...cliente, apellido: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   placeholder="Pérez"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Email *</label>
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Email *</label>
                 <input
                   type="email"
                   required
                   value={cliente.email}
                   onChange={(e) => setCliente({...cliente, email: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   placeholder="cliente@email.com"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Teléfono *</label>
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Teléfono *</label>
                 <input
                   type="tel"
                   required
                   value={cliente.telefono}
                   onChange={(e) => setCliente({...cliente, telefono: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   placeholder="+54 11 1234-5678"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Documento (DNI/Pasaporte) *</label>
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Documento (DNI/Pasaporte) *</label>
                 <input
                   type="text"
                   required
                   value={cliente.documento}
                   onChange={(e) => setCliente({...cliente, documento: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   placeholder="12345678"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Fecha de Nacimiento *</label>
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Fecha de Nacimiento *</label>
                 <input
                   type="date"
                   required
                   value={cliente.fecha_nacimiento}
                   onChange={(e) => setCliente({...cliente, fecha_nacimiento: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Nacionalidad</label>
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Nacionalidad</label>
                 <input
                   type="text"
                   value={cliente.nacionalidad}
                   onChange={(e) => setCliente({...cliente, nacionalidad: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   placeholder="Argentina"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Ciudad</label>
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Ciudad</label>
                 <input
                   type="text"
                   value={cliente.ciudad}
                   onChange={(e) => setCliente({...cliente, ciudad: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   placeholder="Buenos Aires"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Dirección</label>
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Dirección</label>
                 <input
                   type="text"
                   value={cliente.direccion}
                   onChange={(e) => setCliente({...cliente, direccion: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   placeholder="Av. Siempre Viva 123"
                 />
               </div>
@@ -364,17 +364,17 @@ export default function CotizarPaquete() {
           {/* Pasajeros adicionales */}
           {pasajeros.length > 0 && (
             <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5 text-blue-400" />
                 Pasajeros Adicionales
               </h3>
               <div className="space-y-4">
                 {pasajeros.map((pasajero, index) => (
-                  <div key={index} className="p-4 bg-white/5 rounded-xl">
-                    <h4 className="font-medium text-white mb-3">Pasajero {index + 2}</h4>
+                  <div key={index} className="p-4 bg-[var(--muted)] rounded-xl">
+                    <h4 className="font-medium text-[var(--foreground)] mb-3">Pasajero {index + 2}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Nombre</label>
+                        <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Nombre</label>
                         <input
                           type="text"
                           value={pasajero.nombre}
@@ -383,11 +383,11 @@ export default function CotizarPaquete() {
                             nuevos[index].nombre = e.target.value;
                             setPasajeros(nuevos);
                           }}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Apellido</label>
+                        <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Apellido</label>
                         <input
                           type="text"
                           value={pasajero.apellido}
@@ -396,11 +396,11 @@ export default function CotizarPaquete() {
                             nuevos[index].apellido = e.target.value;
                             setPasajeros(nuevos);
                           }}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Documento</label>
+                        <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Documento</label>
                         <input
                           type="text"
                           value={pasajero.documento}
@@ -409,11 +409,11 @@ export default function CotizarPaquete() {
                             nuevos[index].documento = e.target.value;
                             setPasajeros(nuevos);
                           }}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Fecha de Nacimiento</label>
+                        <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Fecha de Nacimiento</label>
                         <input
                           type="date"
                           value={pasajero.fecha_nacimiento}
@@ -422,7 +422,7 @@ export default function CotizarPaquete() {
                             nuevos[index].fecha_nacimiento = e.target.value;
                             setPasajeros(nuevos);
                           }}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                         />
                       </div>
                     </div>
@@ -434,7 +434,7 @@ export default function CotizarPaquete() {
 
           {/* Notas adicionales */}
           <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <FileText className="w-5 h-5 text-blue-400" />
               Notas Adicionales
             </h3>
@@ -442,7 +442,7 @@ export default function CotizarPaquete() {
               value={cliente.notas}
               onChange={(e) => setCliente({...cliente, notas: e.target.value})}
               rows={4}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none"
+              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 resize-none"
               placeholder="Requerimientos especiales, preferencias de horario, etc."
             />
           </div>
@@ -451,32 +451,32 @@ export default function CotizarPaquete() {
         {/* Columna derecha - Resumen */}
         <div className="space-y-6">
           <div className="glass-card rounded-2xl p-6 sticky top-6">
-            <h3 className="text-lg font-bold text-white mb-4">Resumen</h3>
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Resumen</h3>
             
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Paquete</span>
-                <span className="text-white">{paquete.destino}</span>
+                <span className="text-[var(--muted-foreground)]">Paquete</span>
+                <span className="text-[var(--foreground)]">{paquete.destino}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Pasajeros</span>
-                <span className="text-white">{config.num_pasajeros}</span>
+                <span className="text-[var(--muted-foreground)]">Pasajeros</span>
+                <span className="text-[var(--foreground)]">{config.num_pasajeros}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Habitación</span>
-                <span className="text-white capitalize">{config.tipo_habitacion}</span>
+                <span className="text-[var(--muted-foreground)]">Habitación</span>
+                <span className="text-[var(--foreground)] capitalize">{config.tipo_habitacion}</span>
               </div>
-              <div className="h-px bg-white/10 my-3" />
+              <div className="h-px bg-[var(--muted)] my-3" />
               <div className="flex justify-between">
-                <span className="text-slate-400">Precio por persona</span>
-                <span className="text-white">
+                <span className="text-[var(--muted-foreground)]">Precio por persona</span>
+                <span className="text-[var(--foreground)]">
                   ${config.tipo_habitacion === 'doble' ? paquete.precio_doble :
                     config.tipo_habitacion === 'triple' ? paquete.precio_triple :
                     paquete.precio_cuadruple}
                 </span>
               </div>
               <div className="flex justify-between items-center pt-2">
-                <span className="text-lg font-bold text-white">Total</span>
+                <span className="text-lg font-bold text-[var(--foreground)]">Total</span>
                 <span className="text-2xl font-black text-blue-400">${calcularPrecio()}</span>
               </div>
             </div>
@@ -484,7 +484,7 @@ export default function CotizarPaquete() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-[var(--foreground)] font-black rounded-2xl transition-all flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -496,7 +496,7 @@ export default function CotizarPaquete() {
               )}
             </button>
 
-            <p className="text-xs text-slate-400 text-center mt-4">
+            <p className="text-xs text-[var(--muted-foreground)] text-center mt-4">
               La cotización tendrá una validez de 7 días
             </p>
           </div>

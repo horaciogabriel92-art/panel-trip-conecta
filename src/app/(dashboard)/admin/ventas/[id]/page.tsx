@@ -184,7 +184,7 @@ export default function AdminVentaDetalle() {
       case 'emitida': return 'bg-green-500/10 text-green-400 border-green-500/20';
       case 'confirmada': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       case 'en_proceso': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
-      default: return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+      default: return 'bg-slate-500/10 text-[var(--muted-foreground)] border-slate-500/20';
     }
   };
 
@@ -203,7 +203,7 @@ export default function AdminVentaDetalle() {
   if (!venta) {
     return (
       <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-white">Venta no encontrada</h2>
+        <h2 className="text-2xl font-bold text-[var(--foreground)]">Venta no encontrada</h2>
         <Link href="/admin/ventas" className="text-blue-400 hover:text-blue-300 mt-4 inline-block">
           ← Volver a ventas
         </Link>
@@ -215,12 +215,12 @@ export default function AdminVentaDetalle() {
     <div className="space-y-6 animate-in fade-in duration-700">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/admin/ventas" className="p-2 bg-white/5 rounded-xl hover:bg-white/10 transition-all">
-          <ArrowLeft className="w-5 h-5 text-slate-400" />
+        <Link href="/admin/ventas" className="p-2 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all">
+          <ArrowLeft className="w-5 h-5 text-[var(--muted-foreground)]" />
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-black text-white">Venta {venta.codigo}</h2>
+            <h2 className="text-2xl font-black text-[var(--foreground)]">Venta {venta.codigo}</h2>
             <span className={`px-3 py-1 rounded-full text-xs font-black uppercase border ${getStatusColor(venta.estado)}`}>
               {venta.estado.replace('_', ' ')}
             </span>
@@ -233,23 +233,23 @@ export default function AdminVentaDetalle() {
         <div className="lg:col-span-2 space-y-6">
           {/* Info general */}
           <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4">Información General</h3>
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Información General</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-white/5 rounded-xl">
-                <p className="text-xs text-slate-500 uppercase mb-1">Cliente</p>
-                <p className="font-medium text-white">{venta.cliente_nombre}</p>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Cliente</p>
+                <p className="font-medium text-[var(--foreground)]">{venta.cliente_nombre}</p>
               </div>
-              <div className="p-4 bg-white/5 rounded-xl">
-                <p className="text-xs text-slate-500 uppercase mb-1">Vendedor</p>
-                <p className="font-medium text-white">{venta.vendedor_nombre || '-'}</p>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Vendedor</p>
+                <p className="font-medium text-[var(--foreground)]">{venta.vendedor_nombre || '-'}</p>
               </div>
-              <div className="p-4 bg-white/5 rounded-xl">
-                <p className="text-xs text-slate-500 uppercase mb-1">Pasajeros</p>
-                <p className="font-medium text-white">{venta.num_pasajeros}</p>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Pasajeros</p>
+                <p className="font-medium text-[var(--foreground)]">{venta.num_pasajeros}</p>
               </div>
-              <div className="p-4 bg-white/5 rounded-xl">
-                <p className="text-xs text-slate-500 uppercase mb-1">Fecha</p>
-                <p className="font-medium text-white">
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Fecha</p>
+                <p className="font-medium text-[var(--foreground)]">
                   {new Date(venta.fecha_creacion).toLocaleDateString('es-AR')}
                 </p>
               </div>
@@ -259,13 +259,13 @@ export default function AdminVentaDetalle() {
           {/* Documentos */}
           <div className="glass-card rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[var(--foreground)] flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-400" />
                 Documentos de Viaje
               </h3>
               <button
                 onClick={() => setShowUploadModal(true)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] rounded-xl text-sm font-medium transition-all flex items-center gap-2"
               >
                 <Upload className="w-4 h-4" />
                 Subir Documento
@@ -275,16 +275,16 @@ export default function AdminVentaDetalle() {
             {documentos.length > 0 ? (
               <div className="space-y-3">
                 {documentos.map((doc) => (
-                  <div key={doc.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
+                  <div key={doc.id} className="flex items-center justify-between p-4 bg-[var(--muted)] rounded-xl">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
                         <FileText className="w-5 h-5 text-blue-400" />
                       </div>
                       <div>
-                        <p className="font-medium text-white">{getTipoDocumentoLabel(doc.tipo)}</p>
-                        <p className="text-xs text-slate-400">{doc.nombre_archivo}</p>
+                        <p className="font-medium text-[var(--foreground)]">{getTipoDocumentoLabel(doc.tipo)}</p>
+                        <p className="text-xs text-[var(--muted-foreground)]">{doc.nombre_archivo}</p>
                         {doc.descripcion && (
-                          <p className="text-xs text-slate-500 mt-1">{doc.descripcion}</p>
+                          <p className="text-xs text-[var(--muted-foreground)] mt-1">{doc.descripcion}</p>
                         )}
                       </div>
                     </div>
@@ -292,12 +292,12 @@ export default function AdminVentaDetalle() {
                       <button
                         onClick={() => handleDownload(doc.id, doc.nombre_archivo)}
                         disabled={downloadingId === doc.id}
-                        className="p-2 bg-white/5 rounded-lg hover:bg-blue-600 disabled:bg-slate-600 transition-all"
+                        className="p-2 bg-[var(--muted)] rounded-lg hover:bg-blue-600 disabled:bg-slate-600 transition-all"
                       >
                         {downloadingId === doc.id ? (
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         ) : (
-                          <FileText className="w-4 h-4 text-slate-300" />
+                          <FileText className="w-4 h-4 text-[var(--muted-foreground)]" />
                         )}
                       </button>
                       <button
@@ -312,8 +312,8 @@ export default function AdminVentaDetalle() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <AlertCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400">No hay documentos subidos</p>
+                <AlertCircle className="w-12 h-12 text-[var(--muted-foreground)] mx-auto mb-3" />
+                <p className="text-[var(--muted-foreground)]">No hay documentos subidos</p>
               </div>
             )}
           </div>
@@ -321,7 +321,7 @@ export default function AdminVentaDetalle() {
           {/* Notas - Formateadas con tarjetas */}
           {venta.notas && (
             <div>
-              <h3 className="text-lg font-bold text-white mb-4">Información de la Venta</h3>
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Información de la Venta</h3>
               <NotasVenta notas={venta.notas} />
             </div>
           )}
@@ -330,19 +330,19 @@ export default function AdminVentaDetalle() {
         {/* Columna derecha - Acciones */}
         <div className="space-y-6">
           <div className="glass-card rounded-2xl p-6 sticky top-6">
-            <h3 className="text-lg font-bold text-white mb-4">Resumen Financiero</h3>
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Resumen Financiero</h3>
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Total Venta</span>
-                <span className="text-white">${formatCurrency(venta.precio_total)}</span>
+                <span className="text-[var(--muted-foreground)]">Total Venta</span>
+                <span className="text-[var(--foreground)]">${formatCurrency(venta.precio_total)}</span>
               </div>
-              <div className="h-px bg-white/10 my-3" />
+              <div className="h-px bg-[var(--muted)] my-3" />
               <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-white">Comisión Vendedor</span>
+                <span className="text-lg font-bold text-[var(--foreground)]">Comisión Vendedor</span>
                 <span className="text-2xl font-black text-green-400">${formatCurrency(venta.comision_monto)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Estado</span>
+                <span className="text-[var(--muted-foreground)]">Estado</span>
                 <span className={venta.comision_estado === 'pagada' ? 'text-green-400' : 'text-orange-400'}>
                   {venta.comision_estado === 'pagada' ? 'Pagada' : 'Pendiente'}
                 </span>
@@ -352,7 +352,7 @@ export default function AdminVentaDetalle() {
             {venta.comision_estado === 'pendiente' && (
               <button
                 onClick={() => setShowPagarComision(true)}
-                className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2"
+                className="w-full py-4 bg-green-600 hover:bg-green-700 text-[var(--foreground)] font-black rounded-2xl transition-all flex items-center justify-center gap-2"
               >
                 <DollarSign className="w-5 h-5" />
                 Marcar Comisión Pagada
@@ -366,14 +366,14 @@ export default function AdminVentaDetalle() {
       {showUploadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="glass-card w-full max-w-md rounded-3xl p-8">
-            <h3 className="text-2xl font-black text-white mb-6">Subir Documento</h3>
+            <h3 className="text-2xl font-black text-[var(--foreground)] mb-6">Subir Documento</h3>
             <form onSubmit={handleUpload} className="space-y-4">
               <div>
-                <label className="text-sm text-slate-400 mb-1 block">Tipo de Documento</label>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Tipo de Documento</label>
                 <select
                   value={tipoDocumento}
                   onChange={(e) => setTipoDocumento(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                 >
                   {tiposDocumentos.map(t => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -381,30 +381,30 @@ export default function AdminVentaDetalle() {
                 </select>
               </div>
               <div>
-                <label className="text-sm text-slate-400 mb-1 block">Descripción (opcional)</label>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Descripción (opcional)</label>
                 <input
                   type="text"
                   value={descripcion}
                   onChange={(e) => setDescripcion(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   placeholder="Ej: Vuelo AR1234, Hotel XYZ"
                 />
               </div>
               <div>
-                <label className="text-sm text-slate-400 mb-1 block">Archivo PDF</label>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Archivo PDF</label>
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full p-6 bg-white/5 border-2 border-dashed border-white/20 rounded-xl text-center cursor-pointer hover:bg-white/10 transition-all"
+                  className="w-full p-6 bg-[var(--muted)] border-2 border-dashed border-white/20 rounded-xl text-center cursor-pointer hover:bg-[var(--muted)] transition-all"
                 >
                   {archivo ? (
                     <div>
-                      <p className="text-white font-medium">{archivo.name}</p>
-                      <p className="text-sm text-slate-400">Click para cambiar</p>
+                      <p className="text-[var(--foreground)] font-medium">{archivo.name}</p>
+                      <p className="text-sm text-[var(--muted-foreground)]">Click para cambiar</p>
                     </div>
                   ) : (
                     <div>
-                      <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                      <p className="text-slate-400">Click para seleccionar PDF</p>
+                      <Upload className="w-8 h-8 text-[var(--muted-foreground)] mx-auto mb-2" />
+                      <p className="text-[var(--muted-foreground)]">Click para seleccionar PDF</p>
                     </div>
                   )}
                   <input
@@ -420,14 +420,14 @@ export default function AdminVentaDetalle() {
                 <button
                   type="button"
                   onClick={() => setShowUploadModal(false)}
-                  className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                  className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={!archivo || isUploading}
-                  className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white font-bold transition-all"
+                  className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-[var(--foreground)] font-bold transition-all"
                 >
                   {isUploading ? 'Subiendo...' : 'Subir'}
                 </button>
@@ -441,20 +441,20 @@ export default function AdminVentaDetalle() {
       {showPagarComision && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="glass-card w-full max-w-md rounded-3xl p-8">
-            <h3 className="text-2xl font-black text-white mb-4">Pagar Comisión</h3>
-            <p className="text-slate-400 mb-6">
+            <h3 className="text-2xl font-black text-[var(--foreground)] mb-4">Pagar Comisión</h3>
+            <p className="text-[var(--muted-foreground)] mb-6">
               ¿Estás seguro de marcar la comisión de ${formatCurrency(venta.comision_monto)} como pagada al vendedor?
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowPagarComision(false)}
-                className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
               >
                 Cancelar
               </button>
               <button
                 onClick={handlePagarComision}
-                className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold transition-all"
+                className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-[var(--foreground)] font-bold transition-all"
               >
                 Confirmar Pago
               </button>

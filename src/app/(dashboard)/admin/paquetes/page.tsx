@@ -55,19 +55,19 @@ function ImagenUploader({ imagenUrl, onImagenSubida }: { imagenUrl: string; onIm
 
   return (
     <div className="space-y-3">
-      <label className="text-sm text-slate-400 mb-1 block">Imagen de Portada</label>
+      <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Imagen de Portada</label>
       
       {preview ? (
         <div className="relative inline-block">
           <img 
             src={preview} 
             alt="Preview" 
-            className="h-48 rounded-xl object-cover border border-white/10"
+            className="h-48 rounded-xl object-cover border border-[var(--border)]"
           />
           <button
             type="button"
             onClick={handleRemove}
-            className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white shadow-lg"
+            className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-[var(--foreground)] shadow-lg"
           >
             <X className="w-4 h-4" />
           </button>
@@ -75,12 +75,12 @@ function ImagenUploader({ imagenUrl, onImagenSubida }: { imagenUrl: string; onIm
       ) : (
         <div 
           onClick={() => fileInputRef.current?.click()}
-          className="h-48 rounded-xl border-2 border-dashed border-white/20 hover:border-blue-500/50 bg-white/5 hover:bg-white/10 transition-all cursor-pointer flex flex-col items-center justify-center gap-3"
+          className="h-48 rounded-xl border-2 border-dashed border-[var(--border)] hover:border-blue-500/50 bg-[var(--muted)] hover:bg-[var(--muted)] transition-all cursor-pointer flex flex-col items-center justify-center gap-3"
         >
           {isUploading ? (
             <>
               <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-              <span className="text-sm text-slate-400">Subiendo...</span>
+              <span className="text-sm text-[var(--muted-foreground)]">Subiendo...</span>
             </>
           ) : (
             <>
@@ -88,8 +88,8 @@ function ImagenUploader({ imagenUrl, onImagenSubida }: { imagenUrl: string; onIm
                 <ImageIcon className="w-6 h-6 text-blue-400" />
               </div>
               <div className="text-center">
-                <p className="text-sm text-white font-medium">Click para subir imagen</p>
-                <p className="text-xs text-slate-500 mt-1">JPG, PNG o WebP (máx. 5MB)</p>
+                <p className="text-sm text-[var(--foreground)] font-medium">Click para subir imagen</p>
+                <p className="text-xs text-[var(--muted-foreground)] mt-1">JPG, PNG o WebP (máx. 5MB)</p>
               </div>
             </>
           )}
@@ -397,12 +397,12 @@ export default function PaquetesAdmin() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-black text-white">Gestión de Paquetes</h2>
-          <p className="text-slate-400">Crea y administra los paquetes turísticos</p>
+          <h2 className="text-3xl font-black text-[var(--foreground)]">Gestión de Paquetes</h2>
+          <p className="text-[var(--muted-foreground)]">Crea y administra los paquetes turísticos</p>
         </div>
         <button 
           onClick={() => handleOpenModal()}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2"
+          className="bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Nuevo Paquete
@@ -410,12 +410,12 @@ export default function PaquetesAdmin() {
       </div>
 
       <div className="glass-card rounded-3xl overflow-hidden">
-        <div className="p-6 border-b border-white/5 flex items-center justify-between gap-4">
-           <div className="flex-1 max-w-md flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-2">
-             <Search className="w-4 h-4 text-slate-500" />
-             <input type="text" placeholder="Buscar paquetes..." className="bg-transparent border-none outline-none text-sm w-full text-slate-300" />
+        <div className="p-6 border-b border-[var(--border)] flex items-center justify-between gap-4">
+           <div className="flex-1 max-w-md flex items-center gap-3 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-2">
+             <Search className="w-4 h-4 text-[var(--muted-foreground)]" />
+             <input type="text" placeholder="Buscar paquetes..." className="bg-transparent border-none outline-none text-sm w-full text-[var(--foreground)]" />
            </div>
-           <button className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl text-sm font-medium hover:bg-white/10 transition-all">
+           <button className="flex items-center gap-2 px-4 py-2 bg-[var(--muted)] rounded-xl text-sm font-medium hover:bg-[var(--muted)] transition-all">
              <Filter className="w-4 h-4" /> Filtros
            </button>
         </div>
@@ -423,7 +423,7 @@ export default function PaquetesAdmin() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-white/2 text-slate-400 text-xs uppercase tracking-wider">
+              <tr className="bg-[var(--muted)] text-[var(--muted-foreground)] text-xs uppercase tracking-wider">
                 <th className="px-6 py-4 font-black">Paquete</th>
                 <th className="px-6 py-4 font-black">Destino</th>
                 <th className="px-6 py-4 font-black">Precio Doble</th>
@@ -432,23 +432,23 @@ export default function PaquetesAdmin() {
                 <th className="px-6 py-4 font-black text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-[var(--border)]">
               {paquetes.map((p) => (
-                <tr key={p.id} className="hover:bg-white/2 transition-colors group">
+                <tr key={p.id} className="hover:bg-[var(--muted)] transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <p className="font-bold text-white group-hover:text-blue-400 transition-colors uppercase">{p.nombre}</p>
+                      <p className="font-bold text-[var(--foreground)] group-hover:text-blue-400 transition-colors uppercase">{p.nombre}</p>
                       {p.vuelos && p.vuelos.length > 0 && (
                         <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full" title={`${p.vuelos.length} vuelo(s) configurado(s)`}>
                           ✈️
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500">{p.tipo} • {p.duracion} días</p>
+                    <p className="text-xs text-[var(--muted-foreground)]">{p.tipo} • {p.duracion} días</p>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-300">{p.destino}</td>
+                  <td className="px-6 py-4 text-sm text-[var(--foreground)]">{p.destino}</td>
                   <td className="px-6 py-4 text-sm font-bold text-blue-400">${formatCurrency(p.precio_doble)}</td>
-                  <td className="px-6 py-4 text-sm text-slate-300">{p.cupos_disponibles} / {p.cupos_totales}</td>
+                  <td className="px-6 py-4 text-sm text-[var(--foreground)]">{p.cupos_disponibles} / {p.cupos_totales}</td>
                   <td className="px-6 py-4">
                     {p.status === 'activo' ? (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-green-500/10 text-green-400 border border-green-500/20">
@@ -464,13 +464,13 @@ export default function PaquetesAdmin() {
                     <div className="flex items-center justify-end gap-2">
                        <button 
                          onClick={() => handleOpenModal(p)}
-                         className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-all"
+                         className="p-2 hover:bg-[var(--muted)] rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all"
                        >
                          <Edit className="w-4 h-4" />
                        </button>
                        <button 
                          onClick={() => p.id && handleDelete(p.id)}
-                         className="p-2 hover:bg-red-500/10 rounded-lg text-slate-500 hover:text-red-400 transition-all"
+                         className="p-2 hover:bg-red-500/10 rounded-lg text-[var(--muted-foreground)] hover:text-red-400 transition-all"
                        >
                          <Trash2 className="w-4 h-4" />
                        </button>
@@ -492,41 +492,41 @@ export default function PaquetesAdmin() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="glass-card w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl p-8">
-            <h3 className="text-2xl font-black text-white mb-6">
+            <h3 className="text-2xl font-black text-[var(--foreground)] mb-6">
               {editingPaquete ? 'Editar Paquete' : 'Nuevo Paquete'}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="text-sm text-slate-400 mb-1 block">Nombre del Paquete</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Nombre del Paquete</label>
                   <input
                     type="text"
                     required
                     value={formData.nombre}
                     onChange={(e) => setFormData({...formData, nombre: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                     placeholder="Ej: Europa Express 2024"
                   />
                 </div>
                 
                 <div>
-                  <label className="text-sm text-slate-400 mb-1 block">Destino</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Destino</label>
                   <input
                     type="text"
                     required
                     value={formData.destino}
                     onChange={(e) => setFormData({...formData, destino: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                     placeholder="Ej: Madrid, España"
                   />
                 </div>
                 
                 <div>
-                  <label className="text-sm text-slate-400 mb-1 block">Tipo</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Tipo</label>
                   <select
                     value={formData.tipo}
                     onChange={(e) => setFormData({...formData, tipo: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   >
                     <option value="internacional">Internacional</option>
                     <option value="nacional">Nacional</option>
@@ -536,64 +536,64 @@ export default function PaquetesAdmin() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-slate-400 mb-1 block">Duración (días)</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Duración (días)</label>
                   <input
                     type="number"
                     min={1}
                     required
                     value={formData.duracion}
                     onChange={(e) => setFormData({...formData, duracion: Number(e.target.value)})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm text-slate-400 mb-1 block">Fecha de Salida</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Fecha de Salida</label>
                   <input
                     type="date"
                     value={formData.fecha_salida || ''}
                     onChange={(e) => setFormData({...formData, fecha_salida: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   />
                 </div>
 
                 <div className="md:col-span-3 grid grid-cols-3 gap-4">
                   <div>
-                    <label className="text-sm text-slate-400 mb-1 block">Precio Doble</label>
+                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Precio Doble</label>
                     <input
                       type="number"
                       min={0}
                       required
                       value={formData.precio_doble}
                       onChange={(e) => setFormData({...formData, precio_doble: Number(e.target.value)})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-slate-400 mb-1 block">Precio Triple</label>
+                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Precio Triple</label>
                     <input
                       type="number"
                       min={0}
                       value={formData.precio_triple}
                       onChange={(e) => setFormData({...formData, precio_triple: Number(e.target.value)})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-slate-400 mb-1 block">Precio Cuádruple</label>
+                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Precio Cuádruple</label>
                     <input
                       type="number"
                       min={0}
                       value={formData.precio_cuadruple}
                       onChange={(e) => setFormData({...formData, precio_cuadruple: Number(e.target.value)})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 md:col-span-2">
                   <div>
-                    <label className="text-sm text-slate-400 mb-1 block">Cupos Totales</label>
+                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Cupos Totales</label>
                     <input
                       type="number"
                       min={0}
@@ -603,15 +603,15 @@ export default function PaquetesAdmin() {
                         cupos_totales: Number(e.target.value),
                         cupos_disponibles: Number(e.target.value)
                       })}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-slate-400 mb-1 block">Estado</label>
+                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Estado</label>
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({...formData, status: e.target.value as 'activo' | 'inactivo'})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                     >
                       <option value="activo">Activo</option>
                       <option value="inactivo">Inactivo</option>
@@ -620,7 +620,7 @@ export default function PaquetesAdmin() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="text-sm text-slate-400 mb-1 block">Itinerario / Descripción del Viaje</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Itinerario / Descripción del Viaje</label>
                   <textarea
                     rows={5}
                     value={typeof formData.itinerario === 'string' ? formData.itinerario : formData.itinerario?.texto || ''}
@@ -629,27 +629,27 @@ export default function PaquetesAdmin() {
                       itinerario: { texto: e.target.value, dias: [] },
                       descripcion: e.target.value // Mantener sincronizado por compatibilidad
                     })}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none"
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 resize-none"
                     placeholder="Describe el itinerario día por día..."
                   />
                 </div>
 
                 {/* Incluye */}
                 <div className="md:col-span-2">
-                  <label className="text-sm text-slate-400 mb-1 block">Incluye</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Incluye</label>
                   <div className="flex gap-2 mb-2">
                     <input
                       type="text"
                       value={incluyeInput}
                       onChange={(e) => setIncluyeInput(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addIncluye())}
-                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-blue-500"
+                      className="flex-1 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
                       placeholder="Ej: Vuelo directo"
                     />
                     <button
                       type="button"
                       onClick={addIncluye}
-                      className="px-4 py-2 bg-blue-600 rounded-xl text-white font-medium"
+                      className="px-4 py-2 bg-blue-600 rounded-xl text-[var(--foreground)] font-medium"
                     >
                       Agregar
                     </button>
@@ -666,20 +666,20 @@ export default function PaquetesAdmin() {
 
                 {/* No Incluye */}
                 <div className="md:col-span-2">
-                  <label className="text-sm text-slate-400 mb-1 block">No Incluye</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">No Incluye</label>
                   <div className="flex gap-2 mb-2">
                     <input
                       type="text"
                       value={noIncluyeInput}
                       onChange={(e) => setNoIncluyeInput(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addNoIncluye())}
-                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-blue-500"
+                      className="flex-1 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
                       placeholder="Ej: Seguro de viaje"
                     />
                     <button
                       type="button"
                       onClick={addNoIncluye}
-                      className="px-4 py-2 bg-blue-600 rounded-xl text-white font-medium"
+                      className="px-4 py-2 bg-blue-600 rounded-xl text-[var(--foreground)] font-medium"
                     >
                       Agregar
                     </button>
@@ -695,14 +695,14 @@ export default function PaquetesAdmin() {
                 </div>
 
                 {/* Información de Vuelos */}
-                <div className="md:col-span-2 border-t border-white/10 pt-6 mt-2">
-                  <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                <div className="md:col-span-2 border-t border-[var(--border)] pt-6 mt-2">
+                  <h3 className="text-lg font-bold text-[var(--foreground)] mb-2 flex items-center gap-2">
                     ✈️ Información de Vuelos
                   </h3>
                   
                   {/* Selector de Modo de Vuelos */}
                   <div className="mb-4">
-                    <label className="text-sm text-slate-400 mb-2 block">Modo de ingreso</label>
+                    <label className="text-sm text-[var(--muted-foreground)] mb-2 block">Modo de ingreso</label>
                     <div className="flex gap-4 mb-3">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -712,7 +712,7 @@ export default function PaquetesAdmin() {
                           onChange={() => setModoItinerario('manual')}
                           className="w-4 h-4 accent-blue-500"
                         />
-                        <span className="text-white">✏️ Completar manualmente</span>
+                        <span className="text-[var(--foreground)]">✏️ Completar manualmente</span>
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -722,7 +722,7 @@ export default function PaquetesAdmin() {
                           onChange={() => setModoItinerario('amadeus')}
                           className="w-4 h-4 accent-blue-500"
                         />
-                        <span className="text-white">📋 Parsear PNR de Amadeus</span>
+                        <span className="text-[var(--foreground)]">📋 Parsear PNR de Amadeus</span>
                       </label>
                     </div>
 
@@ -732,7 +732,7 @@ export default function PaquetesAdmin() {
                           rows={5}
                           value={pnrRaw}
                           onChange={(e) => setPnrRaw(e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none font-mono text-sm"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 resize-none font-mono text-sm"
                           placeholder="Pega aquí el texto del PNR de Amadeus...
 
 Ejemplo:
@@ -755,7 +755,7 @@ Ejemplo:
                               alert(`${vuelosParseados.length} vuelo(s) parseado(s) correctamente. Revisa los campos de Vuelo de Ida y Vuelta.`);
                             }}
                             disabled={!pnrRaw.trim()}
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 rounded-xl text-white font-medium text-sm flex items-center gap-2"
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 rounded-xl text-[var(--foreground)] font-medium text-sm flex items-center gap-2"
                           >
                             <CheckCircle className="w-4 h-4" />
                             Procesar PNR
@@ -776,13 +776,13 @@ Ejemplo:
                     <h4 className="text-blue-400 font-bold mb-3">VUELO DE IDA</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Origen *</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Origen *</label>
                         <div className="flex gap-2">
                           <input
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'ida')?.origen_codigo || ''}
                             onChange={(e) => updateVueloIda('origen_codigo', e.target.value.toUpperCase())}
-                            className="w-20 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500 uppercase"
+                            className="w-20 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-blue-500 uppercase"
                             placeholder="MVD"
                             maxLength={3}
                           />
@@ -790,19 +790,19 @@ Ejemplo:
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'ida')?.origen_nombre || ''}
                             onChange={(e) => updateVueloIda('origen_nombre', e.target.value)}
-                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
+                            className="flex-1 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
                             placeholder="Montevideo"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Destino *</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Destino *</label>
                         <div className="flex gap-2">
                           <input
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'ida')?.destino_codigo || ''}
                             onChange={(e) => updateVueloIda('destino_codigo', e.target.value.toUpperCase())}
-                            className="w-20 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500 uppercase"
+                            className="w-20 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-blue-500 uppercase"
                             placeholder="MAD"
                             maxLength={3}
                           />
@@ -810,64 +810,64 @@ Ejemplo:
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'ida')?.destino_nombre || ''}
                             onChange={(e) => updateVueloIda('destino_nombre', e.target.value)}
-                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
+                            className="flex-1 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
                             placeholder="Madrid"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Fecha de Salida *</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Fecha de Salida *</label>
                         <input
                           type="date"
                           value={formData.vuelos?.find(v => v.tipo === 'ida')?.fecha_salida || ''}
                           onChange={(e) => updateVueloIda('fecha_salida', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Aerolínea</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Aerolínea</label>
                         <input
                           type="text"
                           value={formData.vuelos?.find(v => v.tipo === 'ida')?.aerolinea_nombre || ''}
                           onChange={(e) => updateVueloIda('aerolinea_nombre', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
                           placeholder="Ej: Air Europa"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Hora Salida</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Hora Salida</label>
                         <input
                           type="time"
                           value={formData.vuelos?.find(v => v.tipo === 'ida')?.hora_salida || ''}
                           onChange={(e) => updateVueloIda('hora_salida', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Hora Llegada</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Hora Llegada</label>
                         <input
                           type="time"
                           value={formData.vuelos?.find(v => v.tipo === 'ida')?.hora_llegada || ''}
                           onChange={(e) => updateVueloIda('hora_llegada', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">N° Vuelo</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">N° Vuelo</label>
                         <input
                           type="text"
                           value={formData.vuelos?.find(v => v.tipo === 'ida')?.numero_vuelo || ''}
                           onChange={(e) => updateVueloIda('numero_vuelo', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
                           placeholder="UX046"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Escalas</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Escalas</label>
                         <select
                           value={formData.vuelos?.find(v => v.tipo === 'ida')?.escalas || 0}
                           onChange={(e) => updateVueloIda('escalas', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
                         >
                           <option value={0} className="bg-slate-900">Directo</option>
                           <option value={1} className="bg-slate-900">1 escala</option>
@@ -883,13 +883,13 @@ Ejemplo:
                     <h4 className="text-purple-400 font-bold mb-3">VUELO DE VUELTA</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Origen *</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Origen *</label>
                         <div className="flex gap-2">
                           <input
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_codigo || ''}
                             onChange={(e) => updateVueloVuelta('origen_codigo', e.target.value.toUpperCase())}
-                            className="w-20 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500 uppercase"
+                            className="w-20 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-purple-500 uppercase"
                             placeholder="MAD"
                             maxLength={3}
                           />
@@ -897,19 +897,19 @@ Ejemplo:
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.origen_nombre || ''}
                             onChange={(e) => updateVueloVuelta('origen_nombre', e.target.value)}
-                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
+                            className="flex-1 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-purple-500"
                             placeholder="Madrid"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Destino *</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Destino *</label>
                         <div className="flex gap-2">
                           <input
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_codigo || ''}
                             onChange={(e) => updateVueloVuelta('destino_codigo', e.target.value.toUpperCase())}
-                            className="w-20 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500 uppercase"
+                            className="w-20 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-purple-500 uppercase"
                             placeholder="MVD"
                             maxLength={3}
                           />
@@ -917,64 +917,64 @@ Ejemplo:
                             type="text"
                             value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.destino_nombre || ''}
                             onChange={(e) => updateVueloVuelta('destino_nombre', e.target.value)}
-                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
+                            className="flex-1 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-purple-500"
                             placeholder="Montevideo"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Fecha de Salida *</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Fecha de Salida *</label>
                         <input
                           type="date"
                           value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.fecha_salida || ''}
                           onChange={(e) => updateVueloVuelta('fecha_salida', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-purple-500"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Aerolínea</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Aerolínea</label>
                         <input
                           type="text"
                           value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.aerolinea_nombre || ''}
                           onChange={(e) => updateVueloVuelta('aerolinea_nombre', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-purple-500"
                           placeholder="Ej: Air Europa"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Hora Salida</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Hora Salida</label>
                         <input
                           type="time"
                           value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.hora_salida || ''}
                           onChange={(e) => updateVueloVuelta('hora_salida', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-purple-500"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Hora Llegada</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Hora Llegada</label>
                         <input
                           type="time"
                           value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.hora_llegada || ''}
                           onChange={(e) => updateVueloVuelta('hora_llegada', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-purple-500"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">N° Vuelo</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">N° Vuelo</label>
                         <input
                           type="text"
                           value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.numero_vuelo || ''}
                           onChange={(e) => updateVueloVuelta('numero_vuelo', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-purple-500"
                           placeholder="UX047"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400 mb-1 block">Escalas</label>
+                        <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Escalas</label>
                         <select
                           value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.escalas || 0}
                           onChange={(e) => updateVueloVuelta('escalas', e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-500"
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-purple-500"
                         >
                           <option value={0} className="bg-slate-900">Directo</option>
                           <option value={1} className="bg-slate-900">1 escala</option>
@@ -996,26 +996,26 @@ Ejemplo:
 
                 {/* Recursos para Vendedores */}
                 <div className="md:col-span-2">
-                  <label className="text-sm text-slate-400 mb-1 block">Recursos para Vendedores (Placas RRSS)</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Recursos para Vendedores (Placas RRSS)</label>
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     <input
                       type="text"
                       value={recursoInput.nombre}
                       onChange={(e) => setRecursoInput({...recursoInput, nombre: e.target.value})}
-                      className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-blue-500"
+                      className="bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
                       placeholder="Nombre del recurso"
                     />
                     <input
                       type="url"
                       value={recursoInput.url}
                       onChange={(e) => setRecursoInput({...recursoInput, url: e.target.value})}
-                      className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-blue-500"
+                      className="bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
                       placeholder="URL del archivo"
                     />
                     <select
                       value={recursoInput.tipo}
                       onChange={(e) => setRecursoInput({...recursoInput, tipo: e.target.value as 'imagen' | 'video' | 'pdf'})}
-                      className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-blue-500"
+                      className="bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
                     >
                       <option value="imagen">Imagen</option>
                       <option value="video">Video</option>
@@ -1025,13 +1025,13 @@ Ejemplo:
                   <button
                     type="button"
                     onClick={addRecurso}
-                    className="px-4 py-2 bg-blue-600 rounded-xl text-white font-medium mb-2"
+                    className="px-4 py-2 bg-blue-600 rounded-xl text-[var(--foreground)] font-medium mb-2"
                   >
                     Agregar Recurso
                   </button>
                   <div className="space-y-2">
                     {(formData.recursos_vendedores || []).map((recurso, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                      <div key={idx} className="flex items-center justify-between p-3 bg-[var(--muted)] rounded-xl">
                         <div className="flex items-center gap-3">
                           <span className={cn(
                             "px-2 py-1 rounded text-xs font-medium",
@@ -1041,7 +1041,7 @@ Ejemplo:
                           )}>
                             {recurso.tipo.toUpperCase()}
                           </span>
-                          <span className="text-sm text-white">{recurso.nombre}</span>
+                          <span className="text-sm text-[var(--foreground)]">{recurso.nombre}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <a 
@@ -1070,13 +1070,13 @@ Ejemplo:
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                  className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all"
+                  className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] font-bold transition-all"
                 >
                   {editingPaquete ? 'Guardar Cambios' : 'Crear Paquete'}
                 </button>

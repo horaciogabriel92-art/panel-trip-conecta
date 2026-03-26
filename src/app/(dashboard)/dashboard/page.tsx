@@ -113,14 +113,14 @@ export default function VendedorDashboard() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-white">Hola, {nombre} 👋</h2>
-          <p className="text-slate-400">
+          <h2 className="text-3xl font-black text-[var(--foreground)]">Hola, {nombre} 👋</h2>
+          <p className="text-[var(--muted-foreground)]">
             {cotizacionesCount > 0 
               ? `¡Tienes ${cotizacionesCount} cotizaciones pendientes!` 
               : 'No tienes cotizaciones pendientes'}
           </p>
         </div>
-        <Link href="/paquetes" className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 w-fit">
+        <Link href="/paquetes" className="bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 w-fit">
           <Package className="w-5 h-5" />
           Ver Catálogo
         </Link>
@@ -129,7 +129,7 @@ export default function VendedorDashboard() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="glass-card p-6 rounded-3xl h-32 animate-pulse bg-white/5" />
+            <div key={i} className="glass-card p-6 rounded-3xl h-32 animate-pulse bg-[var(--muted)]" />
           ))}
         </div>
       ) : (
@@ -140,8 +140,8 @@ export default function VendedorDashboard() {
                 <card.icon className={cn("w-6 h-6", card.color)} />
               </div>
               <div>
-                <p className="text-sm text-slate-400 font-medium">{card.title}</p>
-                <h3 className="text-2xl font-bold text-white">{card.value}</h3>
+                <p className="text-sm text-[var(--muted-foreground)] font-medium">{card.title}</p>
+                <h3 className="text-2xl font-bold text-[var(--foreground)]">{card.value}</h3>
                 <p className="text-xs text-slate-500">{card.subtext}</p>
               </div>
             </div>
@@ -160,13 +160,13 @@ export default function VendedorDashboard() {
           {isLoading ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-12 bg-white/5 rounded-xl animate-pulse" />
+                <div key={i} className="h-12 bg-[var(--muted)] rounded-xl animate-pulse" />
               ))}
             </div>
           ) : (
             <div className="space-y-6">
               {comisionesMensual.map((item, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                <div key={i} className="flex items-center justify-between py-2 border-b border-[var(--border)] last:border-0">
                   <div className="flex items-center gap-3">
                     <div className={cn(
                       "w-10 h-10 rounded-xl flex items-center justify-center",
@@ -177,7 +177,7 @@ export default function VendedorDashboard() {
                         item.estado === 'pagado' ? "text-green-400" : "text-orange-400"
                       )} />
                     </div>
-                    <span className="text-slate-300 font-medium">{item.mes}</span>
+                    <span className="text-[var(--foreground)] font-medium">{item.mes}</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="font-bold">${formatCurrency(item.monto)}</span>
@@ -202,11 +202,11 @@ export default function VendedorDashboard() {
               <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=400')] bg-cover bg-center" />
               <div className="absolute inset-0 bg-black/40" />
               <div className="absolute bottom-4 left-4">
-                <p className="text-white font-black text-xl">Cancún All Inclusive</p>
+                <p className="text-[var(--foreground)] font-black text-xl">Cancún All Inclusive</p>
                 <p className="text-blue-300 text-sm font-bold">Desde $899 USD</p>
               </div>
            </div>
-           <p className="text-slate-400 text-sm mb-6">Increíble oportunidad para este verano. Revisa los detalles y comparte con tus clientes.</p>
+           <p className="text-[var(--muted-foreground)] text-sm mb-6">Increíble oportunidad para este verano. Revisa los detalles y comparte con tus clientes.</p>
            <Link 
              href="/paquetes"
              className="w-full block text-center bg-white text-black font-black py-4 rounded-2xl hover:bg-slate-100 transition-all"

@@ -29,12 +29,12 @@ export default function VentasPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-black text-white">Gestión de Ventas</h2>
-          <p className="text-slate-400">Control de reservas confirmadas y estados de pago</p>
+          <h2 className="text-3xl font-black text-[var(--foreground)]">Gestión de Ventas</h2>
+          <p className="text-[var(--muted-foreground)]">Control de reservas confirmadas y estados de pago</p>
         </div>
-        <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-2 w-72">
-           <Search className="w-4 h-4 text-slate-500" />
-           <input type="text" placeholder="Número de venta..." className="bg-transparent border-none outline-none text-sm w-full text-slate-300" />
+        <div className="flex items-center gap-3 bg-[var(--muted)] border border-[var(--border)] rounded-2xl px-4 py-2 w-72">
+           <Search className="w-4 h-4 text-[var(--muted-foreground)]" />
+           <input type="text" placeholder="Número de venta..." className="bg-transparent border-none outline-none text-sm w-full text-[var(--muted-foreground)]" />
         </div>
       </div>
 
@@ -42,7 +42,7 @@ export default function VentasPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-white/2 text-slate-500 text-[10px] uppercase font-black tracking-[0.2em]">
+              <tr className="bg-white/2 text-[var(--muted-foreground)] text-[10px] uppercase font-black tracking-[0.2em]">
                 <th className="px-8 py-6">ID Venta</th>
                 <th className="px-8 py-6">Cliente</th>
                 <th className="px-8 py-6">Paquete</th>
@@ -57,13 +57,13 @@ export default function VentasPage() {
                 <tr key={v.id} className="hover:bg-white/2 transition-colors">
                   <td className="px-8 py-6 text-blue-400 font-bold">{v.numero_venta}</td>
                   <td className="px-8 py-6">
-                    <p className="font-bold text-white uppercase text-sm">{v.cliente_nombre} {v.cliente_apellido}</p>
-                    <p className="text-xs text-slate-500">{v.cliente_email}</p>
+                    <p className="font-bold text-[var(--foreground)] uppercase text-sm">{v.cliente_nombre} {v.cliente_apellido}</p>
+                    <p className="text-xs text-[var(--muted-foreground)]">{v.cliente_email}</p>
                   </td>
-                  <td className="px-8 py-6 text-sm text-slate-300 font-medium">Europa Classic 15d</td>
-                  <td className="px-8 py-6 text-sm font-black text-white">${formatCurrency(v.precio_venta_total)}</td>
+                  <td className="px-8 py-6 text-sm text-[var(--muted-foreground)] font-medium">Europa Classic 15d</td>
+                  <td className="px-8 py-6 text-sm font-black text-[var(--foreground)]">${formatCurrency(v.precio_venta_total)}</td>
                   <td className="px-8 py-6">
-                    <span className="text-xs px-2 py-1 bg-white/5 rounded-lg text-slate-400">ID: {v.vendedor_id}</span>
+                    <span className="text-xs px-2 py-1 bg-[var(--muted)] rounded-lg text-[var(--muted-foreground)]">ID: {v.vendedor_id}</span>
                   </td>
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-green-500/10 text-green-400 border border-green-500/20 w-fit">
@@ -72,8 +72,8 @@ export default function VentasPage() {
                     </div>
                   </td>
                   <td className="px-8 py-6 text-right">
-                    <button className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all">
-                      <Download className="w-4 h-4 text-slate-400" />
+                    <button className="p-3 bg-[var(--muted)] hover:bg-[var(--muted)] rounded-2xl transition-all">
+                      <Download className="w-4 h-4 text-[var(--muted-foreground)]" />
                     </button>
                   </td>
                 </tr>
@@ -86,7 +86,7 @@ export default function VentasPage() {
             </div>
           )}
           {ventas.length === 0 && !isLoading && (
-            <div className="py-20 flex flex-col items-center justify-center text-slate-500 gap-4">
+            <div className="py-20 flex flex-col items-center justify-center text-[var(--muted-foreground)] gap-4">
               <ShoppingCart className="w-12 h-12 opacity-10" />
               <p className="italic font-medium">No se han registrado ventas aún.</p>
             </div>

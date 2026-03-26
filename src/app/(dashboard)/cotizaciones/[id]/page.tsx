@@ -314,7 +314,7 @@ export default function CotizacionDetalle() {
       case 'convertida': return 'bg-green-500/10 text-green-400 border-green-500/20';
       case 'pendiente': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
       case 'vencida': return 'bg-red-500/10 text-red-400 border-red-500/20';
-      case 'cancelada': return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+      case 'cancelada': return 'bg-slate-500/10 text-[var(--muted-foreground)] border-slate-500/20';
       default: return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
     }
   };
@@ -324,7 +324,7 @@ export default function CotizacionDetalle() {
       case 'convertida': return <CheckCircle className="w-5 h-5 text-green-400" />;
       case 'pendiente': return <Clock className="w-5 h-5 text-orange-400" />;
       case 'vencida': return <AlertCircle className="w-5 h-5 text-red-400" />;
-      case 'cancelada': return <XCircle className="w-5 h-5 text-slate-400" />;
+      case 'cancelada': return <XCircle className="w-5 h-5 text-[var(--muted-foreground)]" />;
       default: return <FileText className="w-5 h-5 text-blue-400" />;
     }
   };
@@ -340,7 +340,7 @@ export default function CotizacionDetalle() {
   if (!cotizacion) {
     return (
       <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-white">Cotización no encontrada</h2>
+        <h2 className="text-2xl font-bold text-[var(--foreground)]">Cotización no encontrada</h2>
         <Link href="/cotizaciones" className="text-blue-400 hover:text-blue-300 mt-4 inline-block">
           ← Volver a cotizaciones
         </Link>
@@ -356,17 +356,17 @@ export default function CotizacionDetalle() {
     <div className="space-y-6 animate-in fade-in duration-700 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/cotizaciones" className="p-2 bg-white/5 rounded-xl hover:bg-white/10 transition-all">
-          <ArrowLeft className="w-5 h-5 text-slate-400" />
+        <Link href="/cotizaciones" className="p-2 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all">
+          <ArrowLeft className="w-5 h-5 text-[var(--muted-foreground)]" />
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-black text-white">Cotización {cotizacion.codigo}</h2>
+            <h2 className="text-2xl font-black text-[var(--foreground)]">Cotización {cotizacion.codigo}</h2>
             <span className={`px-3 py-1 rounded-full text-xs font-black uppercase border ${getStatusColor(cotizacion.estado)}`}>
               {cotizacion.estado}
             </span>
           </div>
-          <p className="text-slate-400 text-sm">
+          <p className="text-[var(--muted-foreground)] text-sm">
             Creada el {new Date(cotizacion.fecha_creacion).toLocaleDateString('es-AR')}
             {cotizacion.fecha_expiracion && ` • Vence el ${new Date(cotizacion.fecha_expiracion).toLocaleDateString('es-AR')}`}
           </p>
@@ -428,18 +428,18 @@ export default function CotizacionDetalle() {
           />
           <button 
             onClick={() => window.print()}
-            className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-all"
+            className="p-3 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all"
             title="Imprimir"
           >
-            <Printer className="w-5 h-5 text-slate-400" />
+            <Printer className="w-5 h-5 text-[var(--muted-foreground)]" />
           </button>
           {puedeEditar && (
             <button 
               onClick={() => setShowEditModal(true)}
-              className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-all"
+              className="p-3 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all"
               title="Editar"
             >
-              <Edit className="w-5 h-5 text-slate-400" />
+              <Edit className="w-5 h-5 text-[var(--muted-foreground)]" />
             </button>
           )}
         </div>
@@ -457,11 +457,11 @@ export default function CotizacionDetalle() {
                 <p className="text-xs text-blue-300 uppercase font-black mb-1">
                   {cotizacion.tipo_cotizacion === 'manual' ? 'Cotización Personalizada' : 'Paquete'}
                 </p>
-                <h3 className="text-xl font-black text-white">
+                <h3 className="text-xl font-black text-[var(--foreground)]">
                   {cotizacion.nombre_cotizacion || paquete?.nombre || paquete?.titulo || 'Cotización no disponible'}
                 </h3>
                 {(paquete?.destino || cotizacion.hospedaje?.[0]?.ciudad) && (
-                  <p className="text-slate-300 text-sm">
+                  <p className="text-[var(--foreground)] text-sm">
                     {paquete?.destino || cotizacion.hospedaje?.[0]?.ciudad}
                   </p>
                 )}
@@ -471,30 +471,30 @@ export default function CotizacionDetalle() {
 
           {/* Detalles de la cotización */}
           <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <FileText className="w-5 h-5 text-blue-400" />
               Detalles de la Cotización
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-white/5 rounded-xl">
-                <p className="text-xs text-slate-500 uppercase font-black mb-1">Pasajeros</p>
-                <p className="text-xl font-black text-white">{cotizacion.num_pasajeros}</p>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Pasajeros</p>
+                <p className="text-xl font-black text-[var(--foreground)]">{cotizacion.num_pasajeros}</p>
               </div>
-              <div className="p-4 bg-white/5 rounded-xl">
-                <p className="text-xs text-slate-500 uppercase font-black mb-1">Habitación</p>
-                <p className="text-xl font-black text-white capitalize">{cotizacion.tipo_habitacion}</p>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Habitación</p>
+                <p className="text-xl font-black text-[var(--foreground)] capitalize">{cotizacion.tipo_habitacion}</p>
               </div>
-              <div className="p-4 bg-white/5 rounded-xl">
-                <p className="text-xs text-slate-500 uppercase font-black mb-1">Fecha Salida</p>
-                <p className="text-lg font-black text-white">
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Fecha Salida</p>
+                <p className="text-lg font-black text-[var(--foreground)]">
                   {cotizacion.fecha_salida 
                     ? new Date(cotizacion.fecha_salida).toLocaleDateString('es-AR')
                     : 'A definir'
                   }
                 </p>
               </div>
-              <div className="p-4 bg-white/5 rounded-xl">
-                <p className="text-xs text-slate-500 uppercase font-black mb-1">Total</p>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Total</p>
                 <p className="text-xl font-black text-blue-400">${formatCurrency(cotizacion.precio_total)}</p>
               </div>
             </div>
@@ -503,7 +503,7 @@ export default function CotizacionDetalle() {
           {/* Itinerario - Cotizaciones de catálogo (desde paquete o notas parseadas) */}
           {(paquete?.itinerario || datosPaqueteDesdeNotas?.itinerario) && (
             <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-blue-400" />
                 Itinerario
               </h3>
@@ -511,7 +511,7 @@ export default function CotizacionDetalle() {
                 const itin = paquete?.itinerario || datosPaqueteDesdeNotas?.itinerario;
                 // Formato string (legacy)
                 if (typeof itin === 'string') {
-                  return <p className="text-slate-300 whitespace-pre-line">{itin}</p>;
+                  return <p className="text-[var(--foreground)] whitespace-pre-line">{itin}</p>;
                 }
                 // Formato {texto, dias} (nuevo formato)
                 if (itin && typeof itin === 'object' && !Array.isArray(itin) && 'texto' in itin) {
@@ -519,23 +519,23 @@ export default function CotizacionDetalle() {
                   return (
                     <div className="space-y-4">
                       {itinObj.texto && (
-                        <p className="text-slate-300 whitespace-pre-line">{itinObj.texto}</p>
+                        <p className="text-[var(--foreground)] whitespace-pre-line">{itinObj.texto}</p>
                       )}
                       {Array.isArray(itinObj.dias) && itinObj.dias.length > 0 && (
                         <div className="space-y-3">
                           {itinObj.dias.map((dia: any, idx: number) => (
-                            <div key={idx} className="p-4 bg-white/5 rounded-xl border-l-2 border-blue-500">
+                            <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border-l-2 border-blue-500">
                               <div className="flex items-center gap-2 mb-2">
                                 <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
                                   Día {dia.dia || idx + 1}
                                 </span>
-                                <span className="font-medium text-white">{dia.titulo}</span>
+                                <span className="font-medium text-[var(--foreground)]">{dia.titulo}</span>
                               </div>
-                              <p className="text-slate-300 text-sm">{dia.descripcion}</p>
+                              <p className="text-[var(--foreground)] text-sm">{dia.descripcion}</p>
                               {dia.actividades && dia.actividades.length > 0 && (
                                 <ul className="mt-2 space-y-1">
                                   {dia.actividades.map((act: string, actIdx: number) => (
-                                    <li key={actIdx} className="text-slate-400 text-sm">• {act}</li>
+                                    <li key={actIdx} className="text-[var(--muted-foreground)] text-sm">• {act}</li>
                                   ))}
                                 </ul>
                               )}
@@ -551,18 +551,18 @@ export default function CotizacionDetalle() {
                   return (
                     <div className="space-y-3">
                       {itin.map((dia: any, idx: number) => (
-                        <div key={idx} className="p-4 bg-white/5 rounded-xl border-l-2 border-blue-500">
+                        <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border-l-2 border-blue-500">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
                               Día {dia.dia || idx + 1}
                             </span>
-                            <span className="font-medium text-white">{dia.titulo}</span>
+                            <span className="font-medium text-[var(--foreground)]">{dia.titulo}</span>
                           </div>
-                          <p className="text-slate-300 text-sm">{dia.descripcion}</p>
+                          <p className="text-[var(--foreground)] text-sm">{dia.descripcion}</p>
                           {dia.actividades && dia.actividades.length > 0 && (
                             <ul className="mt-2 space-y-1">
                               {dia.actividades.map((act: string, actIdx: number) => (
-                                <li key={actIdx} className="text-slate-400 text-sm">• {act}</li>
+                                <li key={actIdx} className="text-[var(--muted-foreground)] text-sm">• {act}</li>
                               ))}
                             </ul>
                           )}
@@ -579,51 +579,51 @@ export default function CotizacionDetalle() {
           {/* Vuelos - Cotizaciones de catálogo (desde paquete) */}
           {(paquete?.vuelos?.length || datosPaqueteDesdeNotas?.vuelos?.length) && (
             <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Plane className="w-5 h-5 text-blue-400" />
                 Vuelos
               </h3>
               <div className="space-y-3">
                 {(paquete?.vuelos || datosPaqueteDesdeNotas?.vuelos || []).map((vuelo: any, idx: number) => (
-                  <div key={idx} className="p-4 bg-white/5 rounded-xl border border-white/10">
+                  <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border border-[var(--border)]">
                     <div className="flex items-center justify-between mb-2">
                       <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold uppercase">
                         {vuelo.tipo === 'ida' ? 'Vuelo de Ida' : 'Vuelo de Vuelta'}
                       </span>
                       {vuelo.numero_vuelo && (
-                        <span className="text-sm text-slate-400">{vuelo.numero_vuelo}</span>
+                        <span className="text-sm text-[var(--muted-foreground)]">{vuelo.numero_vuelo}</span>
                       )}
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
-                        <p className="text-slate-500 text-xs">Origen</p>
-                        <p className="text-white font-medium">{vuelo.origen_nombre || vuelo.origen_codigo || '-'}</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">Origen</p>
+                        <p className="text-[var(--foreground)] font-medium">{vuelo.origen_nombre || vuelo.origen_codigo || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-slate-500 text-xs">Destino</p>
-                        <p className="text-white font-medium">{vuelo.destino_nombre || vuelo.destino_codigo || '-'}</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">Destino</p>
+                        <p className="text-[var(--foreground)] font-medium">{vuelo.destino_nombre || vuelo.destino_codigo || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-slate-500 text-xs">Fecha</p>
-                        <p className="text-white">{vuelo.fecha_salida || '-'}</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">Fecha</p>
+                        <p className="text-[var(--foreground)]">{vuelo.fecha_salida || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-slate-500 text-xs">Horario</p>
-                        <p className="text-white">{vuelo.hora_salida || '--:--'} - {vuelo.hora_llegada || '--:--'}</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">Horario</p>
+                        <p className="text-[var(--foreground)]">{vuelo.hora_salida || '--:--'} - {vuelo.hora_llegada || '--:--'}</p>
                       </div>
                     </div>
                     {(vuelo.aerolinea_nombre || vuelo.clase) && (
-                      <div className="grid grid-cols-2 gap-4 text-sm mt-2 pt-2 border-t border-white/10">
+                      <div className="grid grid-cols-2 gap-4 text-sm mt-2 pt-2 border-t border-[var(--border)]">
                         {vuelo.aerolinea_nombre && (
                           <div>
-                            <p className="text-slate-500 text-xs">Aerolínea</p>
-                            <p className="text-white">{vuelo.aerolinea_nombre}</p>
+                            <p className="text-[var(--muted-foreground)] text-xs">Aerolínea</p>
+                            <p className="text-[var(--foreground)]">{vuelo.aerolinea_nombre}</p>
                           </div>
                         )}
                         {vuelo.clase && (
                           <div>
-                            <p className="text-slate-500 text-xs">Clase</p>
-                            <p className="text-white">{vuelo.clase}</p>
+                            <p className="text-[var(--muted-foreground)] text-xs">Clase</p>
+                            <p className="text-[var(--foreground)]">{vuelo.clase}</p>
                           </div>
                         )}
                       </div>
@@ -638,7 +638,7 @@ export default function CotizacionDetalle() {
           {(paquete?.incluye?.length || paquete?.no_incluye?.length || 
             datosPaqueteDesdeNotas?.incluye?.length || datosPaqueteDesdeNotas?.no_incluye?.length) && (
             <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-blue-400" />
                 Detalles del Servicio
               </h3>
@@ -648,7 +648,7 @@ export default function CotizacionDetalle() {
                     <p className="text-green-400 font-bold mb-2">Incluye</p>
                     <ul className="space-y-1">
                       {(paquete?.incluye || datosPaqueteDesdeNotas?.incluye || []).map((item: string, idx: number) => (
-                        <li key={idx} className="text-slate-300 text-sm">+ {item}</li>
+                        <li key={idx} className="text-[var(--foreground)] text-sm">+ {item}</li>
                       ))}
                     </ul>
                   </div>
@@ -658,7 +658,7 @@ export default function CotizacionDetalle() {
                     <p className="text-red-400 font-bold mb-2">No incluye</p>
                     <ul className="space-y-1">
                       {(paquete?.no_incluye || datosPaqueteDesdeNotas?.no_incluye || []).map((item: string, idx: number) => (
-                        <li key={idx} className="text-slate-300 text-sm">- {item}</li>
+                        <li key={idx} className="text-[var(--foreground)] text-sm">- {item}</li>
                       ))}
                     </ul>
                   </div>
@@ -670,15 +670,15 @@ export default function CotizacionDetalle() {
           {/* Vuelos (cotización manual) */}
           {cotizacion.vuelos && cotizacion.vuelos.length > 0 && (
             <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Plane className="w-5 h-5 text-blue-400" />
                 Vuelos ({cotizacion.vuelos.length})
               </h3>
               <div className="space-y-3">
                 {cotizacion.vuelos.map((vuelo: any, idx: number) => (
-                  <div key={idx} className="p-4 bg-white/5 rounded-xl">
+                  <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-white font-bold">
+                      <span className="text-[var(--foreground)] font-bold">
                         {vuelo.origen_ciudad} → {vuelo.destino_ciudad}
                       </span>
                       <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
@@ -687,18 +687,18 @@ export default function CotizacionDetalle() {
                     </div>
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
-                        <p className="text-slate-500 text-xs">Salida</p>
-                        <p className="text-white">{vuelo.hora_salida}</p>
-                        <p className="text-slate-400 text-xs">{vuelo.fecha_salida}</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">Salida</p>
+                        <p className="text-[var(--foreground)]">{vuelo.hora_salida}</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">{vuelo.fecha_salida}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-slate-500 text-xs">Clase</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">Clase</p>
                         <p className="text-blue-400">{vuelo.clase_codigo}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-slate-500 text-xs">Llegada</p>
-                        <p className="text-white">{vuelo.hora_llegada}</p>
-                        <p className="text-slate-400 text-xs">{vuelo.fecha_llegada}</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">Llegada</p>
+                        <p className="text-[var(--foreground)]">{vuelo.hora_llegada}</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">{vuelo.fecha_llegada}</p>
                       </div>
                     </div>
                   </div>
@@ -710,17 +710,17 @@ export default function CotizacionDetalle() {
           {/* Hospedaje (cotización manual) */}
           {cotizacion.hospedaje && cotizacion.hospedaje.length > 0 && (
             <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <BedDouble className="w-5 h-5 text-blue-400" />
                 Hospedaje
               </h3>
               <div className="space-y-3">
                 {cotizacion.hospedaje.map((hotel: any, idx: number) => (
-                  <div key={idx} className="p-4 bg-white/5 rounded-xl">
+                  <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <p className="text-white font-bold">{hotel.nombre_hotel}</p>
-                        <p className="text-slate-400 text-sm">{hotel.ciudad}</p>
+                        <p className="text-[var(--foreground)] font-bold">{hotel.nombre_hotel}</p>
+                        <p className="text-[var(--muted-foreground)] text-sm">{hotel.ciudad}</p>
                       </div>
                       {hotel.link_hotel && (
                         <a 
@@ -735,16 +735,16 @@ export default function CotizacionDetalle() {
                     </div>
                     <div className="grid grid-cols-3 gap-4 text-sm mt-3">
                       <div>
-                        <p className="text-slate-500 text-xs">Check-in</p>
-                        <p className="text-white">{hotel.fecha_checkin || 'N/A'}</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">Check-in</p>
+                        <p className="text-[var(--foreground)]">{hotel.fecha_checkin || 'N/A'}</p>
                       </div>
                       <div>
-                        <p className="text-slate-500 text-xs">Check-out</p>
-                        <p className="text-white">{hotel.fecha_checkout || 'N/A'}</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">Check-out</p>
+                        <p className="text-[var(--foreground)]">{hotel.fecha_checkout || 'N/A'}</p>
                       </div>
                       <div>
-                        <p className="text-slate-500 text-xs">Regimen</p>
-                        <p className="text-white capitalize">{hotel.regimen?.replace('_', ' ')}</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">Regimen</p>
+                        <p className="text-[var(--foreground)] capitalize">{hotel.regimen?.replace('_', ' ')}</p>
                       </div>
                     </div>
                   </div>
@@ -756,12 +756,12 @@ export default function CotizacionDetalle() {
           {/* Itinerario (cotización manual) */}
           {cotizacion.itinerario_manual && (
             <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-blue-400" />
                 Itinerario
               </h3>
-              <div className="p-4 bg-white/5 rounded-xl">
-                <p className="text-slate-300 whitespace-pre-line">{cotizacion.itinerario_manual}</p>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-[var(--foreground)] whitespace-pre-line">{cotizacion.itinerario_manual}</p>
               </div>
             </div>
           )}
@@ -769,7 +769,7 @@ export default function CotizacionDetalle() {
           {/* Incluye / No incluye */}
           {(cotizacion.incluye?.length || cotizacion.no_incluye?.length) && (
             <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-blue-400" />
                 Detalles del Servicio
               </h3>
@@ -779,7 +779,7 @@ export default function CotizacionDetalle() {
                     <p className="text-green-400 font-bold mb-2">Incluye</p>
                     <ul className="space-y-1">
                       {cotizacion.incluye.map((item: string, idx: number) => (
-                        <li key={idx} className="text-slate-300 text-sm">+ {item}</li>
+                        <li key={idx} className="text-[var(--foreground)] text-sm">+ {item}</li>
                       ))}
                     </ul>
                   </div>
@@ -789,7 +789,7 @@ export default function CotizacionDetalle() {
                     <p className="text-red-400 font-bold mb-2">No incluye</p>
                     <ul className="space-y-1">
                       {cotizacion.no_incluye.map((item: string, idx: number) => (
-                        <li key={idx} className="text-slate-300 text-sm">- {item}</li>
+                        <li key={idx} className="text-[var(--foreground)] text-sm">- {item}</li>
                       ))}
                     </ul>
                   </div>
@@ -800,33 +800,33 @@ export default function CotizacionDetalle() {
 
           {/* Datos del cliente */}
           <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <User className="w-5 h-5 text-blue-400" />
               Datos del Cliente
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl">
-                <User className="w-5 h-5 text-slate-400" />
+              <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
+                <User className="w-5 h-5 text-[var(--muted-foreground)]" />
                 <div>
-                  <p className="text-xs text-slate-500 uppercase">Nombre</p>
-                  <p className="font-medium text-white">{cotizacion.cliente_nombre}</p>
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase">Nombre</p>
+                  <p className="font-medium text-[var(--foreground)]">{cotizacion.cliente_nombre}</p>
                 </div>
               </div>
               {cotizacion.cliente_email && (
-                <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl">
-                  <Mail className="w-5 h-5 text-slate-400" />
+                <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
+                  <Mail className="w-5 h-5 text-[var(--muted-foreground)]" />
                   <div>
-                    <p className="text-xs text-slate-500 uppercase">Email</p>
-                    <p className="font-medium text-white">{cotizacion.cliente_email}</p>
+                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Email</p>
+                    <p className="font-medium text-[var(--foreground)]">{cotizacion.cliente_email}</p>
                   </div>
                 </div>
               )}
               {cotizacion.cliente_telefono && (
-                <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl">
-                  <Phone className="w-5 h-5 text-slate-400" />
+                <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
+                  <Phone className="w-5 h-5 text-[var(--muted-foreground)]" />
                   <div>
-                    <p className="text-xs text-slate-500 uppercase">Teléfono</p>
-                    <p className="font-medium text-white">{cotizacion.cliente_telefono}</p>
+                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Teléfono</p>
+                    <p className="font-medium text-[var(--foreground)]">{cotizacion.cliente_telefono}</p>
                   </div>
                 </div>
               )}
@@ -847,19 +847,19 @@ export default function CotizacionDetalle() {
                 
                 return (
                   <>
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                       <Users className="w-5 h-5 text-blue-400" />
                       Pasajeros ({todosLosPasajeros.length})
                     </h3>
                     <div className="space-y-3">
                       {todosLosPasajeros.map((pasajero: any, idx: number) => (
-                        <div key={idx} className="p-4 bg-white/5 rounded-xl">
+                        <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <span className="w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">
                                 {idx + 1}
                               </span>
-                              <span className="font-medium text-white">
+                              <span className="font-medium text-[var(--foreground)]">
                                 {pasajero.nombre} {pasajero.apellido}
                                 {pasajero.es_titular && (
                                   <span className="ml-2 text-xs text-blue-400">(Titular)</span>
@@ -870,20 +870,20 @@ export default function CotizacionDetalle() {
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             {pasajero.documento && (
                               <div>
-                                <p className="text-xs text-slate-500">Documento</p>
-                                <p className="text-slate-300">{pasajero.documento}</p>
+                                <p className="text-xs text-[var(--muted-foreground)]">Documento</p>
+                                <p className="text-[var(--foreground)]">{pasajero.documento}</p>
                               </div>
                             )}
                             {pasajero.fecha_nacimiento && (
                               <div>
-                                <p className="text-xs text-slate-500">Fecha Nac.</p>
-                                <p className="text-slate-300">{pasajero.fecha_nacimiento}</p>
+                                <p className="text-xs text-[var(--muted-foreground)]">Fecha Nac.</p>
+                                <p className="text-[var(--foreground)]">{pasajero.fecha_nacimiento}</p>
                               </div>
                             )}
                             {pasajero.nacionalidad && (
                               <div>
-                                <p className="text-xs text-slate-500">Nacionalidad</p>
-                                <p className="text-slate-300">{pasajero.nacionalidad}</p>
+                                <p className="text-xs text-[var(--muted-foreground)]">Nacionalidad</p>
+                                <p className="text-[var(--foreground)]">{pasajero.nacionalidad}</p>
                               </div>
                             )}
                           </div>
@@ -899,8 +899,8 @@ export default function CotizacionDetalle() {
           {/* Notas - solo si no es cotización de catálogo o si hay notas reales */}
           {cotizacion.notas && !cotizacion.notas.includes('--- PAQUETE JSON ---') && (
             <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-white mb-4">Notas</h3>
-              <p className="text-slate-300 whitespace-pre-wrap">{cotizacion.notas}</p>
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Notas</h3>
+              <p className="text-[var(--foreground)] whitespace-pre-wrap">{cotizacion.notas}</p>
             </div>
           )}
         </div>
@@ -909,26 +909,26 @@ export default function CotizacionDetalle() {
         <div className="space-y-6">
           {/* Resumen */}
           <div className="glass-card rounded-2xl p-6 sticky top-6">
-            <h3 className="text-lg font-bold text-white mb-4">Resumen</h3>
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Resumen</h3>
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Precio por persona</span>
-                <span className="text-white">
+                <span className="text-[var(--muted-foreground)]">Precio por persona</span>
+                <span className="text-[var(--foreground)]">
                   ${formatCurrency(Math.round(cotizacion.precio_total / cotizacion.num_pasajeros))}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Pasajeros</span>
-                <span className="text-white">{cotizacion.num_pasajeros}</span>
+                <span className="text-[var(--muted-foreground)]">Pasajeros</span>
+                <span className="text-[var(--foreground)]">{cotizacion.num_pasajeros}</span>
               </div>
-              <div className="h-px bg-white/10 my-3" />
+              <div className="h-px bg-[var(--muted)] my-3" />
               <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-white">Total</span>
+                <span className="text-lg font-bold text-[var(--foreground)]">Total</span>
                 <span className="text-2xl font-black text-blue-400">${formatCurrency(cotizacion.precio_total)}</span>
               </div>
               {cotizacion.comision_vendedor && (
                 <div className="flex justify-between text-sm pt-2">
-                  <span className="text-slate-400">Tu comisión</span>
+                  <span className="text-[var(--muted-foreground)]">Tu comisión</span>
                   <span className="text-green-400 font-medium">${formatCurrency(cotizacion.comision_vendedor)}</span>
                 </div>
               )}
@@ -937,7 +937,7 @@ export default function CotizacionDetalle() {
             {puedeConvertir && (
               <button
                 onClick={() => setShowVentaModal(true)}
-                className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2"
+                className="w-full py-4 bg-green-600 hover:bg-green-700 text-[var(--foreground)] font-black rounded-2xl transition-all flex items-center justify-center gap-2"
               >
                 <CheckCircle className="w-5 h-5" />
                 Convertir a Venta
@@ -961,54 +961,54 @@ export default function CotizacionDetalle() {
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="glass-card w-full max-w-lg rounded-3xl p-8">
-            <h3 className="text-2xl font-black text-white mb-6">Editar Cotización</h3>
+            <h3 className="text-2xl font-black text-[var(--foreground)] mb-6">Editar Cotización</h3>
             <form onSubmit={handleUpdate} className="space-y-4">
               <div>
-                <label className="text-sm text-slate-400 mb-1 block">Nombre del Cliente</label>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Nombre del Cliente</label>
                 <input
                   type="text"
                   value={editData.cliente_nombre || ''}
                   onChange={(e) => setEditData({...editData, cliente_nombre: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-slate-400 mb-1 block">Email</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Email</label>
                   <input
                     type="email"
                     value={editData.cliente_email || ''}
                     onChange={(e) => setEditData({...editData, cliente_email: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-slate-400 mb-1 block">Teléfono</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Teléfono</label>
                   <input
                     type="tel"
                     value={editData.cliente_telefono || ''}
                     onChange={(e) => setEditData({...editData, cliente_telefono: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-slate-400 mb-1 block">Pasajeros</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Pasajeros</label>
                   <input
                     type="number"
                     min={1}
                     value={editData.num_pasajeros || 1}
                     onChange={(e) => setEditData({...editData, num_pasajeros: parseInt(e.target.value)})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-slate-400 mb-1 block">Tipo Habitación</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Tipo Habitación</label>
                   <select
                     value={editData.tipo_habitacion || 'doble'}
                     onChange={(e) => setEditData({...editData, tipo_habitacion: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   >
                     <option value="doble">Doble</option>
                     <option value="triple">Triple</option>
@@ -1017,34 +1017,34 @@ export default function CotizacionDetalle() {
                 </div>
               </div>
               <div>
-                <label className="text-sm text-slate-400 mb-1 block">Fecha de Salida</label>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Fecha de Salida</label>
                 <input
                   type="date"
                   value={editData.fecha_salida || ''}
                   onChange={(e) => setEditData({...editData, fecha_salida: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                 />
               </div>
               <div>
-                <label className="text-sm text-slate-400 mb-1 block">Notas</label>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Notas</label>
                 <textarea
                   rows={3}
                   value={editData.notas || ''}
                   onChange={(e) => setEditData({...editData, notas: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 resize-none"
                 />
               </div>
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                  className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all"
+                  className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] font-bold transition-all"
                 >
                   Guardar Cambios
                 </button>
@@ -1058,15 +1058,15 @@ export default function CotizacionDetalle() {
       {showVentaModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="glass-card w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-8">
-            <h3 className="text-2xl font-black text-white mb-2">Cerrar Venta</h3>
-            <p className="text-slate-400 text-sm mb-6">
+            <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Cerrar Venta</h3>
+            <p className="text-[var(--muted-foreground)] text-sm mb-6">
               Cotización: <span className="text-blue-400 font-mono">{cotizacion.codigo}</span>
             </p>
             
             <form onSubmit={handleConvertirAVenta} className="space-y-6">
               {/* Pregunta principal: ¿Recibió pago? */}
               <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-2xl space-y-4">
-                <h4 className="font-bold text-white flex items-center gap-2">
+                <h4 className="font-bold text-[var(--foreground)] flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-blue-400" />
                   ¿El cliente ya realizó algún pago?
                 </h4>
@@ -1077,8 +1077,8 @@ export default function CotizacionDetalle() {
                     onClick={() => setVentaData({...ventaData, pago_realizado: true, tipo_pago: 'adelanto'})}
                     className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
                       ventaData.pago_realizado 
-                        ? 'bg-green-600 text-white' 
-                        : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                        ? 'bg-green-600 text-[var(--foreground)]' 
+                        : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]'
                     }`}
                   >
                     ✅ Sí, recibí pago
@@ -1088,8 +1088,8 @@ export default function CotizacionDetalle() {
                     onClick={() => setVentaData({...ventaData, pago_realizado: false, monto_pagado: '', tipo_pago: 'pendiente'})}
                     className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
                       !ventaData.pago_realizado 
-                        ? 'bg-orange-600 text-white' 
-                        : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                        ? 'bg-orange-600 text-[var(--foreground)]' 
+                        : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]'
                     }`}
                   >
                     ⏳ No, aún no
@@ -1099,31 +1099,31 @@ export default function CotizacionDetalle() {
               
               {/* Si recibió pago - mostrar campos de pago */}
               {ventaData.pago_realizado && (
-                <div className="p-4 bg-white/5 rounded-2xl space-y-4">
-                  <h4 className="font-bold text-white flex items-center gap-2">
+                <div className="p-4 bg-[var(--muted)] rounded-2xl space-y-4">
+                  <h4 className="font-bold text-[var(--foreground)] flex items-center gap-2">
                     <CreditCard className="w-5 h-5 text-green-400" />
                     Detalles del Pago Recibido
                   </h4>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm text-slate-400 mb-1 block">Monto Recibido *</label>
+                      <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Monto Recibido *</label>
                       <input
                         type="number"
                         required={ventaData.pago_realizado}
                         min={1}
                         value={ventaData.monto_pagado}
                         onChange={(e) => setVentaData({...ventaData, monto_pagado: e.target.value})}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                        className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                         placeholder="Ej: 6000"
                       />
                     </div>
                     <div>
-                      <label className="text-sm text-slate-400 mb-1 block">Tipo de Pago *</label>
+                      <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Tipo de Pago *</label>
                       <select
                         value={ventaData.tipo_pago}
                         onChange={(e) => setVentaData({...ventaData, tipo_pago: e.target.value as 'total' | 'adelanto'})}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                        className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                       >
                         <option value="adelanto">Adelanto / Seña</option>
                         <option value="total">Pago Total</option>
@@ -1132,11 +1132,11 @@ export default function CotizacionDetalle() {
                   </div>
 
                   <div>
-                    <label className="text-sm text-slate-400 mb-1 block">Medio de Pago *</label>
+                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Medio de Pago *</label>
                     <select
                       value={ventaData.medio_pago}
                       onChange={(e) => setVentaData({...ventaData, medio_pago: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                     >
                       <option value="transferencia">Transferencia Bancaria</option>
                       <option value="efectivo">Efectivo</option>
@@ -1157,18 +1157,18 @@ export default function CotizacionDetalle() {
                   
                   {/* Upload de comprobantes */}
                   <div>
-                    <label className="text-sm text-slate-400 mb-2 block">
+                    <label className="text-sm text-[var(--muted-foreground)] mb-2 block">
                       Comprobante de Pago (opcional)
                     </label>
                     
                     {comprobantesPreview.length === 0 ? (
-                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/20 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-white/5 transition-all">
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/20 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-[var(--muted)] transition-all">
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <svg className="w-8 h-8 text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-8 h-8 text-[var(--muted-foreground)] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                           </svg>
-                          <p className="text-sm text-slate-400">Click para subir comprobante</p>
-                          <p className="text-xs text-slate-500">Imagen o PDF (máx. 10MB)</p>
+                          <p className="text-sm text-[var(--muted-foreground)]">Click para subir comprobante</p>
+                          <p className="text-xs text-[var(--muted-foreground)]">Imagen o PDF (máx. 10MB)</p>
                         </div>
                         <input 
                           type="file" 
@@ -1180,10 +1180,10 @@ export default function CotizacionDetalle() {
                     ) : (
                       <div className="space-y-2">
                         {comprobantesPreview.map((comp, idx) => (
-                          <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                          <div key={idx} className="flex items-center justify-between p-3 bg-[var(--muted)] rounded-xl">
                             <div className="flex items-center gap-3">
                               <span className="text-2xl">{comp.type === 'pdf' ? '📄' : '📷'}</span>
-                              <span className="text-sm text-white truncate max-w-[200px]">{comp.name}</span>
+                              <span className="text-sm text-[var(--foreground)] truncate max-w-[200px]">{comp.name}</span>
                             </div>
                             <button
                               type="button"
@@ -1194,7 +1194,7 @@ export default function CotizacionDetalle() {
                             </button>
                           </div>
                         ))}
-                        <label className="flex items-center justify-center w-full py-2 border border-dashed border-white/20 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-white/5 transition-all text-sm text-slate-400">
+                        <label className="flex items-center justify-center w-full py-2 border border-dashed border-white/20 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-[var(--muted)] transition-all text-sm text-[var(--muted-foreground)]">
                           + Agregar otro comprobante
                           <input 
                             type="file" 
@@ -1212,20 +1212,20 @@ export default function CotizacionDetalle() {
               {/* Si NO recibió pago */}
               {!ventaData.pago_realizado && (
                 <div className="p-4 bg-orange-500/5 border border-orange-500/20 rounded-2xl space-y-4">
-                  <h4 className="font-bold text-white flex items-center gap-2">
+                  <h4 className="font-bold text-[var(--foreground)] flex items-center gap-2">
                     <Clock className="w-5 h-5 text-orange-400" />
                     Información de Pago Pendiente
                   </h4>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-[var(--muted-foreground)]">
                     Indica cuándo o cómo planeas recibir el pago. Esta información será útil para el administrador.
                   </p>
                   <div>
-                    <label className="text-sm text-slate-400 mb-1 block">Detalles / Acuerdo de pago</label>
+                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Detalles / Acuerdo de pago</label>
                     <textarea
                       rows={3}
                       value={ventaData.observaciones_pago}
                       onChange={(e) => setVentaData({...ventaData, observaciones_pago: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none"
+                      className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 resize-none"
                       placeholder="Ej: El cliente pagará el lunes por transferencia..."
                     />
                   </div>
@@ -1233,40 +1233,40 @@ export default function CotizacionDetalle() {
               )}
 
               {/* Datos de Pasajeros */}
-              <div className="p-4 bg-white/5 rounded-2xl space-y-4">
-                <h4 className="font-bold text-white flex items-center gap-2">
+              <div className="p-4 bg-[var(--muted)] rounded-2xl space-y-4">
+                <h4 className="font-bold text-[var(--foreground)] flex items-center gap-2">
                   <Users className="w-5 h-5 text-blue-400" />
                   Datos de Pasajeros
                 </h4>
                 <div>
-                  <label className="text-sm text-slate-400 mb-1 block">
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">
                     Datos completos de los {cotizacion.num_pasajeros} pasajero(s)
                   </label>
                   <textarea
                     rows={4}
                     value={ventaData.datos_pasajeros}
                     onChange={(e) => setVentaData({...ventaData, datos_pasajeros: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none"
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 resize-none"
                     placeholder={`Nombre completo, DNI/Pasaporte, Fecha de nacimiento de cada pasajero...\n\nEjemplo:\n1. Juan Pérez, DNI 12345678, 15/03/1985\n2. María López, DNI 87654321, 20/07/1990`}
                   />
                 </div>
               </div>
 
               {/* Observaciones */}
-              <div className="p-4 bg-white/5 rounded-2xl space-y-4">
-                <h4 className="font-bold text-white flex items-center gap-2">
+              <div className="p-4 bg-[var(--muted)] rounded-2xl space-y-4">
+                <h4 className="font-bold text-[var(--foreground)] flex items-center gap-2">
                   <FileText className="w-5 h-5 text-purple-400" />
                   Observaciones / Dónde cobrar
                 </h4>
                 <div>
-                  <label className="text-sm text-slate-400 mb-1 block">
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">
                     Detalles adicionales, cuenta bancaria, dirección de cobro, etc.
                   </label>
                   <textarea
                     rows={3}
                     value={ventaData.observaciones_pago}
                     onChange={(e) => setVentaData({...ventaData, observaciones_pago: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 resize-none"
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 resize-none"
                     placeholder="CBU para transferencia, dirección si hay que ir a cobrar, notas especiales..."
                   />
                 </div>
@@ -1275,8 +1275,8 @@ export default function CotizacionDetalle() {
               {/* Resumen */}
               <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-slate-300">Total del viaje:</span>
-                  <span className="text-xl font-black text-white">${formatCurrency(cotizacion.precio_total)}</span>
+                  <span className="text-[var(--foreground)]">Total del viaje:</span>
+                  <span className="text-xl font-black text-[var(--foreground)]">${formatCurrency(cotizacion.precio_total)}</span>
                 </div>
                 {ventaData.pago_realizado && ventaData.monto_pagado && (
                   <div className="flex justify-between items-center text-sm">
@@ -1290,14 +1290,14 @@ export default function CotizacionDetalle() {
                 <button
                   type="button"
                   onClick={() => setShowVentaModal(false)}
-                  className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                  className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isConverting || (ventaData.pago_realizado && !ventaData.monto_pagado)}
-                  className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 disabled:bg-slate-600 text-white font-bold transition-all flex items-center justify-center gap-2"
+                  className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 disabled:bg-slate-600 text-[var(--foreground)] font-bold transition-all flex items-center justify-center gap-2"
                 >
                   {isConverting ? (
                     <>

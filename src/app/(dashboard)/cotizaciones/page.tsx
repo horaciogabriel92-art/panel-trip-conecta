@@ -186,12 +186,12 @@ export default function CotizacionesCRM() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-3xl font-black text-white">Mis Cotizaciones</h2>
-          <p className="text-slate-400">Pipeline de ventas: Nueva → Enviada → Vendida/Perdida</p>
+          <h2 className="text-3xl font-black text-[var(--foreground)]">Mis Cotizaciones</h2>
+          <p className="text-[var(--muted-foreground)]">Pipeline de ventas: Nueva → Enviada → Vendida/Perdida</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl transition-all flex items-center gap-2"
+          className="bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] font-bold px-6 py-3 rounded-2xl transition-all flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Nueva Cotización
@@ -215,15 +215,15 @@ export default function CotizacionesCRM() {
               )}
             >
               {/* Column Header */}
-              <div className="p-3 border-b border-white/10">
+              <div className="p-3 border-b border-[var(--border)]">
                 <div className="flex items-center gap-2 mb-1">
-                  <Icon className="w-4 h-4 text-white" />
-                  <h3 className="font-bold text-white text-sm">{columna.label}</h3>
-                  <span className="ml-auto px-2 py-0.5 bg-white/10 rounded text-xs font-bold text-white">
+                  <Icon className="w-4 h-4 text-[var(--foreground)]" />
+                  <h3 className="font-bold text-[var(--foreground)] text-sm">{columna.label}</h3>
+                  <span className="ml-auto px-2 py-0.5 bg-[var(--muted)] rounded text-xs font-bold text-[var(--foreground)]">
                     {cotizacionesColumna.length}
                   </span>
                 </div>
-                <p className="text-[10px] text-slate-400">{columna.description}</p>
+                <p className="text-[10px] text-[var(--muted-foreground)]">{columna.description}</p>
               </div>
 
               {/* Cards */}
@@ -241,7 +241,7 @@ export default function CotizacionesCRM() {
                         <span className="text-[10px] font-black uppercase tracking-wider text-blue-400">
                           {c.codigo}
                         </span>
-                        <span className="text-base font-black text-white">
+                        <span className="text-base font-black text-[var(--foreground)]">
                           ${formatCurrency(c.precio_total)}
                         </span>
                       </div>
@@ -249,14 +249,14 @@ export default function CotizacionesCRM() {
                       {/* Info del cliente */}
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-white text-sm truncate">{c.cliente_nombre}</h4>
+                          <h4 className="font-bold text-[var(--foreground)] text-sm truncate">{c.cliente_nombre}</h4>
                           {c.tipo_cotizacion === 'manual' && (
                             <span className="px-1.5 py-0.5 bg-teal-500/20 text-teal-400 text-[9px] font-bold rounded">
                               MANUAL
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-slate-400 truncate">
+                        <p className="text-xs text-[var(--muted-foreground)] truncate">
                           {c.tipo_cotizacion === 'manual' 
                             ? `${c.vuelos?.length || 0} vuelos, ${c.hospedaje?.length || 0} hoteles`
                             : c.paquete_nombre
@@ -265,7 +265,7 @@ export default function CotizacionesCRM() {
                       </div>
 
                       {/* Metadata */}
-                      <div className="flex items-center justify-between text-[10px] text-slate-500">
+                      <div className="flex items-center justify-between text-[10px] text-[var(--muted-foreground)]">
                         <span>{c.num_pasajeros} pasajeros</span>
                         {diasRestantes !== null && (
                           <span className={diasRestantes < 0 ? 'text-red-400' : diasRestantes <= 2 ? 'text-orange-400' : 'text-green-400'}>
@@ -275,7 +275,7 @@ export default function CotizacionesCRM() {
                       </div>
 
                       {/* Fechas */}
-                      <div className="text-[10px] text-slate-500 space-y-0.5">
+                      <div className="text-[10px] text-[var(--muted-foreground)] space-y-0.5">
                         <div>Creada: {new Date(c.fecha_creacion).toLocaleDateString()}</div>
                         {c.fecha_envio && (
                           <div>Enviada: {new Date(c.fecha_envio).toLocaleDateString()}</div>
@@ -283,7 +283,7 @@ export default function CotizacionesCRM() {
                       </div>
 
                       {/* Acciones según columna */}
-                      <div className="pt-2 border-t border-white/10 space-y-2">
+                      <div className="pt-2 border-t border-[var(--border)] space-y-2">
                         {/* COLUMNA NUEVA: Botón Enviar */}
                         {columna.id === 'pendiente' && (
                           <button
@@ -337,7 +337,7 @@ export default function CotizacionesCRM() {
                         {columna.id !== 'vendida' && (
                           <button
                             onClick={() => abrirModalEliminar(c)}
-                            className="w-full py-2 bg-slate-600/20 hover:bg-red-600/30 text-slate-400 hover:text-red-400 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
+                            className="w-full py-2 bg-slate-600/20 hover:bg-red-600/30 text-[var(--muted-foreground)] hover:text-red-400 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                             ELIMINAR
@@ -347,7 +347,7 @@ export default function CotizacionesCRM() {
                         {/* Ver detalle siempre disponible */}
                         <Link
                           href={`/cotizaciones/${c.id}`}
-                          className="w-full py-1.5 bg-white/5 hover:bg-white/10 text-slate-400 rounded-lg text-xs transition-all flex items-center justify-center gap-1"
+                          className="w-full py-1.5 bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--muted-foreground)] rounded-lg text-xs transition-all flex items-center justify-center gap-1"
                         >
                           <ArrowRight className="w-3 h-3" />
                           Ver detalle
@@ -358,7 +358,7 @@ export default function CotizacionesCRM() {
                 })}
 
                 {cotizacionesColumna.length === 0 && (
-                  <div className="text-center py-6 text-slate-500">
+                  <div className="text-center py-6 text-[var(--muted-foreground)]">
                     <Icon className="w-6 h-6 mx-auto mb-1 opacity-20" />
                     <p className="text-xs">Sin cotizaciones</p>
                   </div>
@@ -378,29 +378,29 @@ export default function CotizacionesCRM() {
                 <AlertTriangle className="w-5 h-5 text-red-400" />
               </div>
               <div>
-                <h3 className="text-xl font-black text-white">Venta Perdida</h3>
-                <p className="text-sm text-slate-400">{cotizacionPerdida.codigo}</p>
+                <h3 className="text-xl font-black text-[var(--foreground)]">Venta Perdida</h3>
+                <p className="text-sm text-[var(--muted-foreground)]">{cotizacionPerdida.codigo}</p>
               </div>
             </div>
 
-            <div className="mb-4 p-3 bg-white/5 rounded-lg">
-              <p className="text-sm text-slate-300">
+            <div className="mb-4 p-3 bg-[var(--muted)] rounded-lg">
+              <p className="text-sm text-[var(--foreground)]">
                 <strong>Cliente:</strong> {cotizacionPerdida.cliente_nombre}
               </p>
-              <p className="text-sm text-slate-300">
+              <p className="text-sm text-[var(--foreground)]">
                 <strong>Total:</strong> ${formatCurrency(cotizacionPerdida.precio_total)}
               </p>
             </div>
 
             <div className="space-y-3">
-              <label className="text-sm text-slate-400 block">
+              <label className="text-sm text-[var(--muted-foreground)] block">
                 ¿Por qué se perdió esta venta?
               </label>
               <textarea
                 rows={3}
                 value={motivoPerdida}
                 onChange={(e) => setMotivoPerdida(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-red-500 resize-none"
+                className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] text-sm outline-none focus:border-red-500 resize-none"
                 placeholder="Ej: El cliente encontró precio más barato, no puede viajar en esas fechas, etc."
               />
             </div>
@@ -408,14 +408,14 @@ export default function CotizacionesCRM() {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowPerdidaModal(false)}
-                className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all"
+                className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
               >
                 Cancelar
               </button>
               <button
                 onClick={marcarComoPerdida}
                 disabled={!motivoPerdida.trim()}
-                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-slate-600 text-white font-bold transition-all"
+                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-slate-600 text-[var(--foreground)] font-bold transition-all"
               >
                 Confirmar
               </button>
@@ -433,19 +433,19 @@ export default function CotizacionesCRM() {
                 <Trash2 className="w-5 h-5 text-red-400" />
               </div>
               <div>
-                <h3 className="text-xl font-black text-white">¿Eliminar Cotización?</h3>
-                <p className="text-sm text-slate-400">{cotizacionToDelete.codigo}</p>
+                <h3 className="text-xl font-black text-[var(--foreground)]">¿Eliminar Cotización?</h3>
+                <p className="text-sm text-[var(--muted-foreground)]">{cotizacionToDelete.codigo}</p>
               </div>
             </div>
 
-            <div className="mb-4 p-3 bg-white/5 rounded-lg">
-              <p className="text-sm text-slate-300">
+            <div className="mb-4 p-3 bg-[var(--muted)] rounded-lg">
+              <p className="text-sm text-[var(--foreground)]">
                 <strong>Cliente:</strong> {cotizacionToDelete.cliente_nombre}
               </p>
-              <p className="text-sm text-slate-300">
+              <p className="text-sm text-[var(--foreground)]">
                 <strong>Total:</strong> ${formatCurrency(cotizacionToDelete.precio_total)}
               </p>
-              <p className="text-sm text-slate-300">
+              <p className="text-sm text-[var(--foreground)]">
                 <strong>Estado:</strong> {cotizacionToDelete.estado}
               </p>
             </div>
@@ -455,14 +455,14 @@ export default function CotizacionesCRM() {
                 <p className="text-sm text-red-300 font-medium mb-2">
                   ⚠️ Advertencia de eliminación permanente
                 </p>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
                   Si eliminas esta cotización, <strong>todos los datos serán permanentemente eliminados</strong> de la base de datos. 
                   Esta acción <strong>no se puede deshacer</strong>. Los datos del cliente, vuelos, hospedaje y 
                   cualquier información relacionada se perderán definitivamente.
                 </p>
               </div>
               
-              <p className="text-xs text-slate-500 text-center">
+              <p className="text-xs text-[var(--muted-foreground)] text-center">
                 ¿Estás seguro de que deseas continuar?
               </p>
             </div>
@@ -474,14 +474,14 @@ export default function CotizacionesCRM() {
                   setCotizacionToDelete(null);
                 }}
                 disabled={isDeleting}
-                className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-50 text-white font-medium transition-all"
+                className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] disabled:opacity-50 text-[var(--foreground)] font-medium transition-all"
               >
                 Cancelar
               </button>
               <button
                 onClick={eliminarCotizacion}
                 disabled={isDeleting}
-                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold transition-all flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 text-[var(--foreground)] font-bold transition-all flex items-center justify-center gap-2"
               >
                 {isDeleting ? (
                   <>

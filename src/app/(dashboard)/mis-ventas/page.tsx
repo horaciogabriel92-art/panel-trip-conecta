@@ -59,7 +59,7 @@ export default function MisVentas() {
       case 'en_proceso': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
       case 'cancelada': return 'bg-red-500/10 text-red-400 border-red-500/20';
       case 'reembolsada': return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
-      default: return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+      default: return 'bg-slate-500/10 text-[var(--muted-foreground)] border-slate-500/20';
     }
   };
 
@@ -84,27 +84,27 @@ export default function MisVentas() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-black text-white">Mis Ventas</h2>
-          <p className="text-slate-400">Historial de ventas confirmadas y comisiones</p>
+          <h2 className="text-3xl font-black text-[var(--foreground)]">Mis Ventas</h2>
+          <p className="text-[var(--muted-foreground)]">Historial de ventas confirmadas y comisiones</p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="glass-card p-6 rounded-2xl">
-          <p className="text-sm text-slate-400 mb-1">Total Ventas</p>
-          <p className="text-3xl font-black text-white">{stats.total}</p>
+          <p className="text-sm text-[var(--muted-foreground)] mb-1">Total Ventas</p>
+          <p className="text-3xl font-black text-[var(--foreground)]">{stats.total}</p>
         </div>
         <div className="glass-card p-6 rounded-2xl">
-          <p className="text-sm text-slate-400 mb-1">Confirmadas</p>
+          <p className="text-sm text-[var(--muted-foreground)] mb-1">Confirmadas</p>
           <p className="text-3xl font-black text-blue-400">{stats.confirmadas}</p>
         </div>
         <div className="glass-card p-6 rounded-2xl">
-          <p className="text-sm text-slate-400 mb-1">Emitidas</p>
+          <p className="text-sm text-[var(--muted-foreground)] mb-1">Emitidas</p>
           <p className="text-3xl font-black text-green-400">{stats.emitidas}</p>
         </div>
         <div className="glass-card p-6 rounded-2xl">
-          <p className="text-sm text-slate-400 mb-1">Comisión Pendiente</p>
+          <p className="text-sm text-[var(--muted-foreground)] mb-1">Comisión Pendiente</p>
           <p className="text-3xl font-black text-orange-400">${formatCurrency(stats.comisionPendiente)}</p>
         </div>
       </div>
@@ -118,8 +118,8 @@ export default function MisVentas() {
             className={cn(
               "px-4 py-2 rounded-xl text-sm font-medium transition-all capitalize",
               filtroEstado === estado 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                ? 'bg-blue-600 text-[var(--foreground)]' 
+                : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]'
             )}
           >
             {estado === 'todos' ? 'Todas' : estado.replace('_', ' ')}
@@ -136,7 +136,7 @@ export default function MisVentas() {
                 <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">
                   {venta.codigo}
                 </span>
-                <h3 className="text-lg font-black text-white leading-tight">
+                <h3 className="text-lg font-black text-[var(--foreground)] leading-tight">
                   {venta.paquete_nombre || 'Paquete'}
                 </h3>
               </div>
@@ -150,19 +150,19 @@ export default function MisVentas() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-[10px] text-slate-500 uppercase font-black">Cliente</p>
-                <p className="text-sm font-bold text-slate-200">{venta.cliente_nombre}</p>
+                <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-black">Cliente</p>
+                <p className="text-sm font-bold text-[var(--muted-foreground)]">{venta.cliente_nombre}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-[10px] text-slate-500 uppercase font-black">Pasajeros</p>
+                <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-black">Pasajeros</p>
                 <p className="text-sm font-black text-blue-400">{venta.num_pasajeros}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-[10px] text-slate-500 uppercase font-black">Total Venta</p>
-                <p className="text-lg font-black text-white">${formatCurrency(venta.precio_total)}</p>
+                <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-black">Total Venta</p>
+                <p className="text-lg font-black text-[var(--foreground)]">${formatCurrency(venta.precio_total)}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-[10px] text-slate-500 uppercase font-black">Tu Comisión</p>
+                <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-black">Tu Comisión</p>
                 <p className="text-lg font-black text-green-400">${formatCurrency(venta.comision_monto)}</p>
                 <span className={cn(
                   "text-[10px] uppercase font-bold",
@@ -173,14 +173,14 @@ export default function MisVentas() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs text-slate-500">
+            <div className="pt-4 border-t border-[var(--border)] flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>{new Date(venta.fecha_creacion).toLocaleDateString()}</span>
               </div>
               <Link 
                 href={`/mis-ventas/${venta.id}`}
-                className="text-xs font-black text-white hover:text-blue-400 border border-white/10 hover:border-blue-500/50 px-4 py-2 rounded-xl transition-all flex items-center gap-2"
+                className="text-xs font-black text-[var(--foreground)] hover:text-blue-400 border border-[var(--border)] hover:border-blue-500/50 px-4 py-2 rounded-xl transition-all flex items-center gap-2"
               >
                 {venta.tiene_documentos && <FileText className="w-3.5 h-3.5" />}
                 VER DETALLE
@@ -190,7 +190,7 @@ export default function MisVentas() {
         ))}
 
         {filteredVentas.length === 0 && !isLoading && (
-          <div className="col-span-full py-20 bg-white/2 rounded-3xl border border-dashed border-white/10 flex flex-col items-center justify-center text-slate-500 space-y-4">
+          <div className="col-span-full py-20 bg-[var(--muted)] rounded-3xl border border-dashed border-[var(--border)] flex flex-col items-center justify-center text-[var(--muted-foreground)] space-y-4">
             <ShoppingCart className="w-12 h-12 opacity-20" />
             <p className="font-medium italic">Aún no tienes ventas registradas.</p>
             <Link href="/paquetes" className="text-blue-400 hover:underline">

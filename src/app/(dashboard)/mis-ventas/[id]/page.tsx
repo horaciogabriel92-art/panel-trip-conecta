@@ -59,7 +59,7 @@ const tiposDocumentos: Record<string, { icon: any; label: string; color: string 
   itinerario_final: { icon: FileCheck, label: 'Itinerario Final', color: 'text-cyan-400' },
   e_ticket: { icon: Plane, label: 'E-Ticket', color: 'text-blue-400' },
   boarding_pass: { icon: Ticket, label: 'Boarding Pass', color: 'text-pink-400' },
-  otro: { icon: FileText, label: 'Documento', color: 'text-slate-400' }
+  otro: { icon: FileText, label: 'Documento', color: 'text-[var(--muted-foreground)]' }
 };
 
 export default function VentaDetalle() {
@@ -96,7 +96,7 @@ export default function VentaDetalle() {
       case 'emitida': return 'bg-green-500/10 text-green-400 border-green-500/20';
       case 'confirmada': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       case 'en_proceso': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
-      default: return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+      default: return 'bg-slate-500/10 text-[var(--muted-foreground)] border-slate-500/20';
     }
   };
 
@@ -135,7 +135,7 @@ export default function VentaDetalle() {
   if (!venta) {
     return (
       <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-white">Venta no encontrada</h2>
+        <h2 className="text-2xl font-bold text-[var(--foreground)]">Venta no encontrada</h2>
         <Link href="/mis-ventas" className="text-blue-400 hover:text-blue-300 mt-4 inline-block">
           ← Volver a mis ventas
         </Link>
@@ -147,17 +147,17 @@ export default function VentaDetalle() {
     <div className="space-y-6 animate-in fade-in duration-700">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/mis-ventas" className="p-2 bg-white/5 rounded-xl hover:bg-white/10 transition-all">
-          <ArrowLeft className="w-5 h-5 text-slate-400" />
+        <Link href="/mis-ventas" className="p-2 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all">
+          <ArrowLeft className="w-5 h-5 text-[var(--muted-foreground)]" />
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-black text-white">Venta {venta.codigo}</h2>
+            <h2 className="text-2xl font-black text-[var(--foreground)]">Venta {venta.codigo}</h2>
             <span className={`px-3 py-1 rounded-full text-xs font-black uppercase border ${getStatusColor(venta.estado)}`}>
               {venta.estado.replace('_', ' ')}
             </span>
           </div>
-          <p className="text-slate-400 text-sm">
+          <p className="text-[var(--muted-foreground)] text-sm">
             {venta.paquete_nombre}
           </p>
         </div>
@@ -168,25 +168,25 @@ export default function VentaDetalle() {
         <div className="lg:col-span-2 space-y-6">
           {/* Datos del cliente */}
           <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <User className="w-5 h-5 text-blue-400" />
               Datos del Cliente
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-white/5 rounded-xl">
-                <p className="text-xs text-slate-500 uppercase mb-1">Nombre</p>
-                <p className="font-medium text-white">{venta.cliente_nombre}</p>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Nombre</p>
+                <p className="font-medium text-[var(--foreground)]">{venta.cliente_nombre}</p>
               </div>
               {venta.cliente_email && (
-                <div className="p-4 bg-white/5 rounded-xl">
-                  <p className="text-xs text-slate-500 uppercase mb-1">Email</p>
-                  <p className="font-medium text-white">{venta.cliente_email}</p>
+                <div className="p-4 bg-[var(--muted)] rounded-xl">
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Email</p>
+                  <p className="font-medium text-[var(--foreground)]">{venta.cliente_email}</p>
                 </div>
               )}
               {venta.cliente_telefono && (
-                <div className="p-4 bg-white/5 rounded-xl">
-                  <p className="text-xs text-slate-500 uppercase mb-1">Teléfono</p>
-                  <p className="font-medium text-white">{venta.cliente_telefono}</p>
+                <div className="p-4 bg-[var(--muted)] rounded-xl">
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Teléfono</p>
+                  <p className="font-medium text-[var(--foreground)]">{venta.cliente_telefono}</p>
                 </div>
               )}
             </div>
@@ -194,7 +194,7 @@ export default function VentaDetalle() {
 
           {/* Documentos de viaje */}
           <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <FileText className="w-5 h-5 text-blue-400" />
               Documentos de Viaje
             </h3>
@@ -206,16 +206,16 @@ export default function VentaDetalle() {
                   const Icon = tipo.icon;
                   
                   return (
-                    <div key={doc.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
+                    <div key={doc.id} className="flex items-center justify-between p-4 bg-[var(--muted)] rounded-xl">
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center`}>
+                        <div className={`w-10 h-10 rounded-lg bg-[var(--muted)] flex items-center justify-center`}>
                           <Icon className={`w-5 h-5 ${tipo.color}`} />
                         </div>
                         <div>
-                          <p className="font-medium text-white">{tipo.label}</p>
-                          <p className="text-xs text-slate-400">{doc.nombre_archivo}</p>
+                          <p className="font-medium text-[var(--foreground)]">{tipo.label}</p>
+                          <p className="text-xs text-[var(--muted-foreground)]">{doc.nombre_archivo}</p>
                           {doc.descripcion && (
-                            <p className="text-xs text-slate-500 mt-1">{doc.descripcion}</p>
+                            <p className="text-xs text-[var(--muted-foreground)] mt-1">{doc.descripcion}</p>
                           )}
                         </div>
                       </div>
@@ -227,7 +227,7 @@ export default function VentaDetalle() {
                         {downloadingId === doc.id ? (
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         ) : (
-                          <Download className="w-4 h-4 text-white" />
+                          <Download className="w-4 h-4 text-[var(--foreground)]" />
                         )}
                       </button>
                     </div>
@@ -236,9 +236,9 @@ export default function VentaDetalle() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <AlertCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400">Aún no hay documentos disponibles</p>
-                <p className="text-slate-500 text-sm mt-1">
+                <AlertCircle className="w-12 h-12 text-[var(--muted-foreground)] mx-auto mb-3" />
+                <p className="text-[var(--muted-foreground)]">Aún no hay documentos disponibles</p>
+                <p className="text-[var(--muted-foreground)] text-sm mt-1">
                   El admin los subirá cuando estén listos
                 </p>
               </div>
@@ -248,7 +248,7 @@ export default function VentaDetalle() {
           {/* Notas - Formateadas con tarjetas */}
           {venta.notas && (
             <div>
-              <h3 className="text-lg font-bold text-white mb-4">Información de la Venta</h3>
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Información de la Venta</h3>
               <NotasVenta notas={venta.notas} />
             </div>
           )}
@@ -257,32 +257,32 @@ export default function VentaDetalle() {
         {/* Columna derecha - Resumen */}
         <div className="space-y-6">
           <div className="glass-card rounded-2xl p-6 sticky top-6">
-            <h3 className="text-lg font-bold text-white mb-4">Resumen</h3>
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Resumen</h3>
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Pasajeros</span>
-                <span className="text-white">{venta.num_pasajeros}</span>
+                <span className="text-[var(--muted-foreground)]">Pasajeros</span>
+                <span className="text-[var(--foreground)]">{venta.num_pasajeros}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Fecha Salida</span>
-                <span className="text-white">
+                <span className="text-[var(--muted-foreground)]">Fecha Salida</span>
+                <span className="text-[var(--foreground)]">
                   {venta.fecha_salida 
                     ? new Date(venta.fecha_salida).toLocaleDateString('es-AR')
                     : 'A definir'
                   }
                 </span>
               </div>
-              <div className="h-px bg-white/10 my-3" />
+              <div className="h-px bg-[var(--muted)] my-3" />
               <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-white">Total</span>
+                <span className="text-lg font-bold text-[var(--foreground)]">Total</span>
                 <span className="text-2xl font-black text-blue-400">${formatCurrency(venta.precio_total)}</span>
               </div>
               <div className="flex justify-between text-sm pt-2">
-                <span className="text-slate-400">Tu comisión</span>
+                <span className="text-[var(--muted-foreground)]">Tu comisión</span>
                 <span className="text-green-400 font-medium">${formatCurrency(venta.comision_monto)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Estado comisión</span>
+                <span className="text-[var(--muted-foreground)]">Estado comisión</span>
                 <span className={venta.comision_estado === 'pagada' ? 'text-green-400' : 'text-orange-400'}>
                   {venta.comision_estado === 'pagada' ? 'Pagada' : 'Pendiente'}
                 </span>
@@ -295,7 +295,7 @@ export default function VentaDetalle() {
                   <CheckCircle className="w-5 h-5 text-green-400" />
                   <span className="text-green-400 font-medium">Documentos listos</span>
                 </div>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-[var(--muted-foreground)]">
                   {documentos.length} documento{documentos.length > 1 ? 's' : ''} disponible{documentos.length > 1 ? 's' : ''} para descargar
                 </p>
               </div>

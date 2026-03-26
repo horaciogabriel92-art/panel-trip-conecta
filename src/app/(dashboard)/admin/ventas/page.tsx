@@ -56,7 +56,7 @@ export default function AdminVentas() {
       case 'confirmada': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       case 'en_proceso': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
       case 'cancelada': return 'bg-red-500/10 text-red-400 border-red-500/20';
-      default: return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+      default: return 'bg-slate-500/10 text-[var(--muted-foreground)] border-slate-500/20';
     }
   };
 
@@ -83,40 +83,40 @@ export default function AdminVentas() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-black text-white">Gestión de Ventas</h2>
-          <p className="text-slate-400">Administra todas las ventas y emite documentos</p>
+          <h2 className="text-3xl font-black text-[var(--foreground)]">Gestión de Ventas</h2>
+          <p className="text-[var(--muted-foreground)]">Administra todas las ventas y emite documentos</p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="glass-card p-6 rounded-2xl">
-          <p className="text-sm text-slate-400 mb-1">Total Ventas</p>
-          <p className="text-3xl font-black text-white">{stats.total}</p>
+          <p className="text-sm text-[var(--muted-foreground)] mb-1">Total Ventas</p>
+          <p className="text-3xl font-black text-[var(--foreground)]">{stats.total}</p>
         </div>
         <div className="glass-card p-6 rounded-2xl">
-          <p className="text-sm text-slate-400 mb-1">Monto Total</p>
+          <p className="text-sm text-[var(--muted-foreground)] mb-1">Monto Total</p>
           <p className="text-3xl font-black text-blue-400">${formatCurrency(stats.montoTotal)}</p>
         </div>
         <div className="glass-card p-6 rounded-2xl">
-          <p className="text-sm text-slate-400 mb-1">Comisiones Pendientes</p>
+          <p className="text-sm text-[var(--muted-foreground)] mb-1">Comisiones Pendientes</p>
           <p className="text-3xl font-black text-orange-400">${formatCurrency(stats.comisionesPendientes)}</p>
         </div>
         <div className="glass-card p-6 rounded-2xl">
-          <p className="text-sm text-slate-400 mb-1">Comisiones Pagadas</p>
+          <p className="text-sm text-[var(--muted-foreground)] mb-1">Comisiones Pagadas</p>
           <p className="text-3xl font-black text-green-400">${formatCurrency(stats.comisionesPagadas)}</p>
         </div>
       </div>
 
       {/* Buscador */}
-      <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
-        <Search className="w-5 h-5 text-slate-500" />
+      <div className="flex items-center gap-3 bg-[var(--muted)] border border-[var(--border)] rounded-2xl px-4 py-3">
+        <Search className="w-5 h-5 text-[var(--muted-foreground)]" />
         <input 
           type="text" 
           placeholder="Buscar por código, cliente, vendedor..." 
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="bg-transparent border-none outline-none text-sm w-full text-slate-300" 
+          className="bg-transparent border-none outline-none text-sm w-full text-[var(--foreground)]" 
         />
       </div>
 
@@ -125,29 +125,29 @@ export default function AdminVentas() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/10">
-                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Código</th>
-                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Cliente</th>
-                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Paquete</th>
-                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Vendedor</th>
-                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Total</th>
-                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Comisión</th>
-                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Estado</th>
-                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Docs</th>
-                <th className="text-left p-4 text-xs font-black text-slate-400 uppercase">Acciones</th>
+              <tr className="border-b border-[var(--border)]">
+                <th className="text-left p-4 text-xs font-black text-[var(--muted-foreground)] uppercase">Código</th>
+                <th className="text-left p-4 text-xs font-black text-[var(--muted-foreground)] uppercase">Cliente</th>
+                <th className="text-left p-4 text-xs font-black text-[var(--muted-foreground)] uppercase">Paquete</th>
+                <th className="text-left p-4 text-xs font-black text-[var(--muted-foreground)] uppercase">Vendedor</th>
+                <th className="text-left p-4 text-xs font-black text-[var(--muted-foreground)] uppercase">Total</th>
+                <th className="text-left p-4 text-xs font-black text-[var(--muted-foreground)] uppercase">Comisión</th>
+                <th className="text-left p-4 text-xs font-black text-[var(--muted-foreground)] uppercase">Estado</th>
+                <th className="text-left p-4 text-xs font-black text-[var(--muted-foreground)] uppercase">Docs</th>
+                <th className="text-left p-4 text-xs font-black text-[var(--muted-foreground)] uppercase">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {filteredVentas.map((v) => (
-                <tr key={v.id} className="border-b border-white/5 hover:bg-white/5 transition-all">
+                <tr key={v.id} className="border-b border-[var(--border)] hover:bg-[var(--muted)] transition-all">
                   <td className="p-4">
                     <span className="text-blue-400 font-mono text-sm">{v.codigo}</span>
                   </td>
-                  <td className="p-4 text-white">{v.cliente_nombre}</td>
-                  <td className="p-4 text-slate-300">{v.paquete_nombre || '-'}</td>
-                  <td className="p-4 text-slate-300">{v.vendedor_nombre || '-'}</td>
+                  <td className="p-4 text-[var(--foreground)]">{v.cliente_nombre}</td>
+                  <td className="p-4 text-[var(--foreground)]">{v.paquete_nombre || '-'}</td>
+                  <td className="p-4 text-[var(--foreground)]">{v.vendedor_nombre || '-'}</td>
                   <td className="p-4">
-                    <span className="text-white font-bold">${formatCurrency(v.precio_total)}</span>
+                    <span className="text-[var(--foreground)] font-bold">${formatCurrency(v.precio_total)}</span>
                   </td>
                   <td className="p-4">
                     <div>
@@ -172,15 +172,15 @@ export default function AdminVentas() {
                     {v.tiene_documentos ? (
                       <span className="text-green-400 text-sm">✓</span>
                     ) : (
-                      <span className="text-slate-500 text-sm">-</span>
+                      <span className="text-[var(--muted-foreground)] text-sm">-</span>
                     )}
                   </td>
                   <td className="p-4">
                     <Link 
                       href={`/admin/ventas/${v.id}`}
-                      className="p-2 bg-white/5 rounded-lg hover:bg-blue-600 transition-all inline-flex"
+                      className="p-2 bg-[var(--muted)] rounded-lg hover:bg-blue-600 transition-all inline-flex"
                     >
-                      <Eye className="w-4 h-4 text-slate-300" />
+                      <Eye className="w-4 h-4 text-[var(--foreground)]" />
                     </Link>
                   </td>
                 </tr>
@@ -190,7 +190,7 @@ export default function AdminVentas() {
         </div>
 
         {filteredVentas.length === 0 && !isLoading && (
-          <div className="py-20 text-center text-slate-500">
+          <div className="py-20 text-center text-[var(--muted-foreground)]">
             <ShoppingCart className="w-12 h-12 mx-auto mb-4 opacity-20" />
             <p>No se encontraron ventas</p>
           </div>

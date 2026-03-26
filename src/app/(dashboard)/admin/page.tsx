@@ -33,8 +33,8 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div>
-        <h2 className="text-3xl font-black text-white">Panel de Administración</h2>
-        <p className="text-slate-400">Resumen general del sistema Trip Conecta</p>
+        <h2 className="text-3xl font-black text-[var(--foreground)]">Panel de Administración</h2>
+        <p className="text-[var(--muted-foreground)]">Resumen general del sistema Trip Conecta</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -44,8 +44,8 @@ export default function AdminDashboard() {
               <card.icon className={cn("w-6 h-6", card.color)} />
             </div>
             <div>
-              <p className="text-sm text-slate-400 font-medium">{card.title}</p>
-              <h3 className="text-2xl font-bold text-white">{card.value}</h3>
+              <p className="text-sm text-[var(--muted-foreground)] font-medium">{card.title}</p>
+              <h3 className="text-2xl font-bold text-[var(--foreground)]">{card.value}</h3>
             </div>
           </div>
         ))}
@@ -59,8 +59,8 @@ export default function AdminDashboard() {
               Rendimiento de Ventas
             </h3>
             <div className="flex gap-2">
-              <button className="px-3 py-1 text-xs rounded-lg bg-white/5 hover:bg-white/10 transition-colors">7d</button>
-              <button className="px-3 py-1 text-xs rounded-lg bg-blue-600 text-white">30d</button>
+              <button className="px-3 py-1 text-xs rounded-lg bg-[var(--muted)] hover:bg-[var(--muted)] transition-colors">7d</button>
+              <button className="px-3 py-1 text-xs rounded-lg bg-blue-600 text-[var(--foreground)]">30d</button>
             </div>
           </div>
           <div className="h-64 flex items-end justify-between gap-2">
@@ -78,12 +78,12 @@ export default function AdminDashboard() {
           <div className="space-y-6">
             {[1, 2, 3, 4, 5].map((_, i) => (
               <div key={i} className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center font-bold text-xs">
+                <div className="w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center font-bold text-xs">
                   #0{i+1}
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-semibold">Europa Express</p>
-                  <p className="text-xs text-slate-500">hace 2 horas</p>
+                  <p className="text-xs text-[var(--muted-foreground)]">hace 2 horas</p>
                 </div>
                 <p className="text-sm font-bold text-green-400">+$1.2k</p>
               </div>

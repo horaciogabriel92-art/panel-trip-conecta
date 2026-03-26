@@ -17,24 +17,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     console.log('📊 DashboardLayout: isLoading=', isLoading, 'user=', user, 'isClient=', isClient);
-    // Solo redirigir después de confirmar que estamos en cliente y el loading terminó
     if (isClient && !isLoading && !user) {
       console.log('🔴 No user found, redirecting to login');
       router.push('/login');
     }
   }, [user, isLoading, router, isClient]);
 
-  // Mostrar loading mientras se inicializa o no hay usuario
   if (!isClient || isLoading || !user) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0a0a0f]">
+    <div className="flex min-h-screen bg-[var(--background)]">
       <div className="gradient-bg" />
       <Sidebar role={user.rol} />
       <div className="flex-1 flex flex-col">
