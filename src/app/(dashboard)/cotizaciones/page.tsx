@@ -103,13 +103,11 @@ export default function CotizacionesCRM() {
 
   const marcarComoEnviada = async (id: string) => {
     try {
-      await api.put(`/cotizaciones/${id}`, { 
-        estado: 'respondida',
-        fecha_envio: new Date().toISOString()
-      });
+      await api.put(`/cotizaciones/${id}/enviar`);
       fetchCotizaciones();
-    } catch (err) {
-      alert('Error al marcar como enviada');
+    } catch (err: any) {
+      console.error('Error al marcar como enviada:', err);
+      alert('Error al marcar como enviada: ' + (err.response?.data?.error || err.message));
     }
   };
 
