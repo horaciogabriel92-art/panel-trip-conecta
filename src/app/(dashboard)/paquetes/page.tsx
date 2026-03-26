@@ -57,12 +57,12 @@ export default function PaquetesCatalogo() {
                   alt={p.nombre} 
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute top-4 right-4 z-20 px-3 py-1 bg-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest text-[var(--foreground)] shadow-xl">
+                <div className="absolute top-4 right-4 z-20 px-3 py-1 bg-white/90 dark:bg-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-white shadow-xl">
                   {p.tipo}
                 </div>
                 <div className="absolute bottom-4 left-6 z-20">
-                  <h3 className="text-xl font-black text-[var(--foreground)] uppercase leading-tight mb-1">{p.nombre}</h3>
-                  <p className="flex items-center gap-1 text-blue-300 text-xs font-bold uppercase tracking-wider">
+                  <h3 className="text-xl font-black text-white uppercase leading-tight mb-1 drop-shadow-lg">{p.nombre}</h3>
+                  <p className="flex items-center gap-1 text-white/90 text-xs font-bold uppercase tracking-wider drop-shadow-md">
                     <MapPin className="w-3 h-3" /> {p.destino}
                   </p>
                 </div>

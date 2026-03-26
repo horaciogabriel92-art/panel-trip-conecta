@@ -234,11 +234,11 @@ export default function CotizacionesCRM() {
                   return (
                     <div 
                       key={c.id} 
-                      className="bg-black/40 rounded-xl p-3 space-y-2 hover:bg-black/50 transition-all cursor-pointer group"
+                      className="bg-white dark:bg-slate-800 rounded-xl p-3 space-y-2 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all cursor-pointer group shadow-sm border border-[var(--border)]"
                     >
                       {/* Header de la card */}
                       <div className="flex items-start justify-between">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-blue-400">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400">
                           {c.codigo}
                         </span>
                         <span className="text-base font-black text-[var(--foreground)]">
@@ -288,7 +288,7 @@ export default function CotizacionesCRM() {
                         {columna.id === 'pendiente' && (
                           <button
                             onClick={() => marcarComoEnviada(c.id)}
-                            className="w-full py-2 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
+                            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
                           >
                             <Send className="w-3.5 h-3.5" />
                             MARCAR COMO ENVIADA
@@ -300,14 +300,14 @@ export default function CotizacionesCRM() {
                           <>
                             <Link
                               href={`/cotizaciones/${c.id}?accion=cerrar`}
-                              className="w-full py-2 bg-green-600/30 hover:bg-green-600/50 text-green-300 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
+                              className="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
                             >
                               <DollarSign className="w-3.5 h-3.5" />
                               CERRAR VENTA
                             </Link>
                             <button
                               onClick={() => abrirModalPerdida(c)}
-                              className="w-full py-2 bg-red-600/20 hover:bg-red-600/40 text-red-400 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
+                              className="w-full py-2 bg-red-100 hover:bg-red-200 dark:bg-red-600/20 dark:hover:bg-red-600/40 text-red-600 dark:text-red-400 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
                             >
                               <AlertTriangle className="w-3.5 h-3.5" />
                               VENTA PERDIDA
@@ -328,7 +328,7 @@ export default function CotizacionesCRM() {
 
                         {/* COLUMNA PERDIDA: Info */}
                         {columna.id === 'perdida' && (
-                          <div className="w-full py-2 bg-red-600/10 text-red-400 rounded-lg text-xs font-bold text-center">
+                          <div className="w-full py-2 bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400 rounded-lg text-xs font-bold text-center">
                             VENTA NO CONCRETADA
                           </div>
                         )}
@@ -337,7 +337,7 @@ export default function CotizacionesCRM() {
                         {columna.id !== 'vendida' && (
                           <button
                             onClick={() => abrirModalEliminar(c)}
-                            className="w-full py-2 bg-slate-600/20 hover:bg-red-600/30 text-[var(--muted-foreground)] hover:text-red-400 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
+                            className="w-full py-2 bg-gray-200 hover:bg-red-100 dark:bg-slate-600/20 dark:hover:bg-red-600/30 text-gray-600 hover:text-red-600 dark:text-[var(--muted-foreground)] dark:hover:text-red-400 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                             ELIMINAR
@@ -347,7 +347,7 @@ export default function CotizacionesCRM() {
                         {/* Ver detalle siempre disponible */}
                         <Link
                           href={`/cotizaciones/${c.id}`}
-                          className="w-full py-1.5 bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--muted-foreground)] rounded-lg text-xs transition-all flex items-center justify-center gap-1"
+                          className="w-full py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-[var(--muted)] dark:hover:bg-[var(--border)] text-gray-700 dark:text-[var(--muted-foreground)] rounded-lg text-xs transition-all flex items-center justify-center gap-1"
                         >
                           <ArrowRight className="w-3 h-3" />
                           Ver detalle
