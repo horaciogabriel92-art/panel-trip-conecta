@@ -14,10 +14,12 @@ import {
   User,
   DollarSign,
   Calendar,
-  Trash2
+  Trash2,
+  Plus
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
+import { AdminNuevaCotizacionModal } from '@/components/cotizaciones/AdminNuevaCotizacionModal';
 
 interface Cotizacion {
   id: string;
@@ -43,6 +45,9 @@ export default function AdminCotizaciones() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [cotizacionToDelete, setCotizacionToDelete] = useState<Cotizacion | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Estado para modal de nueva cotización
+  const [showNuevaModal, setShowNuevaModal] = useState(false);
 
   useEffect(() => {
     fetchCotizaciones();
@@ -117,6 +122,13 @@ export default function AdminCotizaciones() {
           <h2 className="text-3xl font-black text-white">Gestión de Cotizaciones</h2>
           <p className="text-slate-400">Revisa y administra todas las cotizaciones del sistema</p>
         </div>
+        <button
+          onClick={() => setShowNuevaModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2"
+        >
+          <Plus className="w-5 h-5" />
+          Nueva Cotización
+        </button>
       </div>
 
       {/* Stats */}
@@ -330,6 +342,12 @@ export default function AdminCotizaciones() {
           </div>
         </div>
       )}
+      
+      {/* Modal Nueva Cotización */}
+      <AdminNuevaCotizacionModal 
+        isOpen={showNuevaModal} 
+        onClose={() => setShowNuevaModal(false)} 
+      />
     </div>
   );
 }

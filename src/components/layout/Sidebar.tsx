@@ -19,6 +19,7 @@ import {
 
 const adminLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/cotizaciones', label: 'Cotizaciones', icon: FileText },
   { href: '/admin/paquetes', label: 'Paquetes', icon: Package },
   { href: '/admin/ventas', label: 'Ventas', icon: ShoppingCart },
   { href: '/admin/vendedores', label: 'Vendedores', icon: Users },

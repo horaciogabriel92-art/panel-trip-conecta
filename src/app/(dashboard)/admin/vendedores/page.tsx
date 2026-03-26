@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
-import { Users, Search, Plus, Edit, Mail, Phone, Percent, CheckCircle, XCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Users, Search, Plus, Edit, Mail, Phone, Percent, CheckCircle, XCircle, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Vendedor {
@@ -157,9 +158,18 @@ export default function VendedoresAdmin() {
                     {new Date(v.fecha_registro).toLocaleDateString('es-UY')}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-all">
-                      <Edit className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <Link 
+                        href={`/admin/vendedores/${v.id}`}
+                        className="p-2 hover:bg-blue-500/20 rounded-lg text-slate-400 hover:text-blue-400 transition-all"
+                        title="Ver detalle"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Link>
+                      <button className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-all">
+                        <Edit className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
