@@ -884,36 +884,26 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         )}
 
-        {/* Hospedaje - Después de Vuelos */}
-        {hospedaje && hospedaje.length > 0 && (
+        {/* Hotel desde Paquete - Después de Vuelos */}
+        {cotizacion.paquete_data?.hotel_seleccionado && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Hospedaje</Text>
-            {hospedaje.map((hotel, idx) => (
-              <View key={idx} style={styles.hotelCard}>
-                <View style={styles.hotelHeader}>
-                  <Text style={styles.hotelName}>🏨 {hotel.nombre_hotel}</Text>
-                  {hotel.link_hotel && (
-                    <Link src={hotel.link_hotel}>
-                      <View style={styles.hotelButton}>
-                        <Text style={styles.hotelButtonText}>Ver Hotel</Text>
-                      </View>
-                    </Link>
-                  )}
-                </View>
-                <Text style={styles.hotelInfo}>📍 {hotel.ciudad}</Text>
-                {hotel.tipo_habitacion && (
-                  <Text style={styles.hotelInfo}>🛏️ Habitación: {hotel.tipo_habitacion}</Text>
-                )}
-                {hotel.regimen && (
-                  <Text style={styles.hotelInfo}>🍽️ Régimen: {hotel.regimen}</Text>
-                )}
-                {(hotel.fecha_checkin || hotel.fecha_checkout) && (
-                  <Text style={styles.hotelInfo}>
-                    📅 Check-in: {hotel.fecha_checkin || 'N/A'} | Check-out: {hotel.fecha_checkout || 'N/A'}
-                  </Text>
+            <View style={styles.hotelCard}>
+              <View style={styles.hotelHeader}>
+                <Text style={styles.hotelName}>🏨 {cotizacion.paquete_data.hotel_seleccionado.nombre}</Text>
+                {cotizacion.paquete_data.hotel_seleccionado.link && (
+                  <Link src={cotizacion.paquete_data.hotel_seleccionado.link}>
+                    <View style={styles.hotelButton}>
+                      <Text style={styles.hotelButtonText}>Ver Hotel</Text>
+                    </View>
+                  </Link>
                 )}
               </View>
-            ))}
+              <Text style={styles.hotelInfo}>📍 {cotizacion.paquete_data.hotel_seleccionado.ciudad || 'Ciudad no especificada'}</Text>
+              {cotizacion.paquete_data.hotel_seleccionado.tipo_habitacion && (
+                <Text style={styles.hotelInfo}>🛏️ Habitación: {cotizacion.paquete_data.hotel_seleccionado.tipo_habitacion}</Text>
+              )}
+            </View>
           </View>
         )}
 
@@ -942,71 +932,25 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         )}
 
-        {/* Detalle de Precios con Desglose */}
+        {/* Detalle de Precios - Simple y claro */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Detalle de Precios</Text>
           
-          {/* Desglose por concepto */}
-          {(precios.vuelos || precios.hospedajes || precios.servicios || precios.traslados) && (
-            <View style={styles.priceBreakdownSection}>
-              <Text style={styles.priceBreakdownTitle}>Desglose por Concepto</Text>
-              
-              {precios.vuelos && parseFloat(precios.vuelos) > 0 && (
-                <View style={styles.priceBreakdownRow}>
-                  <Text style={styles.priceBreakdownLabel}>✈ Vuelos</Text>
-                  <Text style={styles.priceBreakdownValue}>${precios.vuelos} {precios.moneda}</Text>
-                </View>
-              )}
-              
-              {precios.hospedajes && parseFloat(precios.hospedajes) > 0 && (
-                <View style={styles.priceBreakdownRow}>
-                  <Text style={styles.priceBreakdownLabel}>🏨 Hospedajes</Text>
-                  <Text style={styles.priceBreakdownValue}>${precios.hospedajes} {precios.moneda}</Text>
-                </View>
-              )}
-              
-              {precios.servicios && parseFloat(precios.servicios) > 0 && (
-                <View style={styles.priceBreakdownRow}>
-                  <Text style={styles.priceBreakdownLabel}>🎯 Servicios / Excursiones</Text>
-                  <Text style={styles.priceBreakdownValue}>${precios.servicios} {precios.moneda}</Text>
-                </View>
-              )}
-              
-              {precios.traslados && parseFloat(precios.traslados) > 0 && (
-                <View style={styles.priceBreakdownRow}>
-                  <Text style={styles.priceBreakdownLabel}>🚗 Traslados</Text>
-                  <Text style={styles.priceBreakdownValue}>${precios.traslados} {precios.moneda}</Text>
-                </View>
-              )}
-              
-              {precios.impuestos && parseFloat(precios.impuestos) > 0 && (
-                <View style={styles.priceBreakdownRow}>
-                  <Text style={styles.priceBreakdownLabel}>Impuestos</Text>
-                  <Text style={styles.priceBreakdownValue}>${precios.impuestos} {precios.moneda}</Text>
-                </View>
-              )}
-              
-              <View style={styles.priceBreakdownDivider} />
-              
-              {/* Precio por persona */}
-              <View style={styles.priceBreakdownRow}>
-                <Text style={styles.priceBreakdownLabel}>👤 Precio por persona ({cotizacion.num_pasajeros} pasajeros)</Text>
-                <Text style={styles.priceBreakdownValue}>
-                  ${(parseFloat(precios.total) / (cotizacion.num_pasajeros || 1)).toFixed(2)} {precios.moneda}
-                </Text>
-              </View>
-              
-              <View style={styles.priceBreakdownTotal}>
-                <Text style={styles.priceBreakdownTotalLabel}>TOTAL</Text>
-                <Text style={styles.priceBreakdownTotalValue}>${precios.total} {precios.moneda}</Text>
-              </View>
+          <View style={styles.priceBreakdownSection}>
+            {/* Precio por persona */}
+            <View style={styles.priceBreakdownRow}>
+              <Text style={styles.priceBreakdownLabel}>Precio por persona</Text>
+              <Text style={styles.priceBreakdownValue}>
+                ${(parseFloat(precios.total) / (cotizacion.num_pasajeros || 1)).toFixed(2)} {precios.moneda}
+              </Text>
             </View>
-          )}
-
-          <View style={styles.totalRow}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={styles.totalText}>TOTAL A PAGAR</Text>
-              <Text style={styles.totalAmount}>${precios.total} {precios.moneda}</Text>
+            
+            <View style={styles.priceBreakdownDivider} />
+            
+            {/* Total */}
+            <View style={styles.priceBreakdownTotal}>
+              <Text style={styles.priceBreakdownTotalLabel}>TOTAL ({cotizacion.num_pasajeros} pasajeros)</Text>
+              <Text style={styles.priceBreakdownTotalValue}>${precios.total} {precios.moneda}</Text>
             </View>
           </View>
         </View>
@@ -1043,172 +987,6 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
             <Text style={styles.footerText}>Para confirmar esta reserva, contacte a su vendedor asignado</Text>
           </View>
         </View>
-      </Page>
-
-      {/* ============================================
-          PÁGINA 2: HOSPEDAJE E ITINERARIO
-          ============================================ */}
-      <Page size="A4" style={styles.page}>
-        {/* Sección de Hospedaje */}
-        {hospedaje && hospedaje.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Hospedaje</Text>
-            {hospedaje.map((hotel, idx) => (
-              <View key={idx} style={styles.hotelCard}>
-                <View style={styles.hotelHeader}>
-                  <Text style={styles.hotelName}>{hotel.nombre_hotel}</Text>
-                  {hotel.link_hotel && (
-                    <Link src={hotel.link_hotel}>
-                      <View style={styles.hotelButton}>
-                        <Text style={styles.hotelButtonText}>Ver Hotel</Text>
-                      </View>
-                    </Link>
-                  )}
-                </View>
-                <Text style={styles.hotelInfo}>Ciudad: {hotel.ciudad}</Text>
-                {hotel.tipo_habitacion && (
-                  <Text style={styles.hotelInfo}>Habitacion: {hotel.tipo_habitacion}</Text>
-                )}
-                {hotel.regimen && (
-                  <Text style={styles.hotelInfo}>Regimen: {hotel.regimen}</Text>
-                )}
-                {(hotel.fecha_checkin || hotel.fecha_checkout) && (
-                  <Text style={styles.hotelInfo}>
-                    Check-in: {hotel.fecha_checkin || 'N/A'} / Check-out: {hotel.fecha_checkout || 'N/A'}
-                  </Text>
-                )}
-              </View>
-            ))}
-          </View>
-        )}
-
-        <Text style={styles.sectionTitle}>Itinerario Detallado</Text>
-
-        {/* Itinerario Manual (desde cotización manual) */}
-        {cotizacion.itinerario_manual && (
-          <View style={styles.dayCard}>
-            <Text style={styles.dayContent}>{cotizacion.itinerario_manual}</Text>
-          </View>
-        )}
-
-        {/* Itinerario del Paquete (prioridad: paquete_data > paquete) */}
-        {(() => {
-          const itin = cotizacion.paquete_data?.itinerario || paquete.itinerario;
-          if (!itin || cotizacion.itinerario_manual) return null;
-          
-          // Si es string, mostrarlo como texto
-          if (typeof itin === 'string') {
-            return (
-              <View style={styles.dayCard}>
-                <Text style={styles.dayContent}>{itin}</Text>
-              </View>
-            );
-          }
-          
-          // Si es objeto con formato { texto, dias }
-          if (typeof itin === 'object' && !Array.isArray(itin)) {
-            const itinObj = itin as { texto?: string; dias?: any[] };
-            const tieneTexto = itinObj.texto && itinObj.texto.trim().length > 0;
-            const tieneDias = Array.isArray(itinObj.dias) && itinObj.dias.length > 0;
-            
-            return (
-              <>
-                {/* Mostrar texto del itinerario si existe */}
-                {tieneTexto && (
-                  <View style={styles.dayCard}>
-                    <Text style={styles.dayContent}>{itinObj.texto}</Text>
-                  </View>
-                )}
-                
-                {/* Mostrar días estructurados si existen */}
-                {tieneDias && itinObj.dias!.map((dia: any, idx: number) => (
-                  <View key={idx} style={styles.dayCard}>
-                    <View style={styles.dayHeader}>
-                      <Text style={styles.dayBadge}>Dia {dia.dia || idx + 1}</Text>
-                      <Text style={styles.dayTitle}>{dia.titulo}</Text>
-                    </View>
-                    <Text style={styles.dayContent}>{dia.descripcion}</Text>
-                    {dia.actividades && dia.actividades.length > 0 && (
-                      <View style={{ marginTop: 6 }}>
-                        {dia.actividades.map((act: string, actIdx: number) => (
-                          <Text key={actIdx} style={styles.dayContent}>- {act}</Text>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                ))}
-              </>
-            );
-          }
-          
-          // Si es array vacío, no mostrar nada
-          if (Array.isArray(itin) && itin.length === 0) {
-            return null;
-          }
-          
-          // Si es array con datos (formato legacy)
-          if (Array.isArray(itin) && itin.length > 0) {
-            return itin.map((dia, idx) => (
-              <View key={idx} style={styles.dayCard}>
-                <View style={styles.dayHeader}>
-                  <Text style={styles.dayBadge}>Dia {dia.dia || idx + 1}</Text>
-                  <Text style={styles.dayTitle}>{dia.titulo}</Text>
-                </View>
-                <Text style={styles.dayContent}>{dia.descripcion}</Text>
-                {dia.actividades && dia.actividades.length > 0 && (
-                  <View style={{ marginTop: 6 }}>
-                    {dia.actividades.map((act: string, actIdx: number) => (
-                      <Text key={actIdx} style={styles.dayContent}>- {act}</Text>
-                    ))}
-                  </View>
-                )}
-              </View>
-            ));
-          }
-          
-          return null;
-        })()}
-
-        {/* Incluye / No Incluye (prioridad: paquete_data > paquete > cotizacion) */}
-        {(() => {
-          const incluye = cotizacion.paquete_data?.incluye || cotizacion.incluye || paquete.incluye || [];
-          const noIncluye = cotizacion.paquete_data?.no_incluye || cotizacion.no_incluye || paquete.no_incluye || [];
-          
-          if (incluye.length === 0 && noIncluye.length === 0) return null;
-          
-          return (
-            <View style={styles.includesSection}>
-              <View style={styles.includesGrid}>
-                {incluye.length > 0 && (
-                  <View style={[styles.includesBox, styles.includesBoxIncluye]}>
-                    <Text style={[styles.includesTitle, styles.includesTitleGreen]}>El paquete incluye</Text>
-                    {incluye.map((item, idx) => (
-                      <Text key={idx} style={[styles.includesItem, styles.checkGreen]}>+ {item}</Text>
-                    ))}
-                  </View>
-                )}
-
-                {noIncluye.length > 0 && (
-                  <View style={[styles.includesBox, styles.includesBoxNoIncluye]}>
-                    <Text style={[styles.includesTitle, styles.includesTitleRed]}>El paquete NO incluye</Text>
-                    {noIncluye.map((item, idx) => (
-                      <Text key={idx} style={[styles.includesItem, styles.checkRed]}>- {item}</Text>
-                    ))}
-                  </View>
-                )}
-              </View>
-            </View>
-          );
-        })()}
-
-        {/* Políticas de Cancelación */}
-        {paquete.politicas_cancelacion && (
-          <View style={styles.policiesSection}>
-            <Text style={styles.policiesTitle}>Políticas de Cancelación</Text>
-            <Text style={styles.policiesText}>{paquete.politicas_cancelacion}</Text>
-          </View>
-        )}
-
       </Page>
     </Document>
   );
