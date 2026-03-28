@@ -828,7 +828,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
 
         {/* Vuelos - Con fechas y horas claras */}
         {vuelos && vuelos.length > 0 && (
-          <View style={styles.section}>
+          <View style={styles.section} wrap={false}>
             <Text style={styles.sectionTitle}>Vuelos</Text>
             {vuelos.map((vuelo, idx) => (
               <View key={idx} style={styles.flightCard}>
@@ -909,7 +909,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
 
         {/* Tabla de Todos los Pasajeros */}
         {pasajeros.length > 0 && (
-          <View style={styles.section}>
+          <View style={styles.section} wrap={false}>
             <Text style={styles.sectionTitle}>Pasajeros ({pasajeros.length})</Text>
             <View style={styles.pricingTable}>
               <View style={styles.tableHeader}>
@@ -933,7 +933,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
         )}
 
         {/* Detalle de Precios - Simple y claro */}
-        <View style={styles.section}>
+        <View style={styles.section} wrap={false}>
           <Text style={styles.sectionTitle}>Detalle de Precios</Text>
           
           <View style={styles.priceBreakdownSection}>
@@ -955,15 +955,87 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         </View>
 
+        {/* Itinerario del Paquete */}
+        {(() => {
+          const itin = cotizacion.paquete_data?.itinerario || paquete.itinerario;
+          if (!itin) return null;
+          
+          return (
+            <View style={styles.section} wrap={false}>
+              <Text style={styles.sectionTitle}>Itinerario</Text>
+              
+              {/* Si es string */}
+              {typeof itin === 'string' && (
+                <View style={styles.dayCard}>
+                  <Text style={styles.dayContent}>{itin}</Text>
+                </View>
+              )}
+              
+              {/* Si es objeto con {texto, dias} */}
+              {typeof itin === 'object' && !Array.isArray(itin) && (itin as any).texto && (
+                <View style={styles.dayCard}>
+                  <Text style={styles.dayContent}>{(itin as any).texto}</Text>
+                </View>
+              )}
+              
+              {/* Si es array de días */}
+              {typeof itin === 'object' && Array.isArray(itin) && itin.length > 0 && (
+                itin.map((dia: any, idx: number) => (
+                  <View key={idx} style={styles.dayCard}>
+                    <View style={styles.dayHeader}>
+                      <Text style={styles.dayBadge}>Día {dia.dia || idx + 1}</Text>
+                      <Text style={styles.dayTitle}>{dia.titulo}</Text>
+                    </View>
+                    <Text style={styles.dayContent}>{dia.descripcion}</Text>
+                  </View>
+                ))
+              )}
+            </View>
+          );
+        })()}
+
+        {/* Incluye / No Incluye */}
+        {(() => {
+          const incluye = cotizacion.paquete_data?.incluye || cotizacion.incluye || paquete.incluye || [];
+          const noIncluye = cotizacion.paquete_data?.no_incluye || cotizacion.no_incluye || paquete.no_incluye || [];
+          
+          if (incluye.length === 0 && noIncluye.length === 0) return null;
+          
+          return (
+            <View style={styles.section} wrap={false}>
+              <Text style={styles.sectionTitle}>Detalles del Servicio</Text>
+              <View style={styles.includesGrid}>
+                {incluye.length > 0 && (
+                  <View style={[styles.includesBox, styles.includesBoxIncluye]}>
+                    <Text style={[styles.includesTitle, styles.includesTitleGreen]}>Incluye</Text>
+                    {incluye.map((item: string, idx: number) => (
+                      <Text key={idx} style={[styles.includesItem, styles.checkGreen]}>+ {item}</Text>
+                    ))}
+                  </View>
+                )}
+
+                {noIncluye.length > 0 && (
+                  <View style={[styles.includesBox, styles.includesBoxNoIncluye]}>
+                    <Text style={[styles.includesTitle, styles.includesTitleRed]}>No incluye</Text>
+                    {noIncluye.map((item: string, idx: number) => (
+                      <Text key={idx} style={[styles.includesItem, styles.checkRed]}>- {item}</Text>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </View>
+          );
+        })()}
+
         {/* Validez - 24 horas si no está paga */}
-        <View style={styles.validityBanner}>
+        <View style={styles.validityBanner} wrap={false}>
           <Text style={styles.validityText}>
             ⏰ Esta cotización tiene una validez de <Text style={styles.validityHighlight}>24 horas</Text> desde la fecha de emisión si aún no ha sido pagada. Una vez confirmada, el límite de validez será definido por el vendedor. Los precios están sujetos a disponibilidad.
           </Text>
         </View>
 
         {/* Vendedor */}
-        <View style={styles.sellerSection}>
+        <View style={styles.sellerSection} wrap={false}>
           <View style={styles.sellerAvatar}>
             <Text style={styles.sellerAvatarText}>{vendedor.iniciales}</Text>
           </View>
@@ -973,8 +1045,8 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         </View>
 
-        {/* Footer con Logo y Vendedor en la misma sección */}
-        <View style={styles.footerWithLogo}>
+        {/* Footer - Solo al final */}
+        <View style={styles.footerWithLogo} wrap={false}>
           <View style={styles.footerLogoSection}>
             <Image src="/logo-trip-conecta.png" style={styles.footerLogoImage} />
             <View style={styles.footerLogoText}>
