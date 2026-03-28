@@ -955,7 +955,40 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         </View>
 
-        {/* Itinerario del Paquete */}
+        {/* Incluye / No Incluye - Después del precio */}
+        {(() => {
+          const incluye = cotizacion.paquete_data?.incluye || cotizacion.incluye || paquete.incluye || [];
+          const noIncluye = cotizacion.paquete_data?.no_incluye || cotizacion.no_incluye || paquete.no_incluye || [];
+          
+          if (incluye.length === 0 && noIncluye.length === 0) return null;
+          
+          return (
+            <View style={styles.section} wrap={false}>
+              <Text style={styles.sectionTitle}>Detalles del Servicio</Text>
+              <View style={styles.includesGrid}>
+                {incluye.length > 0 && (
+                  <View style={[styles.includesBox, styles.includesBoxIncluye]}>
+                    <Text style={[styles.includesTitle, styles.includesTitleGreen]}>Incluye</Text>
+                    {incluye.map((item: string, idx: number) => (
+                      <Text key={idx} style={[styles.includesItem, styles.checkGreen]}>+ {item}</Text>
+                    ))}
+                  </View>
+                )}
+
+                {noIncluye.length > 0 && (
+                  <View style={[styles.includesBox, styles.includesBoxNoIncluye]}>
+                    <Text style={[styles.includesTitle, styles.includesTitleRed]}>No incluye</Text>
+                    {noIncluye.map((item: string, idx: number) => (
+                      <Text key={idx} style={[styles.includesItem, styles.checkRed]}>- {item}</Text>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </View>
+          );
+        })()}
+
+        {/* Itinerario del Paquete - Después de incluye/no incluye */}
         {(() => {
           const itin = cotizacion.paquete_data?.itinerario || paquete.itinerario;
           if (!itin) return null;
@@ -990,39 +1023,6 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
                   </View>
                 ))
               )}
-            </View>
-          );
-        })()}
-
-        {/* Incluye / No Incluye */}
-        {(() => {
-          const incluye = cotizacion.paquete_data?.incluye || cotizacion.incluye || paquete.incluye || [];
-          const noIncluye = cotizacion.paquete_data?.no_incluye || cotizacion.no_incluye || paquete.no_incluye || [];
-          
-          if (incluye.length === 0 && noIncluye.length === 0) return null;
-          
-          return (
-            <View style={styles.section} wrap={false}>
-              <Text style={styles.sectionTitle}>Detalles del Servicio</Text>
-              <View style={styles.includesGrid}>
-                {incluye.length > 0 && (
-                  <View style={[styles.includesBox, styles.includesBoxIncluye]}>
-                    <Text style={[styles.includesTitle, styles.includesTitleGreen]}>Incluye</Text>
-                    {incluye.map((item: string, idx: number) => (
-                      <Text key={idx} style={[styles.includesItem, styles.checkGreen]}>+ {item}</Text>
-                    ))}
-                  </View>
-                )}
-
-                {noIncluye.length > 0 && (
-                  <View style={[styles.includesBox, styles.includesBoxNoIncluye]}>
-                    <Text style={[styles.includesTitle, styles.includesTitleRed]}>No incluye</Text>
-                    {noIncluye.map((item: string, idx: number) => (
-                      <Text key={idx} style={[styles.includesItem, styles.checkRed]}>- {item}</Text>
-                    ))}
-                  </View>
-                )}
-              </View>
             </View>
           );
         })()}
