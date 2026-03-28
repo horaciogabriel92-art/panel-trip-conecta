@@ -900,7 +900,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
                 )}
               </View>
               <Text style={styles.hotelInfo}>📍 {(cotizacion.paquete_data as any).hotel_seleccionado.ciudad || 'Ciudad no especificada'}</Text>
-              {cotizacion.paquete_data.hotel_seleccionado.tipo_habitacion && (
+              {(cotizacion.paquete_data as any).hotel_seleccionado.tipo_habitacion && (
                 <Text style={styles.hotelInfo}>🛏️ Habitación: {(cotizacion.paquete_data as any).hotel_seleccionado.tipo_habitacion}</Text>
               )}
             </View>
