@@ -797,47 +797,6 @@ export default function CotizacionDetalle() {
             </div>
           )}
 
-          {/* Vuelos (cotización manual) */}
-          {cotizacion.vuelos && cotizacion.vuelos.length > 0 && (
-            <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
-                <Plane className="w-5 h-5 text-blue-400" />
-                Vuelos ({cotizacion.vuelos.length})
-              </h3>
-              <div className="space-y-3">
-                {cotizacion.vuelos.map((vuelo: any, idx: number) => (
-                  <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-[var(--foreground)] font-bold">
-                        {vuelo.origen_ciudad || vuelo.origen_nombre || vuelo.origen} → 
-                        {vuelo.destino_ciudad || vuelo.destino_nombre || vuelo.destino}
-                      </span>
-                      <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
-                        {vuelo.aerolinea_codigo || vuelo.aerolinea?.substring(0, 2)?.toUpperCase() || 'AV'} {vuelo.numero_vuelo}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <p className="text-[var(--muted-foreground)] text-xs">Salida</p>
-                        <p className="text-[var(--foreground)]">{vuelo.hora_salida}</p>
-                        <p className="text-[var(--muted-foreground)] text-xs">{vuelo.fecha_salida}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-[var(--muted-foreground)] text-xs">Clase</p>
-                        <p className="text-blue-400">{vuelo.clase_codigo}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[var(--muted-foreground)] text-xs">Llegada</p>
-                        <p className="text-[var(--foreground)]">{vuelo.hora_llegada}</p>
-                        <p className="text-[var(--muted-foreground)] text-xs">{vuelo.fecha_llegada}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Hospedaje (cotización manual) */}
           {cotizacion.hospedaje && cotizacion.hospedaje.length > 0 && (
             <div className="glass-card rounded-2xl p-6">
