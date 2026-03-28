@@ -188,14 +188,20 @@ export default function PaqueteDetalle() {
                     <h3 className="text-lg font-bold text-[var(--foreground)] mb-3">Itinerario</h3>
                     <div className="text-[var(--foreground)] leading-relaxed whitespace-pre-line">
                       {(() => {
-                        // Extraer texto de itinerario (puede ser string o objeto)
-                        if (typeof paquete.itinerario === 'string' && paquete.itinerario) {
-                          return paquete.itinerario;
+                        const itin = paquete.itinerario;
+                        
+                        // Si es string
+                        if (typeof itin === 'string' && itin) {
+                          return itin;
                         }
-                        if (paquete.itinerario && typeof paquete.itinerario === 'object' && !Array.isArray(paquete.itinerario)) {
-                          return (paquete.itinerario as { texto?: string }).texto || '';
+                        
+                        // Si es objeto con texto
+                        if (itin && typeof itin === 'object' && !Array.isArray(itin)) {
+                          const itinObj = itin as { texto?: string; dias?: any[] };
+                          if (itinObj.texto) return itinObj.texto;
                         }
-                        // Fallback a descripcion (legacy)
+                        
+                        // Fallback
                         return paquete.descripcion || "Sin itinerario disponible.";
                       })()}
                     </div>

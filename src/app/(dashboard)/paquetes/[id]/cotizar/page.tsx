@@ -182,7 +182,6 @@ export default function CotizarPaquete() {
         tipo_habitacion: config.tipo_habitacion,
         nombre_cotizacion: `Viaje a ${paquete?.destino || 'Destino'} - ${paquete?.titulo || 'Paquete'}`,
         tipo_cotizacion: 'paquete',
-        origen_datos: 'paquete',
         precios: {
           moneda: 'USD',
           subtotal: calcularPrecio(),
