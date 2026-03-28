@@ -111,6 +111,7 @@ interface Cotizacion {
   fecha_salida?: string;
   // JSONB data
   paquete_data?: {
+    itinerario?: { texto?: string; dias?: any[] } | any[] | string;
     incluye?: string[];
     no_incluye?: string[];
     politicas_cancelacion?: string;
@@ -535,7 +536,8 @@ export default function CotizacionDetalle() {
                 nombre: user.nombre,
                 apellido: user.apellido,
                 email: user.email
-              } : undefined
+              } : undefined,
+              paquete_data: cotizacion.paquete_data
             }}
           />
           <button 
@@ -612,15 +614,17 @@ export default function CotizacionDetalle() {
             </div>
           </div>
 
-          {/* Itinerario - Cotizaciones de catálogo (desde paquete o notas parseadas) */}
-          {(paquete?.itinerario || datosPaqueteDesdeNotas?.itinerario) && (
+          {/* Itinerario - Prioridad: paquete_data > paquete > notas parseadas */}
+          {(() => {
+            const itin = cotizacion.paquete_data?.itinerario || paquete?.itinerario || datosPaqueteDesdeNotas?.itinerario;
+            if (!itin) return null;
+            return (
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-blue-400" />
                 Itinerario
               </h3>
               {(() => {
-                const itin = paquete?.itinerario || datosPaqueteDesdeNotas?.itinerario;
                 // Formato string (legacy)
                 if (typeof itin === 'string') {
                   return <p className="text-[var(--foreground)] whitespace-pre-line">{itin}</p>;
@@ -687,6 +691,7 @@ export default function CotizacionDetalle() {
               })()}
             </div>
           )}
+          )()}
 
           {/* Vuelos - Cotizaciones de catálogo (desde paquete) */}
           {(paquete?.vuelos?.length || datosPaqueteDesdeNotas?.vuelos?.length) && (
@@ -746,8 +751,9 @@ export default function CotizacionDetalle() {
             </div>
           )}
 
-          {/* Incluye / No incluye - Cotizaciones de catálogo */}
-          {(paquete?.incluye?.length || paquete?.no_incluye?.length || 
+          {/* Incluye / No incluye - Prioridad: paquete_data > paquete > notas */}
+          {(cotizacion.paquete_data?.incluye?.length || cotizacion.paquete_data?.no_incluye?.length ||
+            paquete?.incluye?.length || paquete?.no_incluye?.length || 
             datosPaqueteDesdeNotas?.incluye?.length || datosPaqueteDesdeNotas?.no_incluye?.length) && (
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
@@ -755,21 +761,21 @@ export default function CotizacionDetalle() {
                 Detalles del Servicio
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(paquete?.incluye?.length || datosPaqueteDesdeNotas?.incluye?.length) && (
+                {(cotizacion.paquete_data?.incluye?.length || paquete?.incluye?.length || datosPaqueteDesdeNotas?.incluye?.length) && (
                   <div className="p-4 bg-green-500/10 rounded-xl border border-green-500/20">
                     <p className="text-green-400 font-bold mb-2">Incluye</p>
                     <ul className="space-y-1">
-                      {(paquete?.incluye || datosPaqueteDesdeNotas?.incluye || []).map((item: string, idx: number) => (
+                      {(cotizacion.paquete_data?.incluye || paquete?.incluye || datosPaqueteDesdeNotas?.incluye || []).map((item: string, idx: number) => (
                         <li key={idx} className="text-[var(--foreground)] text-sm">+ {item}</li>
                       ))}
                     </ul>
                   </div>
                 )}
-                {(paquete?.no_incluye?.length || datosPaqueteDesdeNotas?.no_incluye?.length) && (
+                {(cotizacion.paquete_data?.no_incluye?.length || paquete?.no_incluye?.length || datosPaqueteDesdeNotas?.no_incluye?.length) && (
                   <div className="p-4 bg-red-500/10 rounded-xl border border-red-500/20">
                     <p className="text-red-400 font-bold mb-2">No incluye</p>
                     <ul className="space-y-1">
-                      {(paquete?.no_incluye || datosPaqueteDesdeNotas?.no_incluye || []).map((item: string, idx: number) => (
+                      {(cotizacion.paquete_data?.no_incluye || paquete?.no_incluye || datosPaqueteDesdeNotas?.no_incluye || []).map((item: string, idx: number) => (
                         <li key={idx} className="text-[var(--foreground)] text-sm">- {item}</li>
                       ))}
                     </ul>

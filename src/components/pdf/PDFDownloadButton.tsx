@@ -35,6 +35,12 @@ interface CotizacionData {
     incluye?: string[];
     no_incluye?: string[];
   };
+  // Datos del paquete snapshot (CRM v2 - paquete_data JSONB)
+  paquete_data?: {
+    itinerario?: any;
+    incluye?: string[];
+    no_incluye?: string[];
+  };
   pasajeros?: Array<{
     nombre: string;
     apellido: string;
@@ -88,7 +94,8 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
       dias_validez: 7,
       itinerario_manual: data.itinerario_manual,
       tipo_cotizacion: data.tipo_cotizacion,
-      nombre_cotizacion: data.nombre_cotizacion
+      nombre_cotizacion: data.nombre_cotizacion,
+      paquete_data: data.paquete_data
     },
     cliente: {
       nombre: data.cliente_nombre || 'Cliente',

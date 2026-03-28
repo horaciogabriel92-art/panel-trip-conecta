@@ -614,6 +614,11 @@ interface CotizacionPDFProps {
       itinerario_manual?: string;
       incluye?: string[];
       no_incluye?: string[];
+      paquete_data?: {
+        itinerario?: any;
+        incluye?: string[];
+        no_incluye?: string[];
+      };
     };
     cliente: {
       nombre: string;
@@ -1045,9 +1050,9 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         )}
 
-        {/* Itinerario del Paquete (desde catálogo) */}
+        {/* Itinerario del Paquete (prioridad: paquete_data > paquete) */}
         {(() => {
-          const itin = paquete.itinerario;
+          const itin = cotizacion.paquete_data?.itinerario || paquete.itinerario;
           if (!itin || cotizacion.itinerario_manual) return null;
           
           // Si es string, mostrarlo como texto
@@ -1123,10 +1128,10 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           return null;
         })()}
 
-        {/* Incluye / No Incluye */}
+        {/* Incluye / No Incluye (prioridad: paquete_data > paquete > cotizacion) */}
         {(() => {
-          const incluye = cotizacion.incluye || paquete.incluye || [];
-          const noIncluye = cotizacion.no_incluye || paquete.no_incluye || [];
+          const incluye = cotizacion.paquete_data?.incluye || cotizacion.incluye || paquete.incluye || [];
+          const noIncluye = cotizacion.paquete_data?.no_incluye || cotizacion.no_incluye || paquete.no_incluye || [];
           
           if (incluye.length === 0 && noIncluye.length === 0) return null;
           
