@@ -32,46 +32,97 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { formatCurrency } from '@/lib/utils';
 
+interface Cliente {
+  id: string;
+  nombre: string;
+  apellido: string;
+  email: string | null;
+  telefono: string | null;
+  tipo_documento: string;
+  documento: string;
+  fecha_nacimiento: string | null;
+  nacionalidad: string;
+}
+
+interface PasajeroVinculado {
+  id: string;
+  cotizacion_id: string;
+  pasajero_id: string;
+  es_titular: boolean;
+  nombre_snapshot: string;
+  apellido_snapshot: string;
+  documento_snapshot: string | null;
+  tipo_habitacion: string | null;
+  regimen: string | null;
+  precio_individual: number | null;
+  pasajero?: Cliente;
+}
+
+interface Vuelo {
+  id: string;
+  tipo_trayecto: string;
+  aerolinea_nombre: string;
+  numero_vuelo: string;
+  origen_codigo: string;
+  origen_nombre: string;
+  destino_codigo: string;
+  destino_nombre: string;
+  fecha_salida: string;
+  hora_salida: string;
+  fecha_llegada: string;
+  hora_llegada: string;
+  clase_nombre: string;
+}
+
+interface Hospedaje {
+  id: string;
+  nombre_hotel: string;
+  ciudad: string;
+  fecha_checkin: string;
+  fecha_checkout: string;
+  tipo_habitacion: string;
+  regimen: string;
+  noches: number;
+}
+
 interface Cotizacion {
   id: string;
   codigo: string;
-  cliente_nombre: string;
-  cliente_email: string;
-  cliente_telefono: string;
-  paquete_id: string;
-  paquete_nombre?: string;
+  // Nuevo schema CRM
+  cliente_id: string;
+  cliente?: Cliente;
+  pasajeros?: PasajeroVinculado[];
+  vuelos?: Vuelo[];
+  hospedajes?: Hospedaje[];
+  // Datos de la cotización
+  nombre_cotizacion?: string;
+  tipo_cotizacion?: 'paquete' | 'manual';
+  destino_principal?: string;
   num_pasajeros: number;
-  tipo_habitacion: string;
-  fecha_salida?: string;
   precio_total: number;
+  precio_moneda?: string;
   comision_vendedor?: number;
   estado: 'pendiente' | 'respondida' | 'convertida' | 'vencida' | 'cancelada';
   notas?: string;
   fecha_creacion: string;
   fecha_expiracion?: string;
-  // Campos para cotizaciones manuales
-  tipo_cotizacion?: 'paquete' | 'manual';
-  nombre_cotizacion?: string;
-  vuelos?: any[];
-  hospedaje?: any[];
-  datos_completos?: {
-    cliente?: {
-      nombre: string;
-      apellido: string;
-      documento?: string;
-      email?: string;
-      telefono?: string;
-      fecha_nacimiento?: string;
-      nacionalidad?: string;
-    };
-    pasajeros?: Array<{
-      nombre: string;
-      apellido: string;
-      documento?: string;
-      fecha_nacimiento?: string;
-      nacionalidad?: string;
-    }>;
+  fecha_salida?: string;
+  // JSONB data
+  paquete_data?: {
+    incluye?: string[];
+    no_incluye?: string[];
+    politicas_cancelacion?: string;
   };
+  itinerario?: { texto?: string; dias?: any[] };
+  // Legacy fields (para cotizaciones viejas)
+  cliente_nombre?: string;
+  cliente_email?: string;
+  cliente_telefono?: string;
+  paquete_id?: string;
+  paquete_nombre?: string;
+  tipo_habitacion?: string;
+  hospedaje?: any[];
+  datos_completos?: any;
   itinerario_manual?: string;
   incluye?: string[];
   no_incluye?: string[];
@@ -798,61 +849,122 @@ export default function CotizacionDetalle() {
             </div>
           )}
 
-          {/* Datos del cliente */}
-          <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
-              <User className="w-5 h-5 text-blue-400" />
-              Datos del Cliente
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
-                <User className="w-5 h-5 text-[var(--muted-foreground)]" />
-                <div>
-                  <p className="text-xs text-[var(--muted-foreground)] uppercase">Nombre</p>
-                  <p className="font-medium text-[var(--foreground)]">{cotizacion.cliente_nombre}</p>
+          {/* Datos del Cliente - Nuevo Schema CRM */}
+          {(cotizacion.cliente || cotizacion.cliente_nombre) && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <User className="w-5 h-5 text-blue-400" />
+                Datos del Cliente
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Nombre */}
+                <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
+                  <User className="w-5 h-5 text-[var(--muted-foreground)]" />
+                  <div>
+                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Nombre</p>
+                    <p className="font-medium text-[var(--foreground)]">
+                      {cotizacion.cliente 
+                        ? `${cotizacion.cliente.nombre} ${cotizacion.cliente.apellido}`
+                        : cotizacion.cliente_nombre}
+                    </p>
+                  </div>
                 </div>
+                {/* Email */}
+                {(cotizacion.cliente?.email || cotizacion.cliente_email) && (
+                  <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
+                    <Mail className="w-5 h-5 text-[var(--muted-foreground)]" />
+                    <div>
+                      <p className="text-xs text-[var(--muted-foreground)] uppercase">Email</p>
+                      <p className="font-medium text-[var(--foreground)]">
+                        {cotizacion.cliente?.email || cotizacion.cliente_email}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {/* Teléfono */}
+                {(cotizacion.cliente?.telefono || cotizacion.cliente_telefono) && (
+                  <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
+                    <Phone className="w-5 h-5 text-[var(--muted-foreground)]" />
+                    <div>
+                      <p className="text-xs text-[var(--muted-foreground)] uppercase">Teléfono</p>
+                      <p className="font-medium text-[var(--foreground)]">
+                        {cotizacion.cliente?.telefono || cotizacion.cliente_telefono}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {/* Documento - Solo nuevo formato */}
+                {cotizacion.cliente?.documento && (
+                  <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
+                    <FileText className="w-5 h-5 text-[var(--muted-foreground)]" />
+                    <div>
+                      <p className="text-xs text-[var(--muted-foreground)] uppercase">Documento</p>
+                      <p className="font-medium text-[var(--foreground)]">
+                        {cotizacion.cliente.tipo_documento} {cotizacion.cliente.documento}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
-              {cotizacion.cliente_email && (
-                <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
-                  <Mail className="w-5 h-5 text-[var(--muted-foreground)]" />
-                  <div>
-                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Email</p>
-                    <p className="font-medium text-[var(--foreground)]">{cotizacion.cliente_email}</p>
-                  </div>
-                </div>
-              )}
-              {cotizacion.cliente_telefono && (
-                <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
-                  <Phone className="w-5 h-5 text-[var(--muted-foreground)]" />
-                  <div>
-                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Teléfono</p>
-                    <p className="font-medium text-[var(--foreground)]">{cotizacion.cliente_telefono}</p>
-                  </div>
-                </div>
-              )}
             </div>
-          </div>
+          )}
 
-          {/* Pasajeros (titular + acompañantes) */}
-          {(cotizacion.datos_completos?.cliente || (cotizacion.datos_completos?.pasajeros && cotizacion.datos_completos.pasajeros.length > 0)) && (
+          {/* Pasajeros - Nuevo Schema CRM */}
+          {(cotizacion.pasajeros && cotizacion.pasajeros.length > 0) ? (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-400" />
+                Pasajeros ({cotizacion.pasajeros.length})
+              </h3>
+              <div className="space-y-3">
+                {cotizacion.pasajeros.map((pv: PasajeroVinculado, idx: number) => (
+                  <div key={pv.id || idx} className="p-4 bg-[var(--muted)] rounded-xl">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-xs font-bold">
+                          {idx + 1}
+                        </span>
+                        <span className="font-medium text-[var(--foreground)]">
+                          {pv.nombre_snapshot} {pv.apellido_snapshot}
+                          {pv.es_titular && (
+                            <span className="ml-2 text-xs text-blue-400">(Titular)</span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    {pv.documento_snapshot && (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <p className="text-xs text-[var(--muted-foreground)]">Documento</p>
+                          <p className="text-[var(--foreground)]">{pv.documento_snapshot}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (cotizacion.datos_completos?.cliente || (cotizacion.datos_completos?.pasajeros && cotizacion.datos_completos.pasajeros.length > 0)) ? (
+            /* Formato viejo - compatibilidad */
             <div className="glass-card rounded-2xl p-6">
               {(() => {
-                // Combinar titular + pasajeros en un solo array
                 const titular = cotizacion.datos_completos?.cliente ? {
-                  ...cotizacion.datos_completos.cliente,
+                  nombre: cotizacion.datos_completos.cliente.nombre,
+                  apellido: cotizacion.datos_completos.cliente.apellido,
+                  documento: cotizacion.datos_completos.cliente.documento,
                   es_titular: true
                 } : null;
-                const otrosPasajeros = cotizacion.datos_completos?.pasajeros || [];
-                const todosLosPasajeros = titular ? [titular, ...otrosPasajeros] : otrosPasajeros;
+                const otros = cotizacion.datos_completos?.pasajeros || [];
+                const todos = titular ? [titular, ...otros] : otros;
                 
                 return (
                   <>
                     <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                       <Users className="w-5 h-5 text-blue-400" />
-                      Pasajeros ({todosLosPasajeros.length})
+                      Pasajeros ({todos.length})
                     </h3>
                     <div className="space-y-3">
-                      {todosLosPasajeros.map((pasajero: any, idx: number) => (
+                      {todos.map((pasajero: any, idx: number) => (
                         <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
@@ -867,26 +979,12 @@ export default function CotizacionDetalle() {
                               </span>
                             </div>
                           </div>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            {pasajero.documento && (
-                              <div>
-                                <p className="text-xs text-[var(--muted-foreground)]">Documento</p>
-                                <p className="text-[var(--foreground)]">{pasajero.documento}</p>
-                              </div>
-                            )}
-                            {pasajero.fecha_nacimiento && (
-                              <div>
-                                <p className="text-xs text-[var(--muted-foreground)]">Fecha Nac.</p>
-                                <p className="text-[var(--foreground)]">{pasajero.fecha_nacimiento}</p>
-                              </div>
-                            )}
-                            {pasajero.nacionalidad && (
-                              <div>
-                                <p className="text-xs text-[var(--muted-foreground)]">Nacionalidad</p>
-                                <p className="text-[var(--foreground)]">{pasajero.nacionalidad}</p>
-                              </div>
-                            )}
-                          </div>
+                          {pasajero.documento && (
+                            <div className="text-sm">
+                              <p className="text-xs text-[var(--muted-foreground)]">Documento</p>
+                              <p className="text-[var(--foreground)]">{pasajero.documento}</p>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -894,7 +992,7 @@ export default function CotizacionDetalle() {
                 );
               })()}
             </div>
-          )}
+          ) : null}
 
           {/* Notas - solo si no es cotización de catálogo o si hay notas reales */}
           {cotizacion.notas && !cotizacion.notas.includes('--- PAQUETE JSON ---') && (
