@@ -19,3 +19,15 @@ export function formatNumber(value: number | undefined | null): string {
   if (value === undefined || value === null || isNaN(value)) return '0';
   return value.toLocaleString('es-AR');
 }
+
+// Debounce function for search inputs
+export function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
