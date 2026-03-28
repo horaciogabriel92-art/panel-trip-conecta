@@ -444,34 +444,81 @@ export default function CotizacionDetalle() {
               // Paquete: combina datos directos + parseados de notas
               paquete: {
                 titulo: paquete?.titulo || paquete?.nombre || datosPaqueteDesdeNotas?.titulo || cotizacion.nombre_cotizacion || 'Cotización',
-                destino: paquete?.destino || datosPaqueteDesdeNotas?.destino || cotizacion.hospedaje?.[0]?.ciudad || 'Destino no especificado',
+                destino: paquete?.destino || datosPaqueteDesdeNotas?.destino || cotizacion.destino_principal || cotizacion.hospedaje?.[0]?.ciudad || cotizacion.hospedajes?.[0]?.ciudad || 'Destino no especificado',
                 descripcion: paquete?.descripcion || datosPaqueteDesdeNotas?.descripcion,
                 duracion_dias: paquete?.duracion_dias || datosPaqueteDesdeNotas?.duracion_dias || 0,
                 imagen_principal: paquete?.imagen_principal || paquete?.imagen_url || datosPaqueteDesdeNotas?.imagen_principal,
                 politicas_cancelacion: paquete?.politicas_cancelacion || datosPaqueteDesdeNotas?.politicas_cancelacion,
-                // Itinerario: del paquete o de los datos parseados
-                itinerario: paquete?.itinerario || datosPaqueteDesdeNotas?.itinerario || { texto: '', dias: [] },
+                // Itinerario: del paquete, datos parseados, o cotización manual
+                itinerario: (() => {
+                  // Prioridad 1: itinerario del paquete
+                  if (paquete?.itinerario) return paquete.itinerario;
+                  // Prioridad 2: datos parseados de notas
+                  if (datosPaqueteDesdeNotas?.itinerario) return datosPaqueteDesdeNotas.itinerario;
+                  // Prioridad 3: itinerario_manual de cotización
+                  if (cotizacion.itinerario_manual) return { texto: cotizacion.itinerario_manual, dias: [] };
+                  // Prioridad 4: itinerario del objeto cotización (JSONB)
+                  if (cotizacion.itinerario) return cotizacion.itinerario;
+                  return { texto: '', dias: [] };
+                })(),
                 // Incluye: del paquete, de los datos parseados, o de la cotización manual
                 incluye: paquete?.incluye || datosPaqueteDesdeNotas?.incluye || cotizacion.incluye || [],
                 no_incluye: paquete?.no_incluye || datosPaqueteDesdeNotas?.no_incluye || cotizacion.no_incluye || []
               },
-              // Pasajeros: titular + extras (del parseo de notas)
-              pasajeros: [
-                // Titular como pasajero 1
-                ...(cotizacion.datos_completos?.cliente ? [{
+              // Pasajeros: del nuevo schema CRM (cotizacion.pasajeros) o legacy (datos_completos)
+              pasajeros: (() => {
+                // Nuevo schema: cotizacion.pasajeros viene del backend
+                if (cotizacion.pasajeros && cotizacion.pasajeros.length > 0) {
+                  return cotizacion.pasajeros.map((pv: any) => ({
+                    nombre: pv.nombre_snapshot || pv.pasajero?.nombre || '',
+                    apellido: pv.apellido_snapshot || pv.pasajero?.apellido || '',
+                    documento: pv.documento_snapshot || pv.pasajero?.documento || '',
+                    fecha_nacimiento: pv.pasajero?.fecha_nacimiento || '',
+                    nacionalidad: pv.pasajero?.nacionalidad || ''
+                  }));
+                }
+                // Legacy: datos_completos (cotizaciones antiguas)
+                const titular = cotizacion.datos_completos?.cliente ? [{
                   nombre: cotizacion.datos_completos.cliente.nombre,
                   apellido: cotizacion.datos_completos.cliente.apellido,
                   documento: cotizacion.datos_completos.cliente.documento,
                   fecha_nacimiento: cotizacion.datos_completos.cliente.fecha_nacimiento,
                   nacionalidad: cotizacion.datos_completos.cliente.nacionalidad
-                }] : []),
-                // Pasajeros adicionales
-                ...(cotizacion.datos_completos?.pasajeros || [])
-              ],
-              // Vuelos: de la cotización, del paquete, o de los datos parseados
-              vuelos: cotizacion.vuelos || paquete?.vuelos || datosPaqueteDesdeNotas?.vuelos || [],
-              // Hospedaje: de la cotización o de los datos parseados  
-              hospedaje: cotizacion.hospedaje || datosPaqueteDesdeNotas?.hospedaje || [],
+                }] : [];
+                const otros = cotizacion.datos_completos?.pasajeros || [];
+                return [...titular, ...otros];
+              })(),
+              // Vuelos: del nuevo schema (cotizacion.vuelos) o legacy
+              vuelos: (() => {
+                // Nuevo schema
+                if (cotizacion.vuelos && cotizacion.vuelos.length > 0) {
+                  return cotizacion.vuelos.map((v: any) => ({
+                    aerolinea_codigo: v.aerolinea_codigo || '',
+                    aerolinea_nombre: v.aerolinea_nombre || '',
+                    numero_vuelo: v.numero_vuelo || '',
+                    clase_codigo: v.clase_codigo || v.clase_nombre || '',
+                    fecha_salida: v.fecha_salida || '',
+                    hora_salida: v.hora_salida || '',
+                    fecha_llegada: v.fecha_llegada || '',
+                    hora_llegada: v.hora_llegada || '',
+                    origen_codigo: v.origen_codigo || '',
+                    origen_ciudad: v.origen_nombre || v.origen_ciudad || '',
+                    destino_codigo: v.destino_codigo || '',
+                    destino_ciudad: v.destino_nombre || v.destino_ciudad || ''
+                  }));
+                }
+                // Legacy: del paquete o datos parseados
+                return paquete?.vuelos || datosPaqueteDesdeNotas?.vuelos || [];
+              })(),
+              // Hospedaje: del nuevo schema o legacy
+              hospedaje: (() => {
+                // Nuevo schema
+                if (cotizacion.hospedajes && cotizacion.hospedajes.length > 0) {
+                  return cotizacion.hospedajes;
+                }
+                // Legacy
+                return cotizacion.hospedaje || datosPaqueteDesdeNotas?.hospedaje || [];
+              })(),
               // Desglose de precios
               precios: {
                 vuelos: cotizacion.precio_vuelos,
