@@ -20,6 +20,9 @@ import {
 import { parseAmadeusPNR, isValidAmadeusText, ParsedFlight } from '@/lib/amadeus-parser';
 import { getAirportDisplay, getAirlineDisplay } from '@/lib/airports';
 import api from '@/lib/api';
+import BuscarCliente from '@/components/cotizaciones/BuscarCliente';
+import CrearClienteModal from '@/components/cotizaciones/CrearClienteModal';
+import { Cliente } from '@/lib/api-clientes';
 
 // ============================================
 // TIPOS
@@ -53,16 +56,9 @@ export default function NuevaCotizacionManual() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Datos del formulario
-  const [cliente, setCliente] = useState({
-    nombre: '',
-    apellido: '',
-    documento: '',
-    email: '',
-    telefono: '',
-    fecha_nacimiento: '',
-    nacionalidad: 'Uruguay',
-  });
+  // Cliente CRM
+  const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null);
+  const [showCrearCliente, setShowCrearCliente] = useState(false);
 
   const [pasajeros, setPasajeros] = useState<Pasajero[]>([]);
   
@@ -189,16 +185,39 @@ export default function NuevaCotizacionManual() {
   }, [precios.subtotal, precios.impuestos]);
 
   const handleSubmit = async () => {
+    if (!clienteSeleccionado) {
+      alert('Debes seleccionar un cliente');
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
+      // Formato CRM nuevo
       const cotizacionData = {
+        cliente_id: clienteSeleccionado.id,
+        pasajeros_ids: [], // Por ahora vacío, se implementará selección de pasajeros
+        pasajeros_nuevos: pasajeros.map(p => ({
+          nombre: p.nombre,
+          apellido: p.apellido,
+          documento: p.documento,
+          fecha_nacimiento: p.fecha_nacimiento,
+          nacionalidad: p.nacionalidad,
+        })),
+        pasajero_titular_id: null, // Se asignará automáticamente
         nombre_cotizacion: nombreCotizacion || `Viaje a ${hospedajes[0]?.ciudad || parsedFlights[0]?.destino_ciudad || 'Destino'}`,
-        cliente,
-        pasajeros,
         vuelos: useAmadeus ? parsedFlights : vuelosManuales,
-        hospedaje: hospedajes,
-        itinerario_manual: itinerario,
+        hospedajes: hospedajes.map(h => ({
+          nombre_hotel: h.nombre_hotel,
+          link_hotel: h.link_hotel,
+          ciudad: h.ciudad,
+          fecha_checkin: h.fecha_checkin,
+          fecha_checkout: h.fecha_checkout,
+          tipo_habitacion: h.tipo_habitacion,
+          regimen: h.regimen,
+          noches: h.noches,
+        })),
+        itinerario: { texto: itinerario, dias: [] },
         incluye: incluye.filter(i => i.trim() !== ''),
         no_incluye: noIncluye.filter(i => i.trim() !== ''),
         politicas_cancelacion: politicasCancelacion,
@@ -208,11 +227,11 @@ export default function NuevaCotizacionManual() {
           impuestos: parseFloat(precios.impuestos) || 0,
           total: parseFloat(precios.total) || 0,
         },
-        origen_datos: useAmadeus && amadeusText ? 'amadeus' : 'manual',
+        origen_datos: useAmadeus && amadeusText ? 'amadeus_pnr' : 'manual',
         amadeus_pnr_raw: useAmadeus ? amadeusText : null,
       };
 
-      console.log('Enviando datos:', cotizacionData);
+      console.log('Enviando datos CRM:', cotizacionData);
       const response = await api.post('/cotizaciones/manual', cotizacionData);
       
       console.log('Respuesta:', response.data);
@@ -256,94 +275,26 @@ export default function NuevaCotizacionManual() {
         </div>
       </div>
 
-      {/* Cliente Titular */}
+      {/* Cliente CRM - Buscar o Crear */}
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
           <User className="w-5 h-5 text-blue-400" />
-          Pasajero 1 (Titular)
+          Cliente (Titular)
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Nombre *</label>
-            <input
-              type="text"
-              value={cliente.nombre}
-              onChange={(e) => setCliente({ ...cliente, nombre: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-              placeholder="Ej: Juan"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Apellido *</label>
-            <input
-              type="text"
-              value={cliente.apellido}
-              onChange={(e) => setCliente({ ...cliente, apellido: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-              placeholder="Ej: Pérez"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Documento</label>
-            <input
-              type="text"
-              value={cliente.documento}
-              onChange={(e) => setCliente({ ...cliente, documento: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-              placeholder="CI / Pasaporte"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Fecha de Nacimiento</label>
-            <input
-              type="date"
-              value={cliente.fecha_nacimiento}
-              onChange={(e) => setCliente({ ...cliente, fecha_nacimiento: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Email *</label>
-            <input
-              type="email"
-              value={cliente.email}
-              onChange={(e) => setCliente({ ...cliente, email: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-              placeholder="juan@email.com"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Teléfono</label>
-            <input
-              type="tel"
-              value={cliente.telefono}
-              onChange={(e) => setCliente({ ...cliente, telefono: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-              placeholder="099 123 456"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Nacionalidad</label>
-            <select
-              value={cliente.nacionalidad}
-              onChange={(e) => setCliente({ ...cliente, nacionalidad: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-            >
-              <option value="Uruguay" className="bg-[var(--background)]">Uruguay</option>
-              <option value="Argentina" className="bg-[var(--background)]">Argentina</option>
-              <option value="Brasil" className="bg-[var(--background)]">Brasil</option>
-              <option value="Chile" className="bg-[var(--background)]">Chile</option>
-              <option value="Paraguay" className="bg-[var(--background)]">Paraguay</option>
-              <option value="Otro" className="bg-[var(--background)]">Otro</option>
-            </select>
-          </div>
-        </div>
+        <BuscarCliente
+          onSelect={setClienteSeleccionado}
+          onNuevoCliente={() => setShowCrearCliente(true)}
+          selectedClienteId={clienteSeleccionado?.id}
+        />
       </div>
 
       {/* Pasajeros Adicionales */}
       <div className="glass-card rounded-2xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-[var(--foreground)]">Pasajeros Adicionales</h3>
+          <h3 className="text-lg font-bold text-[var(--foreground)] flex items-center gap-2">
+            <User className="w-5 h-5 text-blue-400" />
+            Pasajeros Adicionales
+          </h3>
           <button
             onClick={handleAddPasajero}
             className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-xl transition-colors text-sm font-bold"
@@ -953,6 +904,15 @@ RP/DZOUY2100/
         {currentStep === 4 && renderStep4()}
         {currentStep === 5 && renderStep5()}
       </div>
+
+      {/* Modal Crear Cliente */}
+      <CrearClienteModal
+        isOpen={showCrearCliente}
+        onClose={() => setShowCrearCliente(false)}
+        onClienteCreado={(cliente) => {
+          setClienteSeleccionado(cliente);
+        }}
+      />
 
       {/* Navigation Buttons */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-[var(--background)]/95 backdrop-blur border-t border-[var(--border)]">
