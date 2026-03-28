@@ -221,8 +221,11 @@ export default function AdminNuevaCotizacion() {
   }, [precios.subtotal, precios.impuestos]);
 
   const handleSubmit = async () => {
-    if (!vendedorSeleccionado) {
-      alert('Debes seleccionar un vendedor');
+    // Si no seleccionó vendedor, usar el ID del admin actual
+    const vendedorIdFinal = vendedorSeleccionado || user?.id;
+    
+    if (!vendedorIdFinal) {
+      alert('No se pudo determinar el vendedor');
       return;
     }
 
