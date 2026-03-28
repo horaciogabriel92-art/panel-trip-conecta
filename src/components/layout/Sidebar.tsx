@@ -32,6 +32,7 @@ const vendedorLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/paquetes', label: 'Catálogo', icon: Package },
   { href: '/cotizaciones', label: 'Cotizaciones', icon: FileText },
+  { href: '/admin/clientes', label: 'Clientes', icon: Users },
   { href: '/ventas', label: 'Mis Ventas', icon: ShoppingCart },
   { href: '/documentos', label: 'Mis Documentos', icon: Files },
 ];
