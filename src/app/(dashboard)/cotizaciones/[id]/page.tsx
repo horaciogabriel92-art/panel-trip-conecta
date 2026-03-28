@@ -639,7 +639,7 @@ export default function CotizacionDetalle() {
               {(() => {
                 // Formato string (legacy)
                 if (typeof itin === 'string') {
-                  return <p className="text-[var(--foreground)] whitespace-pre-line">{itin}</p>;
+                  return <p className="text-[var(--foreground)] whitespace-pre-line break-words overflow-hidden">{itin}</p>;
                 }
                 // Formato {texto, dias} (nuevo formato)
                 if (itin && typeof itin === 'object' && !Array.isArray(itin) && 'texto' in itin) {
@@ -647,7 +647,7 @@ export default function CotizacionDetalle() {
                   return (
                     <div className="space-y-4">
                       {itinObj.texto && (
-                        <p className="text-[var(--foreground)] whitespace-pre-line">{itinObj.texto}</p>
+                        <p className="text-[var(--foreground)] whitespace-pre-line break-words overflow-hidden">{itinObj.texto}</p>
                       )}
                       {Array.isArray(itinObj.dias) && itinObj.dias.length > 0 && (
                         <div className="space-y-3">
@@ -659,7 +659,7 @@ export default function CotizacionDetalle() {
                                 </span>
                                 <span className="font-medium text-[var(--foreground)]">{dia.titulo}</span>
                               </div>
-                              <p className="text-[var(--foreground)] text-sm">{dia.descripcion}</p>
+                              <p className="text-[var(--foreground)] text-sm break-words overflow-hidden">{dia.descripcion}</p>
                               {dia.actividades && dia.actividades.length > 0 && (
                                 <ul className="mt-2 space-y-1">
                                   {dia.actividades.map((act: string, actIdx: number) => (
@@ -686,7 +686,7 @@ export default function CotizacionDetalle() {
                             </span>
                             <span className="font-medium text-[var(--foreground)]">{dia.titulo}</span>
                           </div>
-                          <p className="text-[var(--foreground)] text-sm">{dia.descripcion}</p>
+                          <p className="text-[var(--foreground)] text-sm break-words overflow-hidden">{dia.descripcion}</p>
                           {dia.actividades && dia.actividades.length > 0 && (
                             <ul className="mt-2 space-y-1">
                               {dia.actividades.map((act: string, actIdx: number) => (
@@ -892,7 +892,7 @@ export default function CotizacionDetalle() {
                 Itinerario
               </h3>
               <div className="p-4 bg-[var(--muted)] rounded-xl">
-                <p className="text-[var(--foreground)] whitespace-pre-line">{cotizacion.itinerario_manual}</p>
+                <p className="text-[var(--foreground)] whitespace-pre-line break-words overflow-hidden">{cotizacion.itinerario_manual}</p>
               </div>
             </div>
           )}
