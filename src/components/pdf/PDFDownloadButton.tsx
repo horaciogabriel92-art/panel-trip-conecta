@@ -14,6 +14,8 @@ interface CotizacionData {
   tipo_habitacion?: string;
   fecha_salida?: string;
   cliente_nombre?: string;
+  cliente_apellido?: string;
+  cliente_documento?: string;
   cliente_email?: string;
   cliente_telefono?: string;
   precio_total: number;
@@ -89,9 +91,9 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
       nombre_cotizacion: data.nombre_cotizacion
     },
     cliente: {
-      nombre: data.cliente_nombre || data.vendedor?.nombre || 'Cliente',
-      apellido: '',
-      documento: '',
+      nombre: data.cliente_nombre || 'Cliente',
+      apellido: data.cliente_apellido || '',
+      documento: data.cliente_documento || '',
       email: data.cliente_email || '',
       telefono: data.cliente_telefono || ''
     },
