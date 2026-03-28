@@ -18,6 +18,9 @@ import {
   CreditCard
 } from 'lucide-react';
 import Link from 'next/link';
+import BuscarCliente from '@/components/cotizaciones/BuscarCliente';
+import CrearClienteModal from '@/components/cotizaciones/CrearClienteModal';
+import { Cliente } from '@/lib/api-clientes';
 
 interface Paquete {
   id: string;
@@ -30,6 +33,9 @@ interface Paquete {
   cupos_disponibles: number;
   imagen_url?: string;
   imagen_principal?: string;
+  fecha_salida?: string;
+  fecha_inicio?: string;
+  duracion_dias?: number;
 }
 
 interface Pasajero {
@@ -49,19 +55,9 @@ export default function CotizarPaquete() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Datos del cliente principal
-  const [cliente, setCliente] = useState({
-    nombre: '',
-    apellido: '',
-    email: '',
-    telefono: '',
-    documento: '',
-    fecha_nacimiento: '',
-    nacionalidad: 'Argentina',
-    direccion: '',
-    ciudad: '',
-    notas: ''
-  });
+  // Cliente CRM
+  const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null);
+  const [showCrearCliente, setShowCrearCliente] = useState(false);
 
   // Configuración de la cotización
   const [config, setConfig] = useState({
@@ -77,7 +73,16 @@ export default function CotizarPaquete() {
     const fetchPaquete = async () => {
       try {
         const res = await api.get(`/paquetes/${params.id}`);
-        setPaquete(res.data);
+        const paqueteData = res.data;
+        setPaquete(paqueteData);
+        
+        // Tomar fecha de salida del paquete automáticamente
+        const fechaPaquete = paqueteData.fecha_salida || paqueteData.fecha_inicio;
+        if (fechaPaquete) {
+          // Formatear fecha a YYYY-MM-DD si viene en otro formato
+          const fechaFormateada = new Date(fechaPaquete).toISOString().split('T')[0];
+          setConfig(prev => ({ ...prev, fecha_salida: fechaFormateada }));
+        }
       } catch (err) {
         console.error('Error cargando paquete:', err);
       } finally {
@@ -121,28 +126,46 @@ export default function CotizarPaquete() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!clienteSeleccionado) {
+      alert('Debes seleccionar un cliente');
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
+      // Formato CRM nuevo
       const cotizacionData = {
+        cliente_id: clienteSeleccionado.id,
+        pasajeros_ids: [], // Se asignará el titular automáticamente
+        pasajeros_nuevos: pasajeros.map(p => ({
+          nombre: p.nombre,
+          apellido: p.apellido,
+          documento: p.documento,
+          fecha_nacimiento: p.fecha_nacimiento,
+          nacionalidad: p.nacionalidad,
+        })),
+        pasajero_titular_id: null,
         paquete_id: params.id,
-        cliente_nombre: `${cliente.nombre} ${cliente.apellido}`,
-        cliente_email: cliente.email,
-        cliente_telefono: cliente.telefono,
+        nombre_cotizacion: `Viaje a ${paquete?.destino || 'Destino'} - ${paquete?.titulo || 'Paquete'}`,
+        tipo_cotizacion: 'paquete',
+        origen_datos: 'manual',
+        precios: {
+          moneda: 'USD',
+          subtotal: calcularPrecio(),
+          impuestos: 0,
+          total: calcularPrecio(),
+        },
         num_pasajeros: config.num_pasajeros,
+        fecha_salida: config.fecha_salida,
         tipo_habitacion: config.tipo_habitacion,
-        fecha_salida: config.fecha_salida || null,
-        precio_total: calcularPrecio(),
-        notas: cliente.notas,
-        // Datos completos del cliente para referencia
-        datos_completos: {
-          cliente,
-          pasajeros,
-          config
-        }
+        itinerario: null,
+        incluye: [],
+        no_incluye: [],
       };
 
-      const res = await api.post('/cotizaciones', cotizacionData);
+      const res = await api.post('/cotizaciones/manual', cotizacionData);
       
       alert('Cotización creada exitosamente');
       router.push('/cotizaciones');
@@ -256,104 +279,17 @@ export default function CotizarPaquete() {
             </div>
           </div>
 
-          {/* Datos del cliente principal */}
+          {/* Cliente CRM - Buscar o Crear */}
           <div className="glass-card rounded-2xl p-6">
             <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <User className="w-5 h-5 text-blue-400" />
-              Datos del Cliente Principal
+              Cliente (Titular)
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Nombre *</label>
-                <input
-                  type="text"
-                  required
-                  value={cliente.nombre}
-                  onChange={(e) => setCliente({...cliente, nombre: e.target.value})}
-                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                  placeholder="Juan"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Apellido *</label>
-                <input
-                  type="text"
-                  required
-                  value={cliente.apellido}
-                  onChange={(e) => setCliente({...cliente, apellido: e.target.value})}
-                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                  placeholder="Pérez"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Email *</label>
-                <input
-                  type="email"
-                  required
-                  value={cliente.email}
-                  onChange={(e) => setCliente({...cliente, email: e.target.value})}
-                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                  placeholder="cliente@email.com"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Teléfono *</label>
-                <input
-                  type="tel"
-                  required
-                  value={cliente.telefono}
-                  onChange={(e) => setCliente({...cliente, telefono: e.target.value})}
-                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                  placeholder="+54 11 1234-5678"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Documento (DNI/Pasaporte) *</label>
-                <input
-                  type="text"
-                  required
-                  value={cliente.documento}
-                  onChange={(e) => setCliente({...cliente, documento: e.target.value})}
-                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                  placeholder="12345678"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Fecha de Nacimiento *</label>
-                <input
-                  type="date"
-                  required
-                  value={cliente.fecha_nacimiento}
-                  onChange={(e) => setCliente({...cliente, fecha_nacimiento: e.target.value})}
-                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Nacionalidad</label>
-                <input
-                  type="text"
-                  value={cliente.nacionalidad}
-                  onChange={(e) => setCliente({...cliente, nacionalidad: e.target.value})}
-                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                  placeholder="Argentina"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Ciudad</label>
-                <input
-                  type="text"
-                  value={cliente.ciudad}
-                  onChange={(e) => setCliente({...cliente, ciudad: e.target.value})}
-                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                  placeholder="Buenos Aires"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Dirección</label>
-                <input
-                  type="text"
-                  value={cliente.direccion}
-                  onChange={(e) => setCliente({...cliente, direccion: e.target.value})}
+            <BuscarCliente
+              onSelect={setClienteSeleccionado}
+              onNuevoCliente={() => setShowCrearCliente(true)}
+              selectedClienteId={clienteSeleccionado?.id}
+            />}
                   className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   placeholder="Av. Siempre Viva 123"
                 />
@@ -432,20 +368,6 @@ export default function CotizarPaquete() {
             </div>
           )}
 
-          {/* Notas adicionales */}
-          <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-400" />
-              Notas Adicionales
-            </h3>
-            <textarea
-              value={cliente.notas}
-              onChange={(e) => setCliente({...cliente, notas: e.target.value})}
-              rows={4}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 resize-none"
-              placeholder="Requerimientos especiales, preferencias de horario, etc."
-            />
-          </div>
         </div>
 
         {/* Columna derecha - Resumen */}
@@ -502,6 +424,15 @@ export default function CotizarPaquete() {
           </div>
         </div>
       </form>
+
+      {/* Modal Crear Cliente */}
+      <CrearClienteModal
+        isOpen={showCrearCliente}
+        onClose={() => setShowCrearCliente(false)}
+        onClienteCreado={(cliente) => {
+          setClienteSeleccionado(cliente);
+        }}
+      />
     </div>
   );
 }
