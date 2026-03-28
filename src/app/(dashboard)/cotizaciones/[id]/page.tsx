@@ -115,6 +115,14 @@ interface Cotizacion {
     incluye?: string[];
     no_incluye?: string[];
     politicas_cancelacion?: string;
+    hotel_seleccionado?: {
+      id: string;
+      nombre: string;
+      link?: string;
+      ciudad?: string;
+      tipo_habitacion?: string;
+      precio_por_persona?: number;
+    };
   };
   itinerario?: { texto?: string; dias?: any[] };
   // Legacy fields (para cotizaciones viejas)
@@ -1076,6 +1084,31 @@ export default function CotizacionDetalle() {
           <div className="glass-card rounded-2xl p-6 sticky top-6">
             <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Resumen</h3>
             <div className="space-y-3 mb-6">
+              {/* Hotel seleccionado */}
+              {cotizacion.paquete_data?.hotel_seleccionado && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-[var(--muted-foreground)]">Hotel</span>
+                  <div className="text-right">
+                    <span className="text-[var(--foreground)] font-medium">
+                      {cotizacion.paquete_data.hotel_seleccionado.nombre}
+                    </span>
+                    {cotizacion.paquete_data.hotel_seleccionado.link && (
+                      <a 
+                        href={cotizacion.paquete_data.hotel_seleccionado.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-xs text-blue-400 hover:text-blue-300"
+                      >
+                        Ver hotel →
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+              <div className="flex justify-between text-sm">
+                <span className="text-[var(--muted-foreground)]">Habitación</span>
+                <span className="text-[var(--foreground)] capitalize">{cotizacion.tipo_habitacion || 'Doble'}</span>
+              </div>
               <div className="flex justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Precio por persona</span>
                 <span className="text-[var(--foreground)]">

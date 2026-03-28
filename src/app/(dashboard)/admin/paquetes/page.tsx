@@ -142,6 +142,18 @@ interface Vuelo {
   notas?: string;
 }
 
+interface Hotel {
+  id: string;
+  nombre: string;
+  link?: string;
+  ciudad?: string;
+  precios: {
+    doble: number;
+    triple: number;
+    cuadruple: number;
+  };
+}
+
 interface Paquete {
   id?: string;
   nombre: string;
@@ -161,6 +173,7 @@ interface Paquete {
   no_incluye: string[];
   recursos_vendedores?: RecursoVendedor[];
   vuelos: Vuelo[];
+  hoteles: Hotel[];
   itinerario?: { texto?: string; dias?: any[] } | string;
 }
 
@@ -180,6 +193,7 @@ const emptyPaquete: Paquete = {
   no_incluye: [],
   recursos_vendedores: [],
   vuelos: [],
+  hoteles: [],
   itinerario: { texto: '', dias: [] }
 };
 
@@ -391,6 +405,40 @@ export default function PaquetesAdmin() {
 
     const otrosVuelos = vuelos.filter(v => v.tipo !== 'vuelta');
     setFormData({ ...formData, vuelos: [...otrosVuelos, updatedVuelo] });
+  };
+
+  // Helper functions para manejar hoteles
+  const addHotel = () => {
+    const nuevoHotel: Hotel = {
+      id: crypto.randomUUID(),
+      nombre: '',
+      link: '',
+      ciudad: formData.destino || '',
+      precios: {
+        doble: formData.precio_doble || 0,
+        triple: formData.precio_triple || 0,
+        cuadruple: formData.precio_cuadruple || 0
+      }
+    };
+    setFormData({ ...formData, hoteles: [...(formData.hoteles || []), nuevoHotel] });
+  };
+
+  const updateHotel = (index: number, field: keyof Hotel | 'precio_doble' | 'precio_triple' | 'precio_cuadruple', value: string | number) => {
+    const hoteles = [...(formData.hoteles || [])];
+    if (field.startsWith('precio_')) {
+      const tipo = field.replace('precio_', '') as 'doble' | 'triple' | 'cuadruple';
+      hoteles[index].precios[tipo] = Number(value) || 0;
+    } else {
+      (hoteles[index] as any)[field] = value;
+    }
+    setFormData({ ...formData, hoteles });
+  };
+
+  const removeHotel = (index: number) => {
+    setFormData({ 
+      ...formData, 
+      hoteles: (formData.hoteles || []).filter((_, i) => i !== index) 
+    });
   };
 
   return (
@@ -1063,6 +1111,120 @@ Ejemplo:
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+
+              {/* Sección Hoteles */}
+              <div className="space-y-4 border border-[var(--border)] rounded-2xl p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-bold text-[var(--foreground)] flex items-center gap-2">
+                      🏨 Hoteles del Paquete
+                    </h4>
+                    <p className="text-xs text-[var(--muted-foreground)]">
+                      Agrega los hoteles disponibles con sus precios por tipo de habitación
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addHotel}
+                    className="px-4 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-xl text-sm font-medium flex items-center gap-2 transition-all"
+                  >
+                    <Plus className="w-4 h-4" /> Agregar Hotel
+                  </button>
+                </div>
+
+                {formData.hoteles?.length === 0 && (
+                  <div className="text-center py-8 bg-[var(--muted)] rounded-xl border border-dashed border-[var(--border)]">
+                    <p className="text-sm text-[var(--muted-foreground)]">
+                      No hay hoteles configurados. Haz clic en "Agregar Hotel" para comenzar.
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  {formData.hoteles?.map((hotel, index) => (
+                    <div key={hotel.id} className="bg-[var(--muted)] rounded-xl p-4 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-blue-400 uppercase">Hotel {index + 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeHotel(index)}
+                          className="text-red-400 hover:text-red-300 text-sm"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Nombre del Hotel *</label>
+                          <input
+                            type="text"
+                            required
+                            value={hotel.nombre}
+                            onChange={(e) => updateHotel(index, 'nombre', e.target.value)}
+                            placeholder="Ej: Hotel Madrid Centro"
+                            className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] outline-none focus:border-blue-500 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Link/URL (opcional)</label>
+                          <input
+                            type="url"
+                            value={hotel.link || ''}
+                            onChange={(e) => updateHotel(index, 'link', e.target.value)}
+                            placeholder="https://booking.com/hotel..."
+                            className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] outline-none focus:border-blue-500 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Ciudad</label>
+                          <input
+                            type="text"
+                            value={hotel.ciudad || ''}
+                            onChange={(e) => updateHotel(index, 'ciudad', e.target.value)}
+                            placeholder="Ej: Madrid"
+                            className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] outline-none focus:border-blue-500 text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Precio Doble *</label>
+                          <input
+                            type="number"
+                            min={0}
+                            required
+                            value={hotel.precios.doble}
+                            onChange={(e) => updateHotel(index, 'precio_doble', e.target.value)}
+                            className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] outline-none focus:border-blue-500 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Precio Triple</label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={hotel.precios.triple}
+                            onChange={(e) => updateHotel(index, 'precio_triple', e.target.value)}
+                            className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] outline-none focus:border-blue-500 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Precio Cuádruple</label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={hotel.precios.cuadruple}
+                            onChange={(e) => updateHotel(index, 'precio_cuadruple', e.target.value)}
+                            className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] outline-none focus:border-blue-500 text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

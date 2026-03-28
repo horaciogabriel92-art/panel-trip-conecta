@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import { formatCurrency } from '@/lib/utils';
 import { 
   ArrowLeft, 
   User, 
@@ -22,6 +23,18 @@ import BuscarCliente from '@/components/cotizaciones/BuscarCliente';
 import CrearClienteModal from '@/components/cotizaciones/CrearClienteModal';
 import { Cliente } from '@/lib/api-clientes';
 
+interface Hotel {
+  id: string;
+  nombre: string;
+  link?: string;
+  ciudad?: string;
+  precios: {
+    doble: number;
+    triple: number;
+    cuadruple: number;
+  };
+}
+
 interface Paquete {
   id: string;
   nombre: string;
@@ -36,6 +49,7 @@ interface Paquete {
   fecha_salida?: string;
   fecha_inicio?: string;
   duracion_dias?: number;
+  hoteles?: Hotel[];
 }
 
 interface Pasajero {
@@ -66,6 +80,9 @@ export default function CotizarPaquete() {
     fecha_salida: ''
   });
 
+  // Hotel seleccionado
+  const [hotelSeleccionado, setHotelSeleccionado] = useState<Hotel | null>(null);
+
   // Pasajeros adicionales (si hay más de 1)
   const [pasajeros, setPasajeros] = useState<Pasajero[]>([]);
 
@@ -75,6 +92,11 @@ export default function CotizarPaquete() {
         const res = await api.get(`/paquetes/${params.id}`);
         const paqueteData = res.data;
         setPaquete(paqueteData);
+        
+        // Seleccionar primer hotel automáticamente si existe
+        if (paqueteData.hoteles && paqueteData.hoteles.length > 0) {
+          setHotelSeleccionado(paqueteData.hoteles[0]);
+        }
         
         // Tomar fecha de salida del paquete automáticamente
         const fechaPaquete = paqueteData.fecha_salida || paqueteData.fecha_inicio;
@@ -117,6 +139,14 @@ export default function CotizarPaquete() {
 
   const calcularPrecio = () => {
     if (!paquete) return 0;
+    
+    // Si hay hotel seleccionado, usar precios del hotel
+    if (hotelSeleccionado) {
+      const precioPorPersona = hotelSeleccionado.precios[config.tipo_habitacion] || 0;
+      return precioPorPersona * config.num_pasajeros;
+    }
+    
+    // Fallback a precios del paquete (legacy)
     const precioPorPersona = 
       config.tipo_habitacion === 'doble' ? paquete.precio_doble :
       config.tipo_habitacion === 'triple' ? paquete.precio_triple :
@@ -148,6 +178,8 @@ export default function CotizarPaquete() {
         })),
         pasajero_titular_id: null,
         paquete_id: params.id,
+        hotel_seleccionado_id: hotelSeleccionado?.id,
+        tipo_habitacion: config.tipo_habitacion,
         nombre_cotizacion: `Viaje a ${paquete?.destino || 'Destino'} - ${paquete?.titulo || 'Paquete'}`,
         tipo_cotizacion: 'paquete',
         origen_datos: 'paquete',
@@ -159,7 +191,6 @@ export default function CotizarPaquete() {
         },
         num_pasajeros: config.num_pasajeros,
         fecha_salida: config.fecha_salida,
-        tipo_habitacion: config.tipo_habitacion,
         // No enviamos itinerario/incluye/no_incluye - el backend los extrae del paquete
       };
 
@@ -277,6 +308,85 @@ export default function CotizarPaquete() {
             </div>
           </div>
 
+          {/* Selección de Hotel */}
+          {paquete.hoteles && paquete.hoteles.length > 0 && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <BedDouble className="w-5 h-5 text-blue-400" />
+                Selección de Hotel
+              </h3>
+              
+              {/* Selector de Hotel */}
+              <div className="mb-4">
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">
+                  Hotel
+                </label>
+                <select
+                  value={hotelSeleccionado?.id || ''}
+                  onChange={(e) => {
+                    const hotel = paquete.hoteles?.find(h => h.id === e.target.value);
+                    setHotelSeleccionado(hotel || null);
+                  }}
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+                >
+                  {paquete.hoteles.map(hotel => (
+                    <option key={hotel.id} value={hotel.id}>
+                      {hotel.nombre} {hotel.ciudad ? `(${hotel.ciudad})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Detalles del hotel seleccionado */}
+              {hotelSeleccionado && (
+                <div className="bg-[var(--muted)] rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-[var(--foreground)]">{hotelSeleccionado.nombre}</span>
+                    {hotelSeleccionado.link && (
+                      <a 
+                        href={hotelSeleccionado.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                      >
+                        Ver hotel →
+                      </a>
+                    )}
+                  </div>
+                  
+                  {hotelSeleccionado.ciudad && (
+                    <p className="text-sm text-[var(--muted-foreground)]">
+                      📍 {hotelSeleccionado.ciudad}
+                    </p>
+                  )}
+                  
+                  {/* Precios por tipo de habitación */}
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[var(--border)]">
+                    <div className="text-center p-2 bg-[var(--background)] rounded-lg">
+                      <p className="text-xs text-[var(--muted-foreground)]">Doble</p>
+                      <p className="font-bold text-[var(--foreground)]">${formatCurrency(hotelSeleccionado.precios.doble)}</p>
+                      <p className="text-xs text-[var(--muted-foreground)]">por persona</p>
+                    </div>
+                    {hotelSeleccionado.precios.triple > 0 && (
+                      <div className="text-center p-2 bg-[var(--background)] rounded-lg">
+                        <p className="text-xs text-[var(--muted-foreground)]">Triple</p>
+                        <p className="font-bold text-[var(--foreground)]">${formatCurrency(hotelSeleccionado.precios.triple)}</p>
+                        <p className="text-xs text-[var(--muted-foreground)]">por persona</p>
+                      </div>
+                    )}
+                    {hotelSeleccionado.precios.cuadruple > 0 && (
+                      <div className="text-center p-2 bg-[var(--background)] rounded-lg">
+                        <p className="text-xs text-[var(--muted-foreground)]">Cuádruple</p>
+                        <p className="font-bold text-[var(--foreground)]">${formatCurrency(hotelSeleccionado.precios.cuadruple)}</p>
+                        <p className="text-xs text-[var(--muted-foreground)]">por persona</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Cliente CRM - Buscar o Crear */}
           <div className="glass-card rounded-2xl p-6">
             <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
@@ -373,6 +483,12 @@ export default function CotizarPaquete() {
                 <span className="text-[var(--muted-foreground)]">Paquete</span>
                 <span className="text-[var(--foreground)]">{paquete.destino}</span>
               </div>
+              {hotelSeleccionado && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-[var(--muted-foreground)]">Hotel</span>
+                  <span className="text-[var(--foreground)] text-right">{hotelSeleccionado.nombre}</span>
+                </div>
+              )}
               <div className="flex justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Pasajeros</span>
                 <span className="text-[var(--foreground)]">{config.num_pasajeros}</span>
@@ -385,9 +501,11 @@ export default function CotizarPaquete() {
               <div className="flex justify-between">
                 <span className="text-[var(--muted-foreground)]">Precio por persona</span>
                 <span className="text-[var(--foreground)]">
-                  ${config.tipo_habitacion === 'doble' ? paquete.precio_doble :
-                    config.tipo_habitacion === 'triple' ? paquete.precio_triple :
-                    paquete.precio_cuadruple}
+                  ${hotelSeleccionado 
+                    ? hotelSeleccionado.precios[config.tipo_habitacion] 
+                    : (config.tipo_habitacion === 'doble' ? paquete.precio_doble :
+                       config.tipo_habitacion === 'triple' ? paquete.precio_triple :
+                       paquete.precio_cuadruple)}
                 </span>
               </div>
               <div className="flex justify-between items-center pt-2">
