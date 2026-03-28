@@ -248,8 +248,10 @@ export default function CotizacionDetalle() {
           }
         }
         
-        // Cargar datos del paquete
-        if (cotizacionData.paquete_id) {
+        // Usar paquete de la cotización si existe, sino cargarlo
+        if (cotizacionData.paquete) {
+          setPaquete(cotizacionData.paquete);
+        } else if (cotizacionData.paquete_id) {
           const paqueteRes = await api.get(`/paquetes/${cotizacionData.paquete_id}`);
           setPaquete(paqueteRes.data);
         }
