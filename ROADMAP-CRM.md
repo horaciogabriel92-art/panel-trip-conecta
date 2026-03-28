@@ -1,8 +1,8 @@
 # Roadmap - CRM Trip Conecta
 
 > **Fecha creación:** 26 Marzo 2026  
-> **Última actualización:** 27 Marzo 2026  
-> **Estado:** 🟡 En desarrollo - Fase 1.3  
+> **Última actualización:** 28 Marzo 2026  
+> **Estado:** 🟡 En desarrollo - Fase 2 (Testing)  
 > **Prioridad:** Alta
 
 ---
@@ -21,292 +21,220 @@ Transformar Trip Conecta en un CRM completo donde:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  FASE 1: Schema ✅ | Backend 🟡 | Frontend 🔴              │
-│  FASE 2: Frontend Clientes 🔴                               │
-│  FASE 3: Adaptar Cotización 🔴                              │
-│  FASE 4: Testing 🔴                                         │
+│  FASE 1: Schema ✅ | Backend ✅ | Frontend ✅              │
+│  FASE 2: Frontend Clientes ✅ (Listo para testing)         │
+│  FASE 3: Adaptar Cotización ✅ (Listo para testing)        │
+│  FASE 4: Testing 🟡 (Pendiente QA)                         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📊 Schema de Base de Datos (COMPLETADO)
+## 📊 Schema de Base de Datos (✅ COMPLETADO - 27 Marzo 2026)
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         SCHEMA CRM - ACTIVO                                 │
-└─────────────────────────────────────────────────────────────────────────────┘
+### Tablas Creadas
 
-clientes (1)  ←── Centro de todo
-  │
-  ├──< (N) pasajeros ── Perfiles de viajeros gestionados por este cliente
-  │       │
-  │       └── es_cliente_registrado: boolean (si este pasajero también es cliente)
-  │
-  ├──< (N) cotizaciones ── Todas las cotizaciones del cliente
-  │       │
-  │       ├──< (N) cotizacion_pasajeros ── Vinculación con snapshot
-  │       │
-  │       ├──< (N) vuelos ── Segmentos de vuelo
-  │       │
-  │       ├──< (N) hospedajes ── Hoteles
-  │       │
-  │       └──< (1) ventas ── Conversión
-  │
-  └──< (N) historial_cliente ── Log de todas las interacciones
-          │
-          └── cotizacion_creada | llamada | email | nota_interna | etc
-```
-
-### Tablas Creadas (✅ 27 Marzo 2026)
-
-| Tabla | Estado | Archivo |
-|-------|--------|---------|
-| `clientes` | ✅ Lista | `005_add_fecha_envio.sql` (parcial) |
-| `pasajeros` | ✅ Lista | `006_recreate_cotizaciones_doc05.sql` |
-| `cotizaciones` | ✅ Recreada | `006_recreate_cotizaciones_doc05.sql` |
-| `cotizacion_pasajeros` | ✅ Lista | `006_recreate_cotizaciones_doc05.sql` |
-| `vuelos` | ✅ Lista | `006_recreate_cotizaciones_doc05.sql` |
-| `hospedajes` | ✅ Lista | `006_recreate_cotizaciones_doc05.sql` |
-| `historial_cliente` | ✅ Lista | `006_recreate_cotizaciones_doc05.sql` |
+| Tabla | Estado | Archivo SQL |
+|-------|--------|-------------|
+| `clientes` | ✅ | `006_recreate_cotizaciones_doc05.sql` |
+| `pasajeros` | ✅ | `006_recreate_cotizaciones_doc05.sql` |
+| `cotizaciones` | ✅ | `006_recreate_cotizaciones_doc05.sql` |
+| `cotizacion_pasajeros` | ✅ | `006_recreate_cotizaciones_doc05.sql` |
+| `vuelos` | ✅ | `006_recreate_cotizaciones_doc05.sql` |
+| `hospedajes` | ✅ | `006_recreate_cotizaciones_doc05.sql` |
+| `historial_cliente` | ✅ | `006_recreate_cotizaciones_doc05.sql` |
 
 ---
 
 ## 📋 Fases del Roadmap
 
-### 🔴 FASE 1: Backend API (EN PROGRESO)
+### ✅ FASE 1: Backend API (COMPLETADO - 27 Marzo 2026)
 
-#### 1.1 Nuevo Controller: Clientes
-**Archivo:** `trip-conecta-api/src/controllers/clientes.controller.ts`
+#### 1.1 Controller: Clientes
+**Archivo:** `trip-conecta-api/src/controllers/clientes.controller.ts` ✅
 
 | Endpoint | Método | Descripción | Estado |
 |----------|--------|-------------|--------|
-| `GET /clientes` | `getClientes` | Listar con paginación y filtros | 🔴 Pendiente |
-| `GET /clientes/:id` | `getClienteById` | Detalle con pasajeros e historial | 🔴 Pendiente |
-| `POST /clientes` | `createCliente` | Crear nuevo (valida duplicados) | 🔴 Pendiente |
-| `PUT /clientes/:id` | `updateCliente` | Actualizar datos | 🔴 Pendiente |
-| `POST /clientes/:id/pasajeros` | `addPasajero` | Agregar pasajero a cliente | 🔴 Pendiente |
-| `GET /clientes/buscar?q=` | `buscarClientes` | Búsqueda fuzzy por nombre/email/doc | 🔴 Pendiente |
-
-**Notas:**
-- Validar duplicados por `email` y `tipo_documento + documento`
-- Al crear cliente, crear automáticamente el pasajero titular
+| `GET /clientes` | `getClientes` | Listar con paginación y filtros | ✅ |
+| `GET /clientes/:id` | `getClienteById` | Detalle con pasajeros e historial | ✅ |
+| `POST /clientes` | `createCliente` | Crear nuevo (valida duplicados) | ✅ |
+| `PUT /clientes/:id` | `updateCliente` | Actualizar datos | ✅ |
+| `POST /clientes/:id/pasajeros` | `addPasajero` | Agregar pasajero a cliente | ✅ |
+| `GET /clientes/buscar?q=` | `buscarClientes` | Búsqueda fuzzy | ✅ |
 
 #### 1.2 Adaptar Controller: Cotizaciones
-**Archivo:** `trip-conecta-api/src/controllers/cotizaciones.controller.ts`
+**Archivo:** `trip-conecta-api/src/controllers/cotizaciones.controller.ts` ✅
 
 | Cambio | Descripción | Estado |
 |--------|-------------|--------|
-| `POST /cotizaciones/manual` | Aceptar `cliente_id` o crear cliente nuevo | 🔴 Pendiente |
-| `POST /cotizaciones` (paquete) | Mismo comportamiento - buscar/crear cliente | 🔴 Pendiente |
-| Guardar vuelos | Insertar en tabla `vuelos` | 🔴 Pendiente |
-| Guardar hospedajes | Insertar en tabla `hospedajes` | 🔴 Pendiente |
-| Guardar pasajeros | Insertar en `cotizacion_pasajeros` con snapshot | 🔴 Pendiente |
-| Historial | Crear registro en `historial_cliente` | 🔴 Pendiente |
-
-**Notas:**
-- El flujo ahora es: Buscar/crear cliente → Crear pasajeros → Crear cotización → Guardar vuelos/hospedajes → Registrar en historial
+| `POST /cotizaciones/manual` | Aceptar `cliente_id` o crear cliente nuevo | ✅ |
+| Guardar vuelos | Insertar en tabla `vuelos` | ✅ |
+| Guardar hospedajes | Insertar en tabla `hospedajes` | ✅ |
+| Guardar pasajeros | Insertar en `cotizacion_pasajeros` con snapshot | ✅ |
+| Historial | Crear registro en `historial_cliente` | ✅ |
 
 #### 1.3 Rutas API
-**Archivo:** `trip-conecta-api/src/routes/clientes.routes.ts` (nuevo)
-
-```typescript
-router.get('/', authenticateToken, clientesController.getClientes);
-router.get('/buscar', authenticateToken, clientesController.buscarClientes);
-router.get('/:id', authenticateToken, clientesController.getClienteById);
-router.post('/', authenticateToken, clientesController.createCliente);
-router.put('/:id', authenticateToken, clientesController.updateCliente);
-router.post('/:id/pasajeros', authenticateToken, clientesController.addPasajero);
-```
+**Archivo:** `trip-conecta-api/src/routes/clientes.routes.ts` ✅
 
 ---
 
-### 🔴 FASE 2: Frontend - Gestión de Clientes
+### ✅ FASE 2: Frontend - Gestión de Clientes (COMPLETADO - 28 Marzo 2026)
 
-#### 2.1 Nueva Página: `/admin/clientes`
+#### 2.1 Página: `/admin/clientes` ✅
 **Archivo:** `trip-conecta-panel/src/app/(dashboard)/admin/clientes/page.tsx`
 
-```
-┌─────────────────────────────────────┐
-│ 👥 Clientes                 [+ Nuevo]
-│                                     │
-│ 🔍 Buscar cliente...               │
-│                                     │
-│ ┌─────────────────────────────────┐ │
-│ │ 👤 Juan Pérez                   │ │
-│ │ juan@email.com | CI 12345678    │ │
-│ │ 3 cotizaciones | Última: 15 Mar │ │
-│ └─────────────────────────────────┘ │
-│ ┌─────────────────────────────────┐ │
-│ │ 👤 María López                  │ │
-│ │ maria@email.com | CI 87654321   │ │
-│ │ 1 cotización | Última: 10 Mar   │ │
-│ └─────────────────────────────────┘ │
-└─────────────────────────────────────┘
-```
+- [x] Lista paginada de clientes
+- [x] Búsqueda en tiempo real (fuzzy)
+- [x] Acceso desde sidebar (nuevo ítem "Clientes")
 
-**Features:**
-- Lista paginada de clientes
-- Búsqueda en tiempo real (fuzzy)
-- Filtros por fecha de registro, cantidad de cotizaciones
-- Botón "+ Nuevo Cliente" (modal o página)
+#### 2.2 Componentes CRM ✅
 
-#### 2.2 Nueva Página: `/admin/clientes/[id]`
-**Archivo:** `trip-conecta-panel/src/app/(dashboard)/admin/clientes/[id]/page.tsx`
+| Componente | Archivo | Descripción | Estado |
+|------------|---------|-------------|--------|
+| `BuscarCliente` | `src/components/cotizaciones/BuscarCliente.tsx` | Búsqueda con autocompletar | ✅ |
+| `CrearClienteModal` | `src/components/cotizaciones/CrearClienteModal.tsx` | Modal para crear cliente nuevo | ✅ |
 
-Tabs:
-- **📋 Info:** Datos personales + pasajeros frecuentes (listado de pasajeros del cliente)
-- **📊 Historial:** Timeline de interacciones (desde `historial_cliente`)
-- **✈️ Viajes:** Lista de cotizaciones del cliente
-- **💬 Notas:** Notas internas del CRM
-
-#### 2.3 Servicio API Clientes
+#### 2.3 Servicio API Clientes ✅
 **Archivo:** `trip-conecta-panel/src/lib/api-clientes.ts`
 
 ```typescript
-export const clientesAPI = {
-  listar: (params?: { q?: string; page?: number }) => Promise<...>,
-  buscar: (query: string) => Promise<...>,
-  obtener: (id: string) => Promise<...>,
-  crear: (data: ClienteInput) => Promise<...>,
-  actualizar: (id: string, data: Partial<ClienteInput>) => Promise<...>,
-  agregarPasajero: (clienteId: string, data: PasajeroInput) => Promise<...>,
-};
+clientesAPI.listar(params)
+clientesAPI.buscar(query)
+clientesAPI.obtener(id)
+clientesAPI.crear(data)
+clientesAPI.actualizar(id, data)
+clientesAPI.getPasajeros(clienteId)
+clientesAPI.agregarPasajero(clienteId, data)
 ```
 
 ---
 
-### 🔴 FASE 3: Adaptar Flujo Cotización
+### ✅ FASE 3: Adaptar Flujo Cotización (COMPLETADO - 28 Marzo 2026)
 
-#### 3.1 Paso 1: Seleccionar Cliente
-**Archivo:** Modificar `/cotizacion/nueva` y `/admin/cotizacion/nueva`
+#### 3.1 Cotización Manual (`/cotizacion/nueva`) ✅
+**Archivo:** `trip-conecta-panel/src/app/(dashboard)/cotizacion/nueva/page.tsx`
 
+- [x] Paso 1: Buscar/Crear cliente con `BuscarCliente`
+- [x] Modal `CrearClienteModal` para nuevos clientes
+- [x] Submit adaptado al formato CRM (envía `cliente_id`)
+- [x] Guarda pasajeros adicionales
+
+#### 3.2 Cotización desde Paquete (`/paquetes/[id]/cotizar`) ✅
+**Archivo:** `trip-conecta-panel/src/app/(dashboard)/paquetes/[id]/cotizar/page.tsx`
+
+- [x] **Fecha de salida automática**: Toma del paquete (`paquete.fecha_salida` o `paquete.fecha_inicio`)
+- [x] Buscar/Crear cliente con componentes CRM
+- [x] Submit adaptado al formato CRM
+- [x] Calcula precio según tipo de habitación y pasajeros
+
+#### 3.3 Cambios en Backend API (Cotizaciones)
+
+El endpoint `POST /cotizaciones/manual` ahora acepta:
+
+```typescript
+{
+  cliente_id?: string;           // Cliente existente
+  cliente_nuevo?: ClienteInput;  // O crear nuevo
+  pasajeros_ids?: string[];      // IDs de pasajeros existentes
+  pasajeros_nuevos?: PasajeroInput[]; // Nuevos pasajeros
+  pasajero_titular_id?: string;
+  nombre_cotizacion: string;
+  tipo_cotizacion: 'paquete' | 'manual';
+  origen_datos: 'manual' | 'amadeus_pnr';
+  vuelos: VueloInput[];
+  hospedajes: HospedajeInput[];
+  itinerario?: { texto: string, dias: any[] };
+  incluye: string[];
+  no_incluye: string[];
+  precios: { moneda, subtotal, impuestos, total };
+}
 ```
-┌─────────────────────────────────────┐
-│ Buscar cliente existente            │
-│ [🔍 Escribir nombre, email o CI...] │
-│                                     │
-│ Sugerencias:                        │
-│ • 👤 Juan Pérez (juan@email.com)   │
-│ • 👤 Juan García (juan.g@email.com)│
-│                                     │
-│ [+ Crear nuevo cliente]             │
-└─────────────────────────────────────┘
+
+---
+
+### 🟡 FASE 4: Testing y Deploy (EN PROGRESO)
+
+| Tarea | Estado | Notas |
+|-------|--------|-------|
+| Deploy backend CRM | ✅ | Commit `c7d7e32` |
+| Deploy frontend CRM | 🟡 | En progreso |
+| Test crear cliente | 🔴 | Pendiente |
+| Test buscar cliente | 🔴 | Pendiente |
+| Test cotización manual | 🔴 | Pendiente |
+| Test cotización desde paquete | 🔴 | Pendiente |
+| Test duplicados (email/doc) | 🔴 | Pendiente |
+| Verificar historial_cliente | 🔴 | Pendiente |
+| Test pasajeros snapshot | 🔴 | Pendiente |
+
+---
+
+## 🚀 Flujo de Uso (Nuevo)
+
+### Crear Cotización Manual
+```
+1. Ir a /cotizacion/nueva
+2. Buscar cliente existente o crear nuevo
+3. Agregar pasajeros adicionales (opcional)
+4. Ingresar vuelos (Amadeus o manual)
+5. Ingresar hospedajes
+6. Definir itinerario y condiciones
+7. Establecer precios
+8. Guardar → Crea:
+   - Cotización con cliente_id
+   - Pasajeros en tabla pasajeros
+   - Vuelos en tabla vuelos
+   - Hospedajes en tabla hospedajes
+   - Vínculos en cotizacion_pasajeros
+   - Registro en historial_cliente
 ```
 
-**Features:**
-- Búsqueda debounce (300ms)
-- Mostrar datos del cliente seleccionado
-- Botón "Crear nuevo cliente" abre modal con formulario
-
-#### 3.2 Paso 2: Seleccionar Pasajeros
-**Archivo:** Modificar flujo de cotización
-
-- Titular: El cliente seleccionado (automático)
-- Listado de "pasajeros frecuentes" de este cliente (dropdown/checkboxes)
-- Botón "+ Agregar pasajero nuevo" (formulario inline)
-
-#### 3.3 Guardar Cotización
-- Crear registro en `cotizaciones` con `cliente_id`
-- Crear registros en `cotizacion_pasajeros` (con snapshot de datos)
-- Crear registros en `vuelos` (si hay)
-- Crear registros en `hospedajes` (si hay)
-- Crear registro en `historial_cliente` (tipo: "cotizacion_creada")
+### Crear Cotización desde Paquete
+```
+1. Ir a /paquetes/[id]
+2. Click "Cotizar"
+3. Fecha de salida ya viene del paquete (no se pide)
+4. Buscar cliente o crear nuevo
+5. Definir pasajeros adicionales
+6. Guardar → Mismo flujo que arriba
+```
 
 ---
 
-### 🔴 FASE 4: Testing y Deploy
+## 📝 Para el PDF (Futuro)
 
-| Tarea | Responsable | Estado |
-|-------|-------------|--------|
-| QA Test endpoints clientes | Dev | 🔴 Pendiente |
-| QA Test flujo cotización completo | Dev | 🔴 Pendiente |
-| Test duplicados (email/doc) | Dev | 🔴 Pendiente |
-| Test pasajeros snapshot | Dev | 🔴 Pendiente |
-| Deploy a producción | DevOps | 🔴 Pendiente |
+Todos los datos quedan correctamente estructurados:
 
----
-
-## 🚨 ATENCIÓN: Código Actual ROTO
-
-Después de ejecutar el SQL de migración, el sistema actual **NO FUNCIONA** para cotizaciones:
-
-| Funcionalidad | Estado | Razón |
-|---------------|--------|-------|
-| Crear cotización desde paquete | ❌ Roto | Falta `cliente_id` obligatorio |
-| Crear cotización manual (vendedor) | ❌ Roto | Falta `cliente_id` obligatorio |
-| Crear cotización manual (admin) | ❌ Roto | Falta `cliente_id` obligatorio |
-| Ver cotizaciones existentes | ⚠️ Posible | Si no se borraron datos, pueden fallar FKs |
-
-**⚡ Prioridad inmediata:** Implementar controller de clientes y adaptar cotizaciones.
-
----
-
-## ✅ Checklist de Tareas
-
-### Backend (Fase 1)
-- [ ] Crear `clientes.controller.ts` con endpoints CRUD
-- [ ] Crear `clientes.routes.ts` y registrar en app
-- [ ] Adaptar `createCotizacionManual` para manejar clientes
-- [ ] Adaptar `createCotizacion` (desde paquete) para manejar clientes
-- [ ] Implementar guardado de vuelos en tabla `vuelos`
-- [ ] Implementar guardado de hospedajes en tabla `hospedajes`
-- [ ] Implementar guardado de pasajeros en `cotizacion_pasajeros`
-- [ ] Implementar registro en `historial_cliente`
-
-### Frontend (Fase 2)
-- [ ] Crear página `/admin/clientes`
-- [ ] Crear página `/admin/clientes/[id]`
-- [ ] Crear servicio `api-clientes.ts`
-- [ ] Crear componente `BuscarCliente` (para usar en cotización)
-- [ ] Crear componente `SeleccionarPasajeros`
-- [ ] Modificar `/cotizacion/nueva` con nuevo flujo
-- [ ] Modificar `/admin/cotizacion/nueva` con nuevo flujo
+| Dato | Origen | Tabla/JSONB |
+|------|--------|-------------|
+| Cliente | `cotizaciones.cliente_id` → JOIN `clientes` | `clientes` |
+| Pasajeros | `cotizacion_pasajeros` con snapshot | `cotizacion_pasajeros` |
+| Vuelos | `vuelos.cotizacion_id` | `vuelos` |
+| Hospedajes | `hospedajes.cotizacion_id` | `hospedajes` |
+| Itinerario | `cotizaciones.itinerario` | JSONB |
+| Incluye/No incluye | `cotizaciones.paquete_data` | JSONB |
+| Precios | `cotizaciones.precio_total` | `cotizaciones` |
 
 ---
 
 ## 📁 Archivos Relacionados
 
-- `docs/05-CRM-REDISENHO.md` - Schema detallado SQL
-- `docs/06-QA-CHECKLIST.md` - Checklist de testing
-- `trip-conecta-api/migrations/006_recreate_cotizaciones_doc05.sql` - Última migración
+### Backend
+- `trip-conecta-api/src/controllers/clientes.controller.ts` - CRUD clientes
+- `trip-conecta-api/src/controllers/cotizaciones.controller.ts` - Adaptado CRM
+- `trip-conecta-api/src/routes/clientes.routes.ts` - Rutas clientes
+
+### Frontend
+- `trip-conecta-panel/src/lib/api-clientes.ts` - Servicio API
+- `trip-conecta-panel/src/components/cotizaciones/BuscarCliente.tsx` - Buscador
+- `trip-conecta-panel/src/components/cotizaciones/CrearClienteModal.tsx` - Modal
+- `trip-conecta-panel/src/app/(dashboard)/admin/clientes/page.tsx` - Lista clientes
+- `trip-conecta-panel/src/app/(dashboard)/cotizacion/nueva/page.tsx` - Manual
+- `trip-conecta-panel/src/app/(dashboard)/paquetes/[id]/cotizar/page.tsx` - Desde paquete
+
+### Database
+- `trip-conecta-api/migrations/006_recreate_cotizaciones_doc05.sql` - Schema completo
 
 ---
 
-## 📝 Notas de Implementación
-
-### Flujo de Crear Cotización (nuevo):
-
-```
-1. BUSCAR/CREAR CLIENTE
-   ↓
-   - Buscar por email, CI o nombre
-   - Si existe: usar ese cliente_id
-   - Si no existe: crear cliente → crear pasajero titular
-
-2. SELECCIONAR PASAJEROS
-   ↓
-   - Titular: el cliente (fijo)
-   - Adicionales: elegir de pasajeros frecuentes del cliente
-   - O crear nuevos pasajeros
-
-3. DATOS DEL VIAJE
-   ↓
-   - Vuelos (parsear Amadeus o manual)
-   - Hospedajes (hoteles)
-   - Itinerario, incluye/no_incluye
-
-4. PRECIOS Y GUARDAR
-   ↓
-   - Calcular totales
-   - Crear cotización
-   - Guardar vuelos en tabla vuelos
-   - Guardar hospedajes en tabla hospedajes
-   - Guardar pasajeros en cotizacion_pasajeros (snapshot)
-   - Registrar en historial_cliente
-```
-
----
-
-**Última actualización:** 27 Marzo 2026  
-**Próxima revisión:** Cuando se complete Fase 1 (Backend)
+**Última actualización:** 28 Marzo 2026  
+**Próximo paso:** Testing y validación de todo el flujo
