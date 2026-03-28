@@ -48,20 +48,17 @@ export default function VendedorDashboard() {
         const comisionesRes = await api.get('/comisiones/pagadas');
         const pagos = comisionesRes.data || [];
         
-        // Agrupar por mes (simulado por ahora)
-        const mensual: ComisionMensual[] = [
-          { mes: 'Enero 2024', monto: 1200, estado: 'pagado' },
-          { mes: 'Febrero 2024', monto: 950, estado: 'pendiente' },
-          { mes: 'Marzo 2024', monto: statsRes.data?.comisiones_pagadas || 1300, estado: 'pagado' },
-        ];
+        // Transformar pagos reales al formato necesario
+        const mensual: ComisionMensual[] = pagos.slice(0, 5).map((pago: any) => ({
+          mes: new Date(pago.fecha_pago).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
+          monto: pago.monto,
+          estado: pago.estado || 'pagado'
+        }));
+        
         setComisionesMensual(mensual);
       } catch (err) {
-        // Si falla el endpoint de comisiones, usar datos mock
-        setComisionesMensual([
-          { mes: 'Enero 2024', monto: 1200, estado: 'pagado' },
-          { mes: 'Febrero 2024', monto: 950, estado: 'pendiente' },
-          { mes: 'Marzo 2024', monto: statsRes.data?.comisiones_pagadas || 1300, estado: 'pagado' },
-        ]);
+        // Si falla, mostrar array vacío
+        setComisionesMensual([]);
       }
 
     } catch (err) {
@@ -197,22 +194,27 @@ export default function VendedorDashboard() {
         </div>
 
         <div className="glass-card p-8 rounded-3xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border-blue-500/20">
-           <h3 className="text-xl font-bold mb-4">Pack Destacado</h3>
-           <div className="relative rounded-2xl overflow-hidden h-40 mb-4">
-              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=400')] bg-cover bg-center" />
-              <div className="absolute inset-0 bg-black/40" />
-              <div className="absolute bottom-4 left-4">
-                <p className="text-[var(--foreground)] font-black text-xl">Cancún All Inclusive</p>
-                <p className="text-blue-300 text-sm font-bold">Desde $899 USD</p>
-              </div>
+           <h3 className="text-xl font-bold mb-4">Acceso Rápido</h3>
+           <div className="space-y-3">
+             <Link 
+               href="/paquetes"
+               className="w-full block text-center bg-white text-black font-black py-3 rounded-xl hover:bg-slate-100 transition-all"
+             >
+               Ver Catálogo
+             </Link>
+             <Link 
+               href="/cotizaciones"
+               className="w-full block text-center bg-[var(--muted)] text-[var(--foreground)] font-bold py-3 rounded-xl hover:bg-[var(--border)] transition-all"
+             >
+               Mis Cotizaciones
+             </Link>
+             <Link 
+               href="/cotizacion/nueva"
+               className="w-full block text-center bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all"
+             >
+               Nueva Cotización
+             </Link>
            </div>
-           <p className="text-[var(--muted-foreground)] text-sm mb-6">Increíble oportunidad para este verano. Revisa los detalles y comparte con tus clientes.</p>
-           <Link 
-             href="/paquetes"
-             className="w-full block text-center bg-white text-black font-black py-4 rounded-2xl hover:bg-slate-100 transition-all"
-           >
-             Ver Detalles del Pack
-           </Link>
         </div>
       </div>
     </div>
