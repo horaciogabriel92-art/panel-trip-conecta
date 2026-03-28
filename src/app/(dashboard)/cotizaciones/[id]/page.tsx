@@ -155,6 +155,9 @@ export default function CotizacionDetalle() {
   // Detectar si venimos del kanban con accion=cerrar
   const accion = searchParams.get('accion');
   const [cotizacion, setCotizacion] = useState<Cotizacion | null>(null);
+  
+  // Calcular número real de pasajeros desde los datos vinculados
+  const numPasajerosReal = cotizacion?.pasajeros?.length || cotizacion?.num_pasajeros || 1;
   const [paquete, setPaquete] = useState<Paquete | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isConverting, setIsConverting] = useState(false);
@@ -431,7 +434,7 @@ export default function CotizacionDetalle() {
               codigo: cotizacion.codigo,
               fecha_creacion: cotizacion.fecha_creacion,
               fecha_expiracion: cotizacion.fecha_expiracion,
-              num_pasajeros: cotizacion.num_pasajeros,
+              num_pasajeros: numPasajerosReal,
               tipo_habitacion: cotizacion.tipo_habitacion,
               fecha_salida: cotizacion.fecha_salida,
               cliente_nombre: cotizacion.cliente_nombre,
@@ -468,7 +471,7 @@ export default function CotizacionDetalle() {
               // Pasajeros: del nuevo schema CRM (cotizacion.pasajeros) o legacy (datos_completos)
               pasajeros: (() => {
                 // Nuevo schema: cotizacion.pasajeros viene del backend
-                if (cotizacion.pasajeros && cotizacion.pasajeros.length > 0) {
+                if (cotizacion.pasajeros && numPasajerosReal > 0) {
                   return cotizacion.pasajeros.map((pv: any) => ({
                     nombre: pv.nombre_snapshot || pv.pasajero?.nombre || '',
                     apellido: pv.apellido_snapshot || pv.pasajero?.apellido || '',
@@ -585,7 +588,7 @@ export default function CotizacionDetalle() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-4 bg-[var(--muted)] rounded-xl">
                 <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Pasajeros</p>
-                <p className="text-xl font-black text-[var(--foreground)]">{cotizacion.num_pasajeros}</p>
+                <p className="text-xl font-black text-[var(--foreground)]">{cotizacion.pasajeros?.length || cotizacion.num_pasajeros || 1}</p>
               </div>
               <div className="p-4 bg-[var(--muted)] rounded-xl">
                 <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Habitación</p>
@@ -966,11 +969,11 @@ export default function CotizacionDetalle() {
           )}
 
           {/* Pasajeros - Nuevo Schema CRM */}
-          {(cotizacion.pasajeros && cotizacion.pasajeros.length > 0) ? (
+          {(cotizacion.pasajeros && numPasajerosReal > 0) ? (
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5 text-blue-400" />
-                Pasajeros ({cotizacion.pasajeros.length})
+                Pasajeros ({numPasajerosReal})
               </h3>
               <div className="space-y-3">
                 {cotizacion.pasajeros.map((pv: PasajeroVinculado, idx: number) => (
@@ -1073,7 +1076,7 @@ export default function CotizacionDetalle() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Pasajeros</span>
-                <span className="text-[var(--foreground)]">{cotizacion.num_pasajeros}</span>
+                <span className="text-[var(--foreground)]">{numPasajerosReal}</span>
               </div>
               <div className="h-px bg-[var(--muted)] my-3" />
               <div className="flex justify-between items-center">
@@ -1394,7 +1397,7 @@ export default function CotizacionDetalle() {
                 </h4>
                 <div>
                   <label className="text-sm text-[var(--muted-foreground)] mb-1 block">
-                    Datos completos de los {cotizacion.num_pasajeros} pasajero(s)
+                    Datos completos de los {numPasajerosReal} pasajero(s)
                   </label>
                   <textarea
                     rows={4}
