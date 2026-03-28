@@ -447,7 +447,7 @@ export default function CotizacionDetalle() {
               fecha_expiracion: cotizacion.fecha_expiracion,
               num_pasajeros: numPasajerosReal,
               tipo_habitacion: cotizacion.tipo_habitacion,
-              fecha_salida: cotizacion.fecha_salida || (cotizacion.paquete_data as any)?.fecha_salida || paquete?.fecha_salida,
+              fecha_salida: cotizacion.fecha_salida || (cotizacion.paquete_data as any)?.fecha_salida || (paquete as any)?.fecha_salida,
               cliente_nombre: cotizacion.cliente_nombre,
               cliente_email: cotizacion.cliente_email,
               cliente_telefono: cotizacion.cliente_telefono,
