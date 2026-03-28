@@ -884,6 +884,39 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         )}
 
+        {/* Hospedaje - Después de Vuelos */}
+        {hospedaje && hospedaje.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Hospedaje</Text>
+            {hospedaje.map((hotel, idx) => (
+              <View key={idx} style={styles.hotelCard}>
+                <View style={styles.hotelHeader}>
+                  <Text style={styles.hotelName}>🏨 {hotel.nombre_hotel}</Text>
+                  {hotel.link_hotel && (
+                    <Link src={hotel.link_hotel}>
+                      <View style={styles.hotelButton}>
+                        <Text style={styles.hotelButtonText}>Ver Hotel</Text>
+                      </View>
+                    </Link>
+                  )}
+                </View>
+                <Text style={styles.hotelInfo}>📍 {hotel.ciudad}</Text>
+                {hotel.tipo_habitacion && (
+                  <Text style={styles.hotelInfo}>🛏️ Habitación: {hotel.tipo_habitacion}</Text>
+                )}
+                {hotel.regimen && (
+                  <Text style={styles.hotelInfo}>🍽️ Régimen: {hotel.regimen}</Text>
+                )}
+                {(hotel.fecha_checkin || hotel.fecha_checkout) && (
+                  <Text style={styles.hotelInfo}>
+                    📅 Check-in: {hotel.fecha_checkin || 'N/A'} | Check-out: {hotel.fecha_checkout || 'N/A'}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+
         {/* Tabla de Todos los Pasajeros */}
         {pasajeros.length > 0 && (
           <View style={styles.section}>
@@ -954,6 +987,14 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
               )}
               
               <View style={styles.priceBreakdownDivider} />
+              
+              {/* Precio por persona */}
+              <View style={styles.priceBreakdownRow}>
+                <Text style={styles.priceBreakdownLabel}>👤 Precio por persona ({cotizacion.num_pasajeros} pasajeros)</Text>
+                <Text style={styles.priceBreakdownValue}>
+                  ${(parseFloat(precios.total) / (cotizacion.num_pasajeros || 1)).toFixed(2)} {precios.moneda}
+                </Text>
+              </View>
               
               <View style={styles.priceBreakdownTotal}>
                 <Text style={styles.priceBreakdownTotalLabel}>TOTAL</Text>
