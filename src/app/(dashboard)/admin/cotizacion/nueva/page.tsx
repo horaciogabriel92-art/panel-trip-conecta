@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { parseAmadeusPNR } from '@/lib/amadeus-parser';
 import api from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 
 // ============================================
 // TIPOS
@@ -57,6 +58,7 @@ interface Hospedaje {
 // ============================================
 export default function AdminNuevaCotizacion() {
   const router = useRouter();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [vendedores, setVendedores] = useState<Vendedor[]>([]);
@@ -228,7 +230,7 @@ export default function AdminNuevaCotizacion() {
     
     try {
       const cotizacionData = {
-        vendedor_id: vendedorSeleccionado,
+        vendedor_id: vendedorIdFinal,
         nombre_cotizacion: nombreCotizacion || `Viaje a ${hospedajes[0]?.ciudad || parsedFlights[0]?.destino_ciudad || 'Destino'}`,
         cliente,
         pasajeros,
@@ -275,8 +277,36 @@ export default function AdminNuevaCotizacion() {
           Seleccionar Vendedor
         </h3>
         <p className="text-[var(--muted-foreground)] text-sm mb-4">
-          Selecciona el vendedor al que se asignará esta cotización.
+          Selecciona el vendedor al que se asignará esta cotización. 
+          <span className="text-blue-400">Si no seleccionas ninguno, se asignará a ti.</span>
         </p>
+        
+        {/* Opción: Asignar a mí mismo */}
+        <button
+          onClick={() => setVendedorSeleccionado('')}
+          className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+            !vendedorSeleccionado
+              ? 'bg-blue-500/20 border-blue-500'
+              : 'bg-[var(--muted)] border-[var(--border)] hover:border-white/30'
+          }`}
+        >
+          <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+              !vendedorSeleccionado ? 'bg-blue-500' : 'bg-[var(--muted)]'
+            }`}>
+              <User className="w-6 h-6" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-[var(--foreground)]">Yo (Administrador)</p>
+              <p className="text-sm text-[var(--muted-foreground)]">{user?.email}</p>
+            </div>
+            {!vendedorSeleccionado && (
+              <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                <Check className="w-4 h-4 text-[var(--foreground)]" />
+              </div>
+            )}
+          </div>
+        </button>
         
         {vendedores.length === 0 ? (
           <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
@@ -921,7 +951,9 @@ RP/DZOUY2100/
             <div className="flex justify-between">
               <span className="text-[var(--muted-foreground)]">Vendedor:</span>
               <span className="text-[var(--foreground)]">
-                {vendedores.find(v => v.id === vendedorSeleccionado)?.nombre} {vendedores.find(v => v.id === vendedorSeleccionado)?.apellido}
+                {vendedorSeleccionado 
+                  ? `${vendedores.find(v => v.id === vendedorSeleccionado)?.nombre} ${vendedores.find(v => v.id === vendedorSeleccionado)?.apellido}`
+                  : 'Yo (Admin)'}
               </span>
             </div>
             <div className="flex justify-between">
@@ -1036,7 +1068,7 @@ RP/DZOUY2100/
           ) : (
             <button
               onClick={handleSubmit}
-              disabled={isSubmitting || !vendedorSeleccionado}
+              disabled={isSubmitting}
               className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-[var(--foreground)] font-bold rounded-xl transition-colors"
             >
               {isSubmitting ? (
