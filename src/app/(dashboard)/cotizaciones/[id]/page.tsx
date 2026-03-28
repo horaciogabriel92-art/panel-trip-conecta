@@ -705,8 +705,8 @@ export default function CotizacionDetalle() {
           )}
           )()}
 
-          {/* Vuelos - Cotizaciones de catálogo (desde paquete) */}
-          {(paquete?.vuelos?.length || datosPaqueteDesdeNotas?.vuelos?.length) && (
+          {/* Vuelos - Cotizaciones de catálogo (desde paquete) - Solo si NO es manual */}
+          {cotizacion.tipo_cotizacion !== 'manual' && (paquete?.vuelos?.length || datosPaqueteDesdeNotas?.vuelos?.length) && (
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Plane className="w-5 h-5 text-blue-400" />
@@ -797,8 +797,8 @@ export default function CotizacionDetalle() {
             </div>
           )}
 
-          {/* Vuelos (cotización manual) */}
-          {cotizacion.vuelos && cotizacion.vuelos.length > 0 && (
+          {/* Vuelos (cotización manual) - Solo mostrar si es cotización manual */}
+          {cotizacion.tipo_cotizacion === 'manual' && cotizacion.vuelos && cotizacion.vuelos.length > 0 && (
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Plane className="w-5 h-5 text-blue-400" />
