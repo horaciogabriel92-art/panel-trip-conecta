@@ -885,7 +885,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
         )}
 
         {/* Hotel desde Paquete - Después de Vuelos */}
-        {cotizacion.paquete_data?.hotel_seleccionado && (
+        {(cotizacion.paquete_data as any)?.hotel_seleccionado && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Hospedaje</Text>
             <View style={styles.hotelCard}>
