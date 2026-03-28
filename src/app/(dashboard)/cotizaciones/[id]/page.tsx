@@ -604,13 +604,17 @@ export default function CotizacionDetalle() {
               </div>
               <div className="p-4 bg-[var(--muted)] rounded-xl">
                 <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Habitación</p>
-                <p className="text-xl font-black text-[var(--foreground)] capitalize">{cotizacion.tipo_habitacion}</p>
+                <p className="text-xl font-black text-[var(--foreground)] capitalize">
+                  {cotizacion.tipo_habitacion || 
+                   cotizacion.paquete_data?.hotel_seleccionado?.tipo_habitacion || 
+                   'No especificada'}
+                </p>
               </div>
               <div className="p-4 bg-[var(--muted)] rounded-xl">
                 <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Fecha Salida</p>
                 <p className="text-lg font-black text-[var(--foreground)]">
-                  {cotizacion.fecha_salida 
-                    ? new Date(cotizacion.fecha_salida).toLocaleDateString('es-AR')
+                  {(cotizacion.fecha_salida || cotizacion.paquete_data?.fecha_salida)
+                    ? new Date(cotizacion.fecha_salida || cotizacion.paquete_data?.fecha_salida).toLocaleDateString('es-AR')
                     : 'A definir'
                   }
                 </p>
@@ -805,10 +809,11 @@ export default function CotizacionDetalle() {
                   <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-[var(--foreground)] font-bold">
-                        {vuelo.origen_ciudad} → {vuelo.destino_ciudad}
+                        {vuelo.origen_ciudad || vuelo.origen_nombre || vuelo.origen} → 
+                        {vuelo.destino_ciudad || vuelo.destino_nombre || vuelo.destino}
                       </span>
                       <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
-                        {vuelo.aerolinea_codigo} {vuelo.numero_vuelo}
+                        {vuelo.aerolinea_codigo || vuelo.aerolinea?.substring(0, 2)?.toUpperCase() || 'AV'} {vuelo.numero_vuelo}
                       </span>
                     </div>
                     <div className="grid grid-cols-3 gap-4 text-sm">
