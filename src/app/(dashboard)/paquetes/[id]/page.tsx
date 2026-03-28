@@ -20,6 +20,18 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+interface Hotel {
+  id: string;
+  nombre: string;
+  link?: string;
+  ciudad?: string;
+  precios: {
+    doble: number;
+    triple: number;
+    cuadruple: number;
+  };
+}
+
 interface Paquete {
   id: string;
   nombre: string;
@@ -43,6 +55,7 @@ interface Paquete {
   galeria?: any[];
   recursos_vendedores?: any[];
   vuelos?: any[];
+  hoteles?: Hotel[];
   status: string;
   estado: string;
 }
@@ -267,6 +280,63 @@ export default function PaqueteDetalle() {
                                 <div>
                                   <p className="text-[var(--muted-foreground)] text-xs">Clase</p>
                                   <p className="text-[var(--foreground)]">{vuelo.clase}</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Hoteles */}
+                  {paquete.hoteles && paquete.hoteles.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-bold text-[var(--foreground)] mb-3 flex items-center gap-2">
+                        🏨 Hoteles
+                      </h3>
+                      <div className="space-y-3">
+                        {paquete.hoteles.map((hotel: Hotel, i: number) => (
+                          <div key={hotel.id} className="p-4 bg-[var(--muted)] rounded-xl border border-[var(--border)]">
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="font-bold text-[var(--foreground)]">{hotel.nombre}</h4>
+                              {hotel.link && (
+                                <a 
+                                  href={hotel.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                                >
+                                  Ver hotel →
+                                </a>
+                              )}
+                            </div>
+                            
+                            {hotel.ciudad && (
+                              <p className="text-sm text-[var(--muted-foreground)] mb-3">
+                                📍 {hotel.ciudad}
+                              </p>
+                            )}
+                            
+                            {/* Precios por habitación */}
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="text-center p-2 bg-[var(--background)] rounded-lg">
+                                <p className="text-xs text-[var(--muted-foreground)]">Doble</p>
+                                <p className="font-bold text-[var(--foreground)]">${hotel.precios.doble}</p>
+                                <p className="text-xs text-[var(--muted-foreground)]">por persona</p>
+                              </div>
+                              {hotel.precios.triple > 0 && (
+                                <div className="text-center p-2 bg-[var(--background)] rounded-lg">
+                                  <p className="text-xs text-[var(--muted-foreground)]">Triple</p>
+                                  <p className="font-bold text-[var(--foreground)]">${hotel.precios.triple}</p>
+                                  <p className="text-xs text-[var(--muted-foreground)]">por persona</p>
+                                </div>
+                              )}
+                              {hotel.precios.cuadruple > 0 && (
+                                <div className="text-center p-2 bg-[var(--background)] rounded-lg">
+                                  <p className="text-xs text-[var(--muted-foreground)]">Cuádruple</p>
+                                  <p className="font-bold text-[var(--foreground)]">${hotel.precios.cuadruple}</p>
+                                  <p className="text-xs text-[var(--muted-foreground)]">por persona</p>
                                 </div>
                               )}
                             </div>
