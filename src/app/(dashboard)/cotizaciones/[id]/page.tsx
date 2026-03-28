@@ -613,8 +613,8 @@ export default function CotizacionDetalle() {
               <div className="p-4 bg-[var(--muted)] rounded-xl">
                 <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Fecha Salida</p>
                 <p className="text-lg font-black text-[var(--foreground)]">
-                  {(cotizacion.fecha_salida || (cotizacion.paquete_data as any)?.fecha_salida)
-                    ? new Date(cotizacion.fecha_salida || (cotizacion.paquete_data as any)?.fecha_salida).toLocaleDateString('es-AR')
+                  {(cotizacion.fecha_salida || (cotizacion.paquete_data as any)?.fecha_salida || (paquete as any)?.fecha_salida)
+                    ? new Date(cotizacion.fecha_salida || (cotizacion.paquete_data as any)?.fecha_salida || (paquete as any)?.fecha_salida).toLocaleDateString('es-AR')
                     : 'A definir'
                   }
                 </p>
