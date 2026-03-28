@@ -289,12 +289,7 @@ export default function CotizarPaquete() {
               onSelect={setClienteSeleccionado}
               onNuevoCliente={() => setShowCrearCliente(true)}
               selectedClienteId={clienteSeleccionado?.id}
-            />}
-                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                  placeholder="Av. Siempre Viva 123"
-                />
-              </div>
-            </div>
+            />
           </div>
 
           {/* Pasajeros adicionales */}
