@@ -150,7 +150,7 @@ export default function CotizarPaquete() {
         paquete_id: params.id,
         nombre_cotizacion: `Viaje a ${paquete?.destino || 'Destino'} - ${paquete?.titulo || 'Paquete'}`,
         tipo_cotizacion: 'paquete',
-        origen_datos: 'manual',
+        origen_datos: 'paquete',
         precios: {
           moneda: 'USD',
           subtotal: calcularPrecio(),
@@ -160,9 +160,7 @@ export default function CotizarPaquete() {
         num_pasajeros: config.num_pasajeros,
         fecha_salida: config.fecha_salida,
         tipo_habitacion: config.tipo_habitacion,
-        itinerario: null,
-        incluye: [],
-        no_incluye: [],
+        // No enviamos itinerario/incluye/no_incluye - el backend los extrae del paquete
       };
 
       const res = await api.post('/cotizaciones/manual', cotizacionData);
