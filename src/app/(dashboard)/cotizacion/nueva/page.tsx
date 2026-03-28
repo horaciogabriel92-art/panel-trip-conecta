@@ -81,9 +81,12 @@ export default function NuevaCotizacionManual() {
   const [noIncluye, setNoIncluye] = useState<string[]>(['Gastos personales', 'Propinas']);
   const [politicasCancelacion, setPoliticasCancelacion] = useState('');
 
-  // Precios
+  // Precios - Desglosado
   const [precios, setPrecios] = useState({
     moneda: 'USD' as 'USD' | 'UYU',
+    vuelos: '',
+    hospedajes: '',
+    extras: '',
     subtotal: '',
     impuestos: '',
     total: '',
@@ -174,15 +177,22 @@ export default function NuevaCotizacionManual() {
     setNoIncluye(noIncluye.filter((_, i) => i !== index));
   };
 
-  // Calcular total automáticamente
+  // Calcular subtotal y total automáticamente
   useEffect(() => {
-    const subtotal = parseFloat(precios.subtotal) || 0;
+    const vuelos = parseFloat(precios.vuelos) || 0;
+    const hospedajes = parseFloat(precios.hospedajes) || 0;
+    const extras = parseFloat(precios.extras) || 0;
     const impuestos = parseFloat(precios.impuestos) || 0;
+    
+    const subtotal = vuelos + hospedajes + extras;
+    const total = subtotal + impuestos;
+    
     setPrecios(prev => ({
       ...prev,
-      total: (subtotal + impuestos).toFixed(2),
+      subtotal: subtotal.toFixed(2),
+      total: total.toFixed(2),
     }));
-  }, [precios.subtotal, precios.impuestos]);
+  }, [precios.vuelos, precios.hospedajes, precios.extras, precios.impuestos]);
 
   const handleSubmit = async () => {
     if (!clienteSeleccionado) {
@@ -223,6 +233,9 @@ export default function NuevaCotizacionManual() {
         politicas_cancelacion: politicasCancelacion,
         precios: {
           moneda: precios.moneda,
+          vuelos: parseFloat(precios.vuelos) || 0,
+          hospedajes: parseFloat(precios.hospedajes) || 0,
+          extras: parseFloat(precios.extras) || 0,
           subtotal: parseFloat(precios.subtotal) || 0,
           impuestos: parseFloat(precios.impuestos) || 0,
           total: parseFloat(precios.total) || 0,
@@ -754,11 +767,11 @@ RP/DZOUY2100/
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
           <DollarSign className="w-5 h-5 text-green-400" />
-          Precios
+          Precios Desglosados
         </h3>
 
         {/* Moneda */}
-        <div className="mb-4">
+        <div className="mb-6">
           <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Moneda</label>
           <div className="flex gap-2">
             <button
@@ -784,42 +797,91 @@ RP/DZOUY2100/
           </div>
         </div>
 
-        {/* Montos */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Subtotal</label>
-            <input
-              type="number"
-              value={precios.subtotal}
-              onChange={(e) => setPrecios({ ...precios, subtotal: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-green-500"
-              placeholder="0.00"
-            />
+        {/* Desglose de Precios */}
+        <div className="space-y-4 mb-6">
+          <h4 className="text-sm font-bold text-[var(--foreground)]">Desglose de Servicios</h4>
+          
+          {/* Vuelos */}
+          <div className="flex items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
+            <Plane className="w-5 h-5 text-blue-400" />
+            <div className="flex-1">
+              <label className="block text-xs text-[var(--muted-foreground)]">Vuelos</label>
+              <input
+                type="number"
+                value={precios.vuelos}
+                onChange={(e) => setPrecios({ ...precios, vuelos: e.target.value })}
+                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-blue-500"
+                placeholder="0.00"
+              />
+            </div>
+            <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
           </div>
-          <div>
-            <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Impuestos</label>
-            <input
-              type="number"
-              value={precios.impuestos}
-              onChange={(e) => setPrecios({ ...precios, impuestos: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-green-500"
-              placeholder="0.00"
-            />
+
+          {/* Hospedajes */}
+          <div className="flex items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
+            <Hotel className="w-5 h-5 text-purple-400" />
+            <div className="flex-1">
+              <label className="block text-xs text-[var(--muted-foreground)]">Hospedajes</label>
+              <input
+                type="number"
+                value={precios.hospedajes}
+                onChange={(e) => setPrecios({ ...precios, hospedajes: e.target.value })}
+                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-purple-500"
+                placeholder="0.00"
+              />
+            </div>
+            <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
           </div>
-          <div>
-            <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Total</label>
-            <input
-              type="text"
-              value={precios.total}
-              readOnly
-              className="w-full bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3 text-green-400 font-bold outline-none"
-            />
+
+          {/* Extras */}
+          <div className="flex items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
+            <Plus className="w-5 h-5 text-orange-400" />
+            <div className="flex-1">
+              <label className="block text-xs text-[var(--muted-foreground)]">Traslados, Excursiones, Extras</label>
+              <input
+                type="number"
+                value={precios.extras}
+                onChange={(e) => setPrecios({ ...precios, extras: e.target.value })}
+                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-orange-500"
+                placeholder="0.00"
+              />
+            </div>
+            <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
           </div>
         </div>
 
-        {/* Resumen */}
+        {/* Subtotal (auto-calculado) */}
+        <div className="flex justify-between items-center p-3 border-t border-[var(--border)]">
+          <span className="text-[var(--muted-foreground)]">Subtotal</span>
+          <span className="text-[var(--foreground)] font-medium">
+            {precios.moneda === 'USD' ? '$' : '$U'} {precios.subtotal || '0.00'}
+          </span>
+        </div>
+
+        {/* Impuestos */}
+        <div className="flex items-center gap-4 p-3 border-t border-[var(--border)]">
+          <span className="text-[var(--muted-foreground)] flex-1">Impuestos</span>
+          <input
+            type="number"
+            value={precios.impuestos}
+            onChange={(e) => setPrecios({ ...precios, impuestos: e.target.value })}
+            className="w-32 bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-1 text-right text-[var(--foreground)] outline-none focus:border-green-500"
+            placeholder="0.00"
+          />
+          <span className="text-[var(--muted-foreground)] w-8">{precios.moneda === 'USD' ? '$' : '$U'}</span>
+        </div>
+
+        {/* Total */}
+        <div className="flex justify-between items-center p-4 bg-green-500/10 border border-green-500/30 rounded-xl mt-4">
+          <span className="text-[var(--foreground)] font-bold text-lg">TOTAL</span>
+          <span className="text-green-400 font-black text-2xl">
+            {precios.moneda === 'USD' ? '$' : '$U'} {precios.total || '0.00'}
+          </span>
+        </div>
+
+        {/* Resumen de servicios */}
         <div className="mt-6 p-4 bg-[var(--muted)] rounded-xl">
-          <h4 className="text-sm font-bold text-[var(--foreground)] mb-3">Resumen de la Cotización</h4>
+          <h4 className="text-sm font-bold text-[var(--foreground)] mb-3">Resumen de Servicios</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-[var(--muted-foreground)]">Pasajeros:</span>
@@ -834,12 +896,6 @@ RP/DZOUY2100/
             <div className="flex justify-between">
               <span className="text-[var(--muted-foreground)]">Hoteles:</span>
               <span className="text-[var(--foreground)]">{hospedajes.length}</span>
-            </div>
-            <div className="flex justify-between border-t border-[var(--border)] pt-2 mt-2">
-              <span className="text-[var(--foreground)] font-bold">Total:</span>
-              <span className="text-green-400 font-bold text-lg">
-                {precios.moneda === 'USD' ? '$' : '$U'} {precios.total || '0.00'}
-              </span>
             </div>
           </div>
         </div>

@@ -13,7 +13,7 @@ interface CotizacionData {
   num_pasajeros: number;
   tipo_habitacion?: string;
   fecha_salida?: string;
-  cliente_nombre: string;
+  cliente_nombre?: string;
   cliente_email?: string;
   cliente_telefono?: string;
   precio_total: number;
@@ -48,6 +48,16 @@ interface CotizacionData {
     email?: string;
     telefono?: string;
   };
+  // Desglose de precios
+  precios?: {
+    vuelos?: number;
+    hospedajes?: number;
+    servicios?: number;
+    traslados?: number;
+    impuestos?: number;
+    total?: number;
+    moneda?: string;
+  };
 }
 
 interface PDFDownloadButtonProps {
@@ -79,7 +89,7 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
       nombre_cotizacion: data.nombre_cotizacion
     },
     cliente: {
-      nombre: data.cliente_nombre || 'No especificado',
+      nombre: data.cliente_nombre || data.vendedor?.nombre || 'Cliente',
       apellido: '',
       documento: '',
       email: data.cliente_email || '',
@@ -106,14 +116,18 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
     hospedaje: data.hospedaje || [],
     vuelos: data.vuelos || [],
     precios: {
-      moneda: 'USD',
+      moneda: data.precios?.moneda || 'USD',
       precio_unitario: ((data.precio_total || 0) / (data.num_pasajeros || 1)).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
       subtotal: (data.precio_total || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
-      impuestos: '0.00',
+      impuestos: (data.precios?.impuestos || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
       extras: '0.00',
-      total: (data.precio_total || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
-      anticipo: ((data.precio_total || 0) * 0.3).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
-      saldo: ((data.precio_total || 0) * 0.7).toLocaleString('es-UY', { minimumFractionDigits: 2 })
+      total: (data.precios?.total || data.precio_total || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
+      anticipo: ((data.precios?.total || data.precio_total || 0) * 0.3).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
+      saldo: ((data.precios?.total || data.precio_total || 0) * 0.7).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
+      vuelos: (data.precios?.vuelos || 0) > 0 ? (data.precios?.vuelos || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }) : undefined,
+      hospedajes: (data.precios?.hospedajes || 0) > 0 ? (data.precios?.hospedajes || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }) : undefined,
+      servicios: (data.precios?.servicios || 0) > 0 ? (data.precios?.servicios || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }) : undefined,
+      traslados: (data.precios?.traslados || 0) > 0 ? (data.precios?.traslados || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }) : undefined,
     },
     vendedor: {
       nombre: data.vendedor?.nombre || 'Vendedor',

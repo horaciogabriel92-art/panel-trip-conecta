@@ -101,6 +101,8 @@ interface Cotizacion {
   num_pasajeros: number;
   precio_total: number;
   precio_moneda?: string;
+  precio_vuelos?: number;
+  precio_hospedajes?: number;
   comision_vendedor?: number;
   estado: 'pendiente' | 'respondida' | 'convertida' | 'vencida' | 'cancelada';
   notas?: string;
@@ -470,6 +472,13 @@ export default function CotizacionDetalle() {
               vuelos: cotizacion.vuelos || paquete?.vuelos || datosPaqueteDesdeNotas?.vuelos || [],
               // Hospedaje: de la cotización o de los datos parseados  
               hospedaje: cotizacion.hospedaje || datosPaqueteDesdeNotas?.hospedaje || [],
+              // Desglose de precios
+              precios: {
+                vuelos: cotizacion.precio_vuelos,
+                hospedajes: cotizacion.precio_hospedajes,
+                total: cotizacion.precio_total,
+                moneda: cotizacion.precio_moneda || 'USD'
+              },
               vendedor: user ? {
                 nombre: user.nombre,
                 apellido: user.apellido,

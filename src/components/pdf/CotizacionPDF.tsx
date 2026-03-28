@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   
-  // Vuelos
+  // Vuelos - Mejorado con fechas claras
   flightCard: {
     backgroundColor: COLORS.background,
     borderRadius: 6,
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   flightRoute: {
     fontSize: 11,
@@ -474,50 +474,124 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: 'bold',
   },
-  flightDetails: {
+  flightTimeline: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 6,
-  },
-  flightTime: {
     alignItems: 'center',
+    marginTop: 4,
   },
-  flightTimeText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: COLORS.dark,
+  flightOrigin: {
+    alignItems: 'flex-start',
+    width: '35%',
   },
-  flightDate: {
-    fontSize: 8,
-    color: COLORS.textLight,
-    marginTop: 2,
+  flightDestination: {
+    alignItems: 'flex-end',
+    width: '35%',
   },
-  flightArrow: {
+  flightConnector: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 10,
   },
-  flightArrowLine: {
-    width: 60,
-    height: 1,
+  flightConnectorLine: {
+    width: '100%',
+    height: 2,
     backgroundColor: COLORS.primary,
-    position: 'relative',
+    marginBottom: 4,
   },
-  flightArrowText: {
-    fontSize: 8,
+  flightConnectorArrow: {
+    fontSize: 10,
+    color: COLORS.primary,
+    fontWeight: 'bold',
+  },
+  flightTimeLarge: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.dark,
+  },
+  flightDateLarge: {
+    fontSize: 9,
     color: COLORS.textLight,
+    marginTop: 2,
+  },
+  flightAirport: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: COLORS.primaryDark,
     marginTop: 4,
+  },
+  flightCity: {
+    fontSize: 9,
+    color: COLORS.textLight,
+  },
+  flightDuration: {
+    fontSize: 8,
+    color: '#666',
+    marginTop: 2,
   },
   flightMeta: {
     flexDirection: 'row',
-    gap: 15,
-    marginTop: 6,
-    paddingTop: 6,
+    gap: 20,
+    marginTop: 10,
+    paddingTop: 8,
     borderTop: `1px dashed ${COLORS.primaryLight}`,
   },
   flightMetaItem: {
-    fontSize: 8,
+    fontSize: 9,
     color: COLORS.textLight,
+  },
+  flightMetaLabel: {
+    fontWeight: 'bold',
+    color: COLORS.dark,
+  },
+  
+  // Price breakdown
+  priceBreakdownSection: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 6,
+    borderLeft: `3px solid ${COLORS.primary}`,
+  },
+  priceBreakdownTitle: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: COLORS.dark,
+    marginBottom: 6,
+  },
+  priceBreakdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  priceBreakdownLabel: {
+    fontSize: 9,
+    color: '#666',
+  },
+  priceBreakdownValue: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: COLORS.dark,
+  },
+  priceBreakdownDivider: {
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 6,
+  },
+  priceBreakdownTotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  priceBreakdownTotalLabel: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: COLORS.dark,
+  },
+  priceBreakdownTotalValue: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: COLORS.primary,
   },
 });
 
@@ -594,6 +668,7 @@ interface CotizacionPDFProps {
       origen_ciudad: string;
       destino_codigo: string;
       destino_ciudad: string;
+      duracion?: string;
     }>;
     precios: {
       moneda: string;
@@ -604,6 +679,10 @@ interface CotizacionPDFProps {
       total: string;
       anticipo: string;
       saldo: string;
+      vuelos?: string;
+      hospedajes?: string;
+      servicios?: string;
+      traslados?: string;
     };
     vendedor: {
       nombre: string;
@@ -742,7 +821,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         </View>
 
-        {/* Vuelos - Solo para cotizaciones manuales con vuelos */}
+        {/* Vuelos - Con fechas y horas claras */}
         {vuelos && vuelos.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Vuelos</Text>
@@ -756,25 +835,44 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
                     {vuelo.aerolinea_codigo} {vuelo.numero_vuelo}
                   </Text>
                 </View>
-                <View style={styles.flightDetails}>
-                  <View style={styles.flightTime}>
-                    <Text style={styles.flightTimeText}>{vuelo.hora_salida}</Text>
-                    <Text style={styles.flightDate}>{vuelo.origen_codigo}</Text>
-                    <Text style={styles.flightDate}>{vuelo.fecha_salida}</Text>
+                
+                {/* Timeline visual con horas y fechas */}
+                <View style={styles.flightTimeline}>
+                  <View style={styles.flightOrigin}>
+                    <Text style={styles.flightTimeLarge}>{vuelo.hora_salida}</Text>
+                    <Text style={styles.flightDateLarge}>{vuelo.fecha_salida}</Text>
+                    <Text style={styles.flightAirport}>{vuelo.origen_codigo}</Text>
+                    <Text style={styles.flightCity}>{vuelo.origen_ciudad}</Text>
                   </View>
-                  <View style={styles.flightArrow}>
-                    <View style={styles.flightArrowLine} />
-                    <Text style={styles.flightArrowText}>{vuelo.clase_codigo}</Text>
+                  
+                  <View style={styles.flightConnector}>
+                    <View style={styles.flightConnectorLine} />
+                    <Text style={styles.flightConnectorArrow}>✈</Text>
+                    {vuelo.duracion && (
+                      <Text style={styles.flightDuration}>{vuelo.duracion}</Text>
+                    )}
                   </View>
-                  <View style={styles.flightTime}>
-                    <Text style={styles.flightTimeText}>{vuelo.hora_llegada}</Text>
-                    <Text style={styles.flightDate}>{vuelo.destino_codigo}</Text>
-                    <Text style={styles.flightDate}>{vuelo.fecha_llegada}</Text>
+                  
+                  <View style={styles.flightDestination}>
+                    <Text style={styles.flightTimeLarge}>{vuelo.hora_llegada}</Text>
+                    <Text style={styles.flightDateLarge}>{vuelo.fecha_llegada}</Text>
+                    <Text style={styles.flightAirport}>{vuelo.destino_codigo}</Text>
+                    <Text style={styles.flightCity}>{vuelo.destino_ciudad}</Text>
                   </View>
                 </View>
+                
                 <View style={styles.flightMeta}>
-                  <Text style={styles.flightMetaItem}>Aerolínea: {vuelo.aerolinea_nombre}</Text>
-                  <Text style={styles.flightMetaItem}>Clase: {vuelo.clase_codigo}</Text>
+                  <Text style={styles.flightMetaItem}>
+                    <Text style={styles.flightMetaLabel}>Aerolínea:</Text> {vuelo.aerolinea_nombre}
+                  </Text>
+                  <Text style={styles.flightMetaItem}>
+                    <Text style={styles.flightMetaLabel}>Clase:</Text> {vuelo.clase_codigo}
+                  </Text>
+                  {vuelo.numero_vuelo && (
+                    <Text style={styles.flightMetaItem}>
+                      <Text style={styles.flightMetaLabel}>Vuelo:</Text> {vuelo.numero_vuelo}
+                    </Text>
+                  )}
                 </View>
               </View>
             ))}
@@ -806,23 +904,58 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         )}
 
-        {/* Detalle de Precios */}
+        {/* Detalle de Precios con Desglose */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Detalle de Precios</Text>
-          <View style={styles.pricingTable}>
-            <View style={styles.tableHeader}>
-              <Text style={styles.tableCell}>Concepto</Text>
-              <Text style={styles.tableCellRight}>Precio Unit.</Text>
-              <Text style={styles.tableCellRight}>Cantidad</Text>
-              <Text style={styles.tableCellRight}>Subtotal</Text>
+          
+          {/* Desglose por concepto */}
+          {(precios.vuelos || precios.hospedajes || precios.servicios || precios.traslados) && (
+            <View style={styles.priceBreakdownSection}>
+              <Text style={styles.priceBreakdownTitle}>Desglose por Concepto</Text>
+              
+              {precios.vuelos && parseFloat(precios.vuelos) > 0 && (
+                <View style={styles.priceBreakdownRow}>
+                  <Text style={styles.priceBreakdownLabel}>✈ Vuelos</Text>
+                  <Text style={styles.priceBreakdownValue}>${precios.vuelos} {precios.moneda}</Text>
+                </View>
+              )}
+              
+              {precios.hospedajes && parseFloat(precios.hospedajes) > 0 && (
+                <View style={styles.priceBreakdownRow}>
+                  <Text style={styles.priceBreakdownLabel}>🏨 Hospedajes</Text>
+                  <Text style={styles.priceBreakdownValue}>${precios.hospedajes} {precios.moneda}</Text>
+                </View>
+              )}
+              
+              {precios.servicios && parseFloat(precios.servicios) > 0 && (
+                <View style={styles.priceBreakdownRow}>
+                  <Text style={styles.priceBreakdownLabel}>🎯 Servicios / Excursiones</Text>
+                  <Text style={styles.priceBreakdownValue}>${precios.servicios} {precios.moneda}</Text>
+                </View>
+              )}
+              
+              {precios.traslados && parseFloat(precios.traslados) > 0 && (
+                <View style={styles.priceBreakdownRow}>
+                  <Text style={styles.priceBreakdownLabel}>🚗 Traslados</Text>
+                  <Text style={styles.priceBreakdownValue}>${precios.traslados} {precios.moneda}</Text>
+                </View>
+              )}
+              
+              {precios.impuestos && parseFloat(precios.impuestos) > 0 && (
+                <View style={styles.priceBreakdownRow}>
+                  <Text style={styles.priceBreakdownLabel}>Impuestos</Text>
+                  <Text style={styles.priceBreakdownValue}>${precios.impuestos} {precios.moneda}</Text>
+                </View>
+              )}
+              
+              <View style={styles.priceBreakdownDivider} />
+              
+              <View style={styles.priceBreakdownTotal}>
+                <Text style={styles.priceBreakdownTotalLabel}>TOTAL</Text>
+                <Text style={styles.priceBreakdownTotalValue}>${precios.total} {precios.moneda}</Text>
+              </View>
             </View>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableCell}>{paquete.titulo} - {cotizacion.tipo_habitacion || 'Estándar'}</Text>
-              <Text style={styles.tableCellRight}>${precios.precio_unitario}</Text>
-              <Text style={styles.tableCellRight}>{cotizacion.num_pasajeros}</Text>
-              <Text style={styles.tableCellRight}>${precios.subtotal}</Text>
-            </View>
-          </View>
+          )}
 
           <View style={styles.totalRow}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
