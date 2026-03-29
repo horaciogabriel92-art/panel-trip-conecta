@@ -150,7 +150,7 @@ export default function VendedorDashboard() {
         <div className="glass-card p-8 rounded-3xl">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-xl font-bold">Resumen de Comisiones</h3>
-            <Link href="/ventas" className="text-blue-400 text-sm font-bold hover:underline flex items-center gap-1">
+            <Link href="/mis-ventas" className="text-blue-400 text-sm font-bold hover:underline flex items-center gap-1">
               Ver detalle <ArrowUpRight className="w-4 h-4" />
             </Link>
           </div>

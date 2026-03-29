@@ -41,6 +41,17 @@ interface Venta {
   estado: string;
   fecha_creacion: string;
   notas?: string;
+  pago_heredado?: boolean;
+  monto_pagado_heredado?: number;
+  tipo_pago_heredado?: string;
+  comprobantes_pago?: Array<{
+    id: string;
+    nombre_archivo: string;
+    tipo_archivo: string;
+    url: string;
+    descripcion?: string;
+    fecha_subida: string;
+  }>;
 }
 
 interface Documento {
@@ -192,6 +203,44 @@ export default function VentaDetalle() {
             </div>
           </div>
 
+          {/* Comprobantes de Pago */}
+          {venta.comprobantes_pago && venta.comprobantes_pago.length > 0 && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-green-400" />
+                Comprobantes de Pago
+              </h3>
+              <div className="space-y-3">
+                {venta.comprobantes_pago.map((comp) => (
+                  <div key={comp.id} className="flex items-center justify-between p-4 bg-[var(--muted)] rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-green-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-[var(--foreground)]">{comp.nombre_archivo}</p>
+                        <p className="text-xs text-[var(--muted-foreground)]">
+                          {new Date(comp.fecha_subida).toLocaleDateString('es-AR')}
+                        </p>
+                        {comp.descripcion && (
+                          <p className="text-xs text-[var(--muted-foreground)] mt-1">{comp.descripcion}</p>
+                        )}
+                      </div>
+                    </div>
+                    <a
+                      href={`https://api.tripconecta.com${comp.url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-3 bg-green-600 hover:bg-green-700 rounded-xl transition-all"
+                    >
+                      <Download className="w-4 h-4 text-white" />
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Documentos de viaje */}
           <div className="glass-card rounded-2xl p-6">
             <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
@@ -287,6 +336,26 @@ export default function VentaDetalle() {
                   {venta.comision_estado === 'pagada' ? 'Pagada' : 'Pendiente'}
                 </span>
               </div>
+              {venta.pago_heredado && (
+                <div className="mt-3 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-green-400 font-medium">
+                      {venta.tipo_pago_heredado === 'total' ? 'Pago Total' : 'Pago Parcial'}
+                    </span>
+                    <span className="text-sm text-[var(--foreground)] font-bold">
+                      ${formatCurrency(venta.monto_pagado_heredado || 0)} de ${formatCurrency(venta.precio_total)}
+                    </span>
+                  </div>
+                  {venta.tipo_pago_heredado !== 'total' && venta.monto_pagado_heredado && (
+                    <div className="mt-2 w-full bg-[var(--muted)] rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full transition-all"
+                        style={{ width: `${Math.min((venta.monto_pagado_heredado / venta.precio_total) * 100, 100)}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {documentos.length > 0 && (
