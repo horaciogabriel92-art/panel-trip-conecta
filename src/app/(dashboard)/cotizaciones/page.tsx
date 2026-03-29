@@ -25,7 +25,7 @@ interface Cotizacion {
   cliente_nombre: string;
   paquete_nombre: string;
   precio_total: number;
-  estado: 'pendiente' | 'respondida' | 'convertida' | 'vencida' | 'cancelada';
+  estado: 'nueva' | 'enviada' | 'vendida' | 'perdida';
   fecha_creacion: string;
   fecha_envio?: string;
   fecha_vencimiento?: string;
@@ -36,17 +36,17 @@ interface Cotizacion {
   hospedaje?: any[];
 }
 
-// Pipeline correcto: Nueva → Enviada → Vendida/Perdida
+// Estados reales de la DB: nueva, enviada, vendida, perdida
 const COLUMNAS = [
   { 
-    id: 'pendiente', 
+    id: 'nueva', 
     label: 'Nueva', 
     description: 'Creada, pendiente de enviar',
     color: 'bg-slate-500/10 border-slate-500/20',
     icon: FileText
   },
   { 
-    id: 'respondida', 
+    id: 'enviada', 
     label: 'Enviada', 
     description: 'Enviada al cliente',
     color: 'bg-blue-500/10 border-blue-500/20',
@@ -95,11 +95,8 @@ export default function CotizacionesCRM() {
     }
   };
 
-  const getColumnaCotizacion = (c: Cotizacion) => {
-    if (c.estado === 'convertida') return 'vendida';
-    if (c.estado === 'cancelada') return 'perdida';
-    return c.estado;
-  };
+  // Ya no necesita mapeo - el estado viene directo de la DB
+  const getColumnaCotizacion = (c: Cotizacion) => c.estado;
 
   const marcarComoEnviada = async (id: string) => {
     try {
@@ -122,7 +119,7 @@ export default function CotizacionesCRM() {
     
     try {
       await api.put(`/cotizaciones/${cotizacionPerdida.id}`, { 
-        estado: 'cancelada',
+        estado: 'perdida',
         notas: `VENTA PERDIDA - Motivo: ${motivoPerdida}\n\nNotas anteriores:\n${cotizacionPerdida.notas || ''}`
       });
       setShowPerdidaModal(false);
@@ -283,7 +280,7 @@ export default function CotizacionesCRM() {
                       {/* Acciones según columna */}
                       <div className="pt-2 border-t border-[var(--border)] space-y-2">
                         {/* COLUMNA NUEVA: Botón Enviar */}
-                        {columna.id === 'pendiente' && (
+                        {columna.id === 'nueva' && (
                           <button
                             onClick={() => marcarComoEnviada(c.id)}
                             className="w-full py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
@@ -294,7 +291,7 @@ export default function CotizacionesCRM() {
                         )}
                         
                         {/* COLUMNA ENVIADA: Botones Cerrar Venta y Venta Perdida */}
-                        {columna.id === 'respondida' && (
+                        {columna.id === 'enviada' && (
                           <>
                             <Link
                               href={`/cotizaciones/${c.id}?accion=cerrar`}

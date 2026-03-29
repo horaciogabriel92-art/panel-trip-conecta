@@ -23,6 +23,7 @@ import {
   XCircle,
   AlertCircle,
   ArrowRight,
+  Send,
   Edit,
   Printer,
   CreditCard,
@@ -104,7 +105,7 @@ interface Cotizacion {
   precio_vuelos?: number;
   precio_hospedajes?: number;
   comision_vendedor?: number;
-  estado: 'pendiente' | 'respondida' | 'convertida' | 'vencida' | 'cancelada';
+  estado: 'nueva' | 'enviada' | 'vendida' | 'perdida';
   notas?: string;
   fecha_creacion: string;
   fecha_expiracion?: string;
@@ -266,7 +267,7 @@ export default function CotizacionDetalle() {
         }
         
         // Si venimos del kanban con accion=cerrar, abrir modal automáticamente
-        if (accion === 'cerrar' && cotizacionData.estado === 'respondida') {
+        if (accion === 'cerrar' && cotizacionData.estado === 'enviada') {
           setShowVentaModal(true);
         }
       } catch (err) {
@@ -378,8 +379,8 @@ export default function CotizacionDetalle() {
 
   const getStatusColor = (estado: string) => {
     switch (estado) {
-      case 'convertida': return 'bg-green-500/10 text-green-400 border-green-500/20';
-      case 'pendiente': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+      case 'vendida': return 'bg-green-500/10 text-green-400 border-green-500/20';
+      case 'nueva': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
       case 'vencida': return 'bg-red-500/10 text-red-400 border-red-500/20';
       case 'cancelada': return 'bg-slate-500/10 text-[var(--muted-foreground)] border-slate-500/20';
       default: return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
@@ -388,8 +389,8 @@ export default function CotizacionDetalle() {
 
   const getStatusIcon = (estado: string) => {
     switch (estado) {
-      case 'convertida': return <CheckCircle className="w-5 h-5 text-green-400" />;
-      case 'pendiente': return <Clock className="w-5 h-5 text-orange-400" />;
+      case 'vendida': return <CheckCircle className="w-5 h-5 text-green-400" />;
+      case 'nueva': return <Clock className="w-5 h-5 text-orange-400" />;
       case 'vencida': return <AlertCircle className="w-5 h-5 text-red-400" />;
       case 'cancelada': return <XCircle className="w-5 h-5 text-[var(--muted-foreground)]" />;
       default: return <FileText className="w-5 h-5 text-blue-400" />;
@@ -416,8 +417,8 @@ export default function CotizacionDetalle() {
   }
 
   const imagen = paquete?.imagen_url || paquete?.imagen_principal || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800';
-  const puedeEditar = cotizacion.estado === 'pendiente' && user?.rol === 'vendedor';
-  const puedeConvertir = cotizacion.estado === 'pendiente' || cotizacion.estado === 'respondida';
+  const puedeEditar = cotizacion.estado === 'nueva' && user?.rol === 'vendedor';
+  const puedeConvertir = cotizacion.estado === 'nueva' || cotizacion.estado === 'enviada';
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700 max-w-6xl mx-auto">
@@ -1147,7 +1148,7 @@ export default function CotizacionDetalle() {
               </button>
             )}
 
-            {cotizacion.estado === 'convertida' && (
+            {cotizacion.estado === 'vendida' && (
               <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-center">
                 <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
                 <p className="text-green-400 font-medium">Esta cotización ya fue convertida en venta</p>
