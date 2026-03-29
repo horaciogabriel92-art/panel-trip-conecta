@@ -18,10 +18,54 @@ import {
   Edit,
   Printer,
   ArrowRight,
-  UserCircle
+  UserCircle,
+  CreditCard,
+  Download,
+  Receipt,
+  Plane,
+  Hotel,
+  MapPin,
+  FileDown
 } from 'lucide-react';
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
+
+interface Pasajero {
+  id: string;
+  nombre_snapshot: string;
+  apellido_snapshot: string;
+  documento_snapshot: string;
+  tipo_habitacion: string;
+  es_titular: boolean;
+}
+
+interface Vuelo {
+  id?: string;
+  origen_ciudad?: string;
+  destino_ciudad?: string;
+  fecha_salida?: string;
+  aerolinea_nombre?: string;
+  numero_vuelo?: string;
+}
+
+interface Comprobante {
+  id: string;
+  nombre_archivo: string;
+  url: string;
+}
+
+interface Venta {
+  id: string;
+  codigo: string;
+  fecha_creacion: string;
+  precio_total: number;
+  pago_heredado: boolean;
+  monto_pagado_heredado?: number;
+  tipo_pago_heredado?: string;
+  medio_pago_heredado?: string;
+  observaciones_pago_heredado?: string;
+  comprobantes_pago_urls?: string;
+}
 
 interface Cotizacion {
   id: string;
@@ -38,11 +82,18 @@ interface Cotizacion {
   fecha_salida?: string;
   precio_total: number;
   comision_vendedor?: number;
-  estado: 'pendiente' | 'convertida' | 'vencida' | 'cancelada';
+  estado: 'nueva' | 'enviada' | 'vendida' | 'perdida';
   notas?: string;
   fecha_creacion: string;
   fecha_expiracion?: string;
-  fecha_conversion?: string;
+  fecha_envio?: string;
+  fecha_venta?: string;
+  // Relaciones enriquecidas
+  pasajeros?: Pasajero[];
+  vuelos?: Vuelo[];
+  paquete?: any;
+  venta?: Venta;
+  comprobantes_pago?: Comprobante[];
 }
 
 export default function AdminCotizacionDetalle() {
@@ -58,6 +109,7 @@ export default function AdminCotizacionDetalle() {
     const fetchCotizacion = async () => {
       try {
         const res = await api.get(`/cotizaciones/${params.id}`);
+        console.log('[Admin Cotizacion] Data recibida:', res.data);
         setCotizacion(res.data);
       } catch (err) {
         console.error('Error cargando cotización:', err);
@@ -95,12 +147,45 @@ export default function AdminCotizacionDetalle() {
 
   const getStatusColor = (estado: string) => {
     switch (estado) {
-      case 'convertida': return 'bg-green-500/10 text-green-400 border-green-500/20';
-      case 'pendiente': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
-      case 'vencida': return 'bg-red-500/10 text-red-400 border-red-500/20';
-      case 'cancelada': return 'bg-slate-500/10 text-[var(--muted-foreground)] border-slate-500/20';
-      default: return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      case 'vendida': return 'bg-green-500/10 text-green-400 border-green-500/20';
+      case 'enviada': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      case 'nueva': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+      case 'perdida': return 'bg-red-500/10 text-red-400 border-red-500/20';
+      default: return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
     }
+  };
+
+  const getStatusLabel = (estado: string) => {
+    switch (estado) {
+      case 'vendida': return 'VENDIDA';
+      case 'enviada': return 'ENVIADA';
+      case 'nueva': return 'NUEVA';
+      case 'perdida': return 'PERDIDA';
+      default: return estado.toUpperCase();
+    }
+  };
+
+  const getPagoBadge = (tipo?: string) => {
+    if (tipo === 'total') {
+      return <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full font-bold">PAGO TOTAL</span>;
+    } else if (tipo === 'parcial') {
+      return <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full font-bold">PAGO PARCIAL</span>;
+    }
+    return <span className="px-2 py-1 bg-slate-500/20 text-slate-400 text-xs rounded-full font-bold">PENDIENTE</span>;
+  };
+
+  const handleDownloadComprobante = (url: string, filename: string) => {
+    // Construir URL completa si es relativa
+    const fullUrl = url.startsWith('http') ? url : `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+    
+    // Crear link temporal para descarga
+    const link = document.createElement('a');
+    link.href = fullUrl;
+    link.download = filename;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (isLoading) {
@@ -122,8 +207,15 @@ export default function AdminCotizacionDetalle() {
     );
   }
 
+  const isVendida = cotizacion.estado === 'vendida';
+  const venta = cotizacion.venta;
+  const comprobantes = cotizacion.comprobantes_pago || [];
+  const pasajeros = cotizacion.pasajeros || [];
+  const vuelos = cotizacion.vuelos || [];
+  const paquete = cotizacion.paquete;
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-700 max-w-6xl mx-auto">
+    <div className="space-y-6 animate-in fade-in duration-700 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/admin/cotizaciones" className="p-2 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all">
@@ -133,11 +225,17 @@ export default function AdminCotizacionDetalle() {
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-black text-[var(--foreground)]">Cotización {cotizacion.codigo}</h2>
             <span className={`px-3 py-1 rounded-full text-xs font-black uppercase border ${getStatusColor(cotizacion.estado)}`}>
-              {cotizacion.estado}
+              {getStatusLabel(cotizacion.estado)}
             </span>
+            {isVendida && venta && (
+              <span className="px-3 py-1 rounded-full text-xs font-black uppercase bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                VENTA: {venta.codigo}
+              </span>
+            )}
           </div>
           <p className="text-[var(--muted-foreground)] text-sm">
             Creada el {new Date(cotizacion.fecha_creacion).toLocaleDateString('es-AR')}
+            {cotizacion.fecha_envio && ` • Enviada el ${new Date(cotizacion.fecha_envio).toLocaleDateString('es-AR')}`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -149,6 +247,28 @@ export default function AdminCotizacionDetalle() {
           </button>
         </div>
       </div>
+
+      {/* BANNER VENTA - Solo si está vendida */}
+      {isVendida && venta && (
+        <div className="glass-card rounded-2xl p-6 bg-gradient-to-r from-green-500/10 to-purple-500/10 border-green-500/20">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
+              <CheckCircle className="w-8 h-8 text-green-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-black text-[var(--foreground)]">¡Venta Confirmada!</h3>
+              <p className="text-[var(--muted-foreground)]">
+                Venta <strong className="text-green-400">{venta.codigo}</strong> realizada el {' '}
+                {new Date(venta.fecha_creacion).toLocaleDateString('es-AR')}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-3xl font-black text-green-400">${formatCurrency(venta.precio_total)}</p>
+              <p className="text-sm text-[var(--muted-foreground)]">Monto total</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Columna izquierda */}
@@ -200,7 +320,184 @@ export default function AdminCotizacionDetalle() {
             </div>
           </div>
 
-          {/* Detalles */}
+          {/* LISTA DE PASAJEROS */}
+          {pasajeros.length > 0 && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-400" />
+                Pasajeros ({pasajeros.length})
+              </h3>
+              <div className="space-y-3">
+                {pasajeros.map((p, idx) => (
+                  <div key={p.id || idx} className="p-4 bg-[var(--muted)] rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                          <span className="text-blue-400 font-bold">{idx + 1}</span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-[var(--foreground)]">
+                            {p.nombre_snapshot} {p.apellido_snapshot}
+                            {p.es_titular && <span className="ml-2 px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded-full">Titular</span>}
+                          </p>
+                          <p className="text-sm text-[var(--muted-foreground)]">{p.documento_snapshot}</p>
+                        </div>
+                      </div>
+                      <span className="px-3 py-1 bg-[var(--background)] rounded-full text-sm text-[var(--muted-foreground)] capitalize">
+                        {p.tipo_habitacion?.replace('_', ' ')}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* VUELOS */}
+          {vuelos.length > 0 && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <Plane className="w-5 h-5 text-blue-400" />
+                Vuelos
+              </h3>
+              <div className="space-y-3">
+                {vuelos.map((v, idx) => (
+                  <div key={v.id || idx} className="p-4 bg-[var(--muted)] rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="text-center">
+                          <p className="text-lg font-black text-[var(--foreground)]">{v.origen_ciudad || '?'}</p>
+                          <p className="text-xs text-[var(--muted-foreground)]">Origen</p>
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-blue-400" />
+                        <div className="text-center">
+                          <p className="text-lg font-black text-[var(--foreground)]">{v.destino_ciudad || '?'}</p>
+                          <p className="text-xs text-[var(--muted-foreground)]">Destino</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium text-[var(--foreground)]">{v.aerolinea_nombre || 'Aerolínea'}</p>
+                        {v.fecha_salida && (
+                          <p className="text-sm text-[var(--muted-foreground)]">
+                            {new Date(v.fecha_salida).toLocaleDateString('es-AR')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* DATOS DEL PAQUETE */}
+          {paquete && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-blue-400" />
+                Paquete: {paquete.nombre}
+              </h3>
+              {paquete.descripcion && (
+                <p className="text-[var(--muted-foreground)] mb-4">{paquete.descripcion}</p>
+              )}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-3 bg-[var(--muted)] rounded-xl text-center">
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase">Duración</p>
+                  <p className="font-bold text-[var(--foreground)]">{paquete.duracion || '-'} días</p>
+                </div>
+                <div className="p-3 bg-[var(--muted)] rounded-xl text-center">
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase">Noches</p>
+                  <p className="font-bold text-[var(--foreground)]">{paquete.noches || '-'}</p>
+                </div>
+                {paquete.categoria && (
+                  <div className="p-3 bg-[var(--muted)] rounded-xl text-center">
+                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Categoría</p>
+                    <p className="font-bold text-[var(--foreground)] capitalize">{paquete.categoria}</p>
+                  </div>
+                )}
+                {paquete.regimen && (
+                  <div className="p-3 bg-[var(--muted)] rounded-xl text-center">
+                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Régimen</p>
+                    <p className="font-bold text-[var(--foreground)] capitalize">{paquete.regimen}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* DATOS DE PAGO (solo si está vendida) */}
+          {isVendida && venta && (
+            <div className="glass-card rounded-2xl p-6 border-green-500/20">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-green-400" />
+                Información de Pago
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="p-4 bg-[var(--muted)] rounded-xl">
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Estado del Pago</p>
+                  <div className="flex items-center gap-2">
+                    {getPagoBadge(venta.tipo_pago_heredado)}
+                  </div>
+                </div>
+                {venta.monto_pagado_heredado && (
+                  <div className="p-4 bg-[var(--muted)] rounded-xl">
+                    <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Monto Pagado</p>
+                    <p className="text-xl font-black text-green-400">${formatCurrency(venta.monto_pagado_heredado)}</p>
+                  </div>
+                )}
+                {venta.medio_pago_heredado && (
+                  <div className="p-4 bg-[var(--muted)] rounded-xl">
+                    <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Medio de Pago</p>
+                    <p className="font-medium text-[var(--foreground)] capitalize">{venta.medio_pago_heredado}</p>
+                  </div>
+                )}
+              </div>
+              {venta.observaciones_pago_heredado && (
+                <div className="p-4 bg-[var(--muted)] rounded-xl">
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Observaciones de Pago</p>
+                  <p className="text-[var(--foreground)]">{venta.observaciones_pago_heredado}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* COMPROBANTES DE PAGO */}
+          {comprobantes.length > 0 && (
+            <div className="glass-card rounded-2xl p-6 border-blue-500/20">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-blue-400" />
+                Comprobantes de Pago ({comprobantes.length})
+              </h3>
+              <div className="space-y-3">
+                {comprobantes.map((comp) => (
+                  <div key={comp.id} className="p-4 bg-[var(--muted)] rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                          <FileDown className="w-5 h-5 text-blue-400" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-[var(--foreground)] truncate max-w-[300px]">
+                            {comp.nombre_archivo}
+                          </p>
+                          <p className="text-xs text-[var(--muted-foreground)]">Comprobante de pago</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDownloadComprobante(comp.url, comp.nombre_archivo)}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2 transition-all"
+                      >
+                        <Download className="w-4 h-4" />
+                        Descargar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Detalles básicos */}
           <div className="glass-card rounded-2xl p-6">
             <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <FileText className="w-5 h-5 text-blue-400" />
@@ -269,7 +566,7 @@ export default function AdminCotizacionDetalle() {
               )}
             </div>
 
-            {cotizacion.estado === 'pendiente' && (
+            {cotizacion.estado === 'nueva' && (
               <div className="space-y-3">
                 <button
                   onClick={() => setShowAprobarModal(true)}
@@ -288,15 +585,37 @@ export default function AdminCotizacionDetalle() {
               </div>
             )}
 
-            {cotizacion.estado === 'convertida' && (
+            {cotizacion.estado === 'vendida' && venta && (
               <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-center">
                 <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                <p className="text-green-400 font-medium">Cotización convertida a venta</p>
+                <p className="text-green-400 font-medium">Cotización vendida</p>
                 <p className="text-[var(--muted-foreground)] text-sm mt-1">
-                  {cotizacion.fecha_conversion && 
-                    `El ${new Date(cotizacion.fecha_conversion).toLocaleDateString('es-AR')}`
-                  }
+                  Venta {venta.codigo}
                 </p>
+                <Link 
+                  href={`/admin/ventas/${venta.id}`}
+                  className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 rounded-lg text-sm transition-all"
+                >
+                  Ver Venta
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
+
+            {cotizacion.estado === 'enviada' && (
+              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-center">
+                <AlertCircle className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+                <p className="text-blue-400 font-medium">Cotización enviada</p>
+                <p className="text-[var(--muted-foreground)] text-sm mt-1">
+                  Esperando respuesta del cliente
+                </p>
+              </div>
+            )}
+
+            {cotizacion.estado === 'perdida' && (
+              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-center">
+                <XCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
+                <p className="text-red-400 font-medium">Cotización perdida</p>
               </div>
             )}
           </div>
@@ -309,7 +628,7 @@ export default function AdminCotizacionDetalle() {
           <div className="glass-card w-full max-w-md rounded-3xl p-8">
             <h3 className="text-2xl font-black text-[var(--foreground)] mb-4">Aprobar Cotización</h3>
             <p className="text-[var(--muted-foreground)] mb-6">
-              ¿Estás seguro de aprobar esta cotización? El vendedor podrá convertirla en venta.
+              ¿Estás seguro de aprobar esta cotización? El vendedor podrá enviarla al cliente.
             </p>
             <div className="mb-4">
               <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Notas (opcional)</label>

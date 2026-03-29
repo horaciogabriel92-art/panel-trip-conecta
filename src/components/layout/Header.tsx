@@ -1,8 +1,9 @@
 "use client";
 
-import { Bell, Search, User } from 'lucide-react';
+import { Search, User } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
+import NotificationsBell from '@/components/NotificationsBell';
 
 // Import dinámico del ThemeToggle para evitar SSR
 const ThemeToggle = dynamic(() => import("@/components/ThemeToggle").then(mod => mod.ThemeToggle), {
@@ -25,10 +26,7 @@ export default function Header({ userName = 'Usuario', userRole = 'Vendedor' }: 
       <div className="flex items-center gap-4">
         <ThemeToggle />
         
-        <button className="relative p-2 rounded-xl hover:bg-[var(--muted)] transition-colors">
-          <Bell className="w-5 h-5 text-[var(--muted-foreground)]" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-        </button>
+        <NotificationsBell />
 
         <div className="h-8 w-px bg-[var(--border)] mx-2" />
 
