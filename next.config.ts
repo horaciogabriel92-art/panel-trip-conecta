@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
     maxInactiveAge: 60 * 60 * 1000,
     pagesBufferLength: 2,
   },
+  // Redirects para rutas legacy
+  async redirects() {
+    return [
+      {
+        source: '/ventas',
+        destination: '/mis-ventas',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
