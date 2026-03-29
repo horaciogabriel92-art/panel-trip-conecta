@@ -318,7 +318,10 @@ export default function CotizacionDetalle() {
       router.push('/mis-ventas');
     } catch (err: any) {
       console.error('Error completo:', err);
-      alert(err.response?.data?.error || err.response?.data?.message || 'Error al convertir cotización');
+      const errorMsg = err.response?.data?.error || 'Error al convertir cotización';
+      const details = err.response?.data?.details || '';
+      const code = err.response?.data?.code || '';
+      alert(`${errorMsg}${details ? '\n\nDetalles: ' + details : ''}${code ? '\nCódigo: ' + code : ''}`);
     } finally {
       setIsConverting(false);
       setIsUploadingComprobantes(false);
