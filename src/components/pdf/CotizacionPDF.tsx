@@ -890,7 +890,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
             <Text style={styles.sectionTitle}>Hospedaje</Text>
             <View style={styles.hotelCard}>
               <View style={styles.hotelHeader}>
-                <Text style={styles.hotelName}>🏨 {(cotizacion.paquete_data as any).hotel_seleccionado.nombre}</Text>
+                <Text style={styles.hotelName}>{(cotizacion.paquete_data as any).hotel_seleccionado.nombre}</Text>
                 {(cotizacion.paquete_data as any).hotel_seleccionado.link && (
                   <Link src={(cotizacion.paquete_data as any).hotel_seleccionado.link}>
                     <View style={styles.hotelButton}>
@@ -899,9 +899,9 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
                   </Link>
                 )}
               </View>
-              <Text style={styles.hotelInfo}>📍 {(cotizacion.paquete_data as any).hotel_seleccionado.ciudad || 'Ciudad no especificada'}</Text>
+              <Text style={styles.hotelInfo}>Ciudad: {(cotizacion.paquete_data as any).hotel_seleccionado.ciudad || 'No especificada'}</Text>
               {(cotizacion.paquete_data as any).hotel_seleccionado.tipo_habitacion && (
-                <Text style={styles.hotelInfo}>🛏️ Habitación: {(cotizacion.paquete_data as any).hotel_seleccionado.tipo_habitacion}</Text>
+                <Text style={styles.hotelInfo}>Habitación: {(cotizacion.paquete_data as any).hotel_seleccionado.tipo_habitacion}</Text>
               )}
             </View>
           </View>
