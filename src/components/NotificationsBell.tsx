@@ -19,7 +19,7 @@ interface Notificacion {
     paquete_nombre?: string;
   };
   leida: boolean;
-  fecha_creacion: string;
+  created_at: string;
 }
 
 const tipoConfig = {
@@ -179,7 +179,7 @@ export default function NotificationsBell() {
                             {notif.titulo}
                           </p>
                           <span className="text-xs text-[var(--muted-foreground)] flex-shrink-0">
-                            {getTimeAgo(notif.fecha_creacion)}
+                            {getTimeAgo(notif.created_at)}
                           </span>
                         </div>
                         <p className="text-sm text-[var(--muted-foreground)] line-clamp-2 mt-1">

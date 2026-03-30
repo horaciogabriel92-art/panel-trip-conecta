@@ -667,7 +667,7 @@ export default function CotizacionDetalle() {
                               {dia.actividades && dia.actividades.length > 0 && (
                                 <ul className="mt-2 space-y-1">
                                   {dia.actividades.map((act: string, actIdx: number) => (
-                                    <li key={actIdx} className="text-[var(--muted-foreground)] text-sm">• {act}</li>
+                                    <li key={actIdx} className="text-[var(--muted-foreground)] text-sm break-words overflow-hidden">• {act}</li>
                                   ))}
                                 </ul>
                               )}
@@ -694,7 +694,7 @@ export default function CotizacionDetalle() {
                           {dia.actividades && dia.actividades.length > 0 && (
                             <ul className="mt-2 space-y-1">
                               {dia.actividades.map((act: string, actIdx: number) => (
-                                <li key={actIdx} className="text-[var(--muted-foreground)] text-sm">• {act}</li>
+                                <li key={actIdx} className="text-[var(--muted-foreground)] text-sm break-words overflow-hidden">• {act}</li>
                               ))}
                             </ul>
                           )}

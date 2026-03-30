@@ -25,7 +25,8 @@ import {
   Plane,
   Hotel,
   MapPin,
-  FileDown
+  FileDown,
+  Wallet
 } from 'lucide-react';
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
@@ -65,6 +66,8 @@ interface Venta {
   medio_pago_heredado?: string;
   observaciones_pago_heredado?: string;
   comprobantes_pago_urls?: string;
+  comision_estado: 'pendiente' | 'pagada';
+  comision_monto: number;
 }
 
 interface Cotizacion {
@@ -91,9 +94,20 @@ interface Cotizacion {
   // Relaciones enriquecidas
   pasajeros?: Pasajero[];
   vuelos?: Vuelo[];
-  paquete?: any;
+  paquete?: Paquete;
   venta?: Venta;
   comprobantes_pago?: Comprobante[];
+}
+
+interface Paquete {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+  duracion?: number;
+  noches?: number;
+  categoria?: string;
+  regimen?: string;
+  itinerario?: { texto?: string; dias?: any[] } | any[] | string;
 }
 
 export default function AdminCotizacionDetalle() {
@@ -103,6 +117,7 @@ export default function AdminCotizacionDetalle() {
   const [isLoading, setIsLoading] = useState(true);
   const [showAprobarModal, setShowAprobarModal] = useState(false);
   const [showRechazarModal, setShowRechazarModal] = useState(false);
+  const [showPagarComision, setShowPagarComision] = useState(false);
   const [notasAdmin, setNotasAdmin] = useState('');
 
   useEffect(() => {
@@ -145,6 +160,20 @@ export default function AdminCotizacionDetalle() {
     }
   };
 
+  const handlePagarComision = async () => {
+    if (!venta?.id) return;
+    try {
+      await api.put(`/ventas/${venta.id}/pagar-comision`);
+      alert('Comisión marcada como pagada');
+      setShowPagarComision(false);
+      // Refrescar datos
+      const res = await api.get(`/cotizaciones/${params.id}`);
+      setCotizacion(res.data);
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Error al pagar comisión');
+    }
+  };
+
   const getStatusColor = (estado: string) => {
     switch (estado) {
       case 'vendida': return 'bg-green-500/10 text-green-400 border-green-500/20';
@@ -176,7 +205,19 @@ export default function AdminCotizacionDetalle() {
 
   const handleDownloadComprobante = (url: string, filename: string) => {
     // Construir URL completa si es relativa
-    const fullUrl = url.startsWith('http') ? url : `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+    // Las URLs de comprobantes vienen como /uploads/comprobantes/...
+    // y deben ir directo al dominio del API (sin /api/)
+    let fullUrl: string;
+    if (url.startsWith('http')) {
+      fullUrl = url;
+    } else {
+      // Quitar /api/ si está presente y usar solo el dominio base
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const baseUrl = apiUrl.replace(/\/api\/?$/, ''); // quitar /api/ al final
+      fullUrl = `${baseUrl}${url}`;
+    }
+    
+    console.log('[Download] URL final:', fullUrl);
     
     // Crear link temporal para descarga
     const link = document.createElement('a');
@@ -425,6 +466,75 @@ export default function AdminCotizacionDetalle() {
             </div>
           )}
 
+          {/* ITINERARIO DEL PAQUETE */}
+          {paquete?.itinerario && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-blue-400" />
+                Itinerario
+              </h3>
+              {(() => {
+                const itin = paquete.itinerario;
+                // Formato string (legacy)
+                if (typeof itin === 'string') {
+                  return <p className="text-[var(--foreground)] whitespace-pre-line break-words overflow-hidden">{itin}</p>;
+                }
+                // Formato {texto, dias} (nuevo formato)
+                if (itin && typeof itin === 'object' && !Array.isArray(itin) && 'texto' in itin) {
+                  const itinObj = itin as { texto?: string; dias?: any[] };
+                  return (
+                    <div className="space-y-4">
+                      {itinObj.texto && (
+                        <p className="text-[var(--foreground)] whitespace-pre-line break-words overflow-hidden">{itinObj.texto}</p>
+                      )}
+                      {Array.isArray(itinObj.dias) && itinObj.dias.length > 0 && (
+                        <div className="space-y-3">
+                          {itinObj.dias.map((dia: any, idx: number) => (
+                            <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border-l-2 border-blue-500">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
+                                  Día {dia.dia || idx + 1}
+                                </span>
+                                <span className="font-medium text-[var(--foreground)]">{dia.titulo}</span>
+                              </div>
+                              <p className="text-[var(--foreground)] text-sm break-words overflow-hidden">{dia.descripcion}</p>
+                              {dia.actividades && dia.actividades.length > 0 && (
+                                <ul className="mt-2 space-y-1">
+                                  {dia.actividades.map((act: string, actIdx: number) => (
+                                    <li key={actIdx} className="text-[var(--muted-foreground)] text-sm break-words overflow-hidden">• {act}</li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                // Formato array (legacy)
+                if (Array.isArray(itin) && itin.length > 0) {
+                  return (
+                    <div className="space-y-3">
+                      {itin.map((dia: any, idx: number) => (
+                        <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border-l-2 border-blue-500">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
+                              Día {dia.dia || idx + 1}
+                            </span>
+                            <span className="font-medium text-[var(--foreground)]">{dia.titulo}</span>
+                          </div>
+                          <p className="text-[var(--foreground)] text-sm break-words overflow-hidden">{dia.descripcion}</p>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </div>
+          )}
+
           {/* DATOS DE PAGO (solo si está vendida) */}
           {isVendida && venta && (
             <div className="glass-card rounded-2xl p-6 border-green-500/20">
@@ -586,19 +696,35 @@ export default function AdminCotizacionDetalle() {
             )}
 
             {cotizacion.estado === 'vendida' && venta && (
-              <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-center">
-                <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                <p className="text-green-400 font-medium">Cotización vendida</p>
-                <p className="text-[var(--muted-foreground)] text-sm mt-1">
-                  Venta {venta.codigo}
-                </p>
-                <Link 
-                  href={`/admin/ventas/${venta.id}`}
-                  className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 rounded-lg text-sm transition-all"
-                >
-                  Ver Venta
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+              <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+                <div className="text-center mb-4">
+                  <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                  <p className="text-green-400 font-medium">Cotización vendida</p>
+                  <p className="text-[var(--muted-foreground)] text-sm mt-1">
+                    Venta {venta.codigo}
+                  </p>
+                  {venta.comision_estado === 'pagada' ? (
+                    <span className="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-xs font-medium">
+                      <CheckCircle className="w-3 h-3" />
+                      Comisión pagada
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-medium">
+                      <AlertCircle className="w-3 h-3" />
+                      Comisión pendiente
+                    </span>
+                  )}
+                </div>
+                
+                {venta.comision_estado !== 'pagada' && (
+                  <button
+                    onClick={() => setShowPagarComision(true)}
+                    className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                  >
+                    <DollarSign className="w-5 h-5" />
+                    Marcar Comisión Pagada
+                  </button>
+                )}
               </div>
             )}
 
@@ -690,6 +816,41 @@ export default function AdminCotizacionDetalle() {
                 className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-slate-600 text-[var(--foreground)] font-bold transition-all"
               >
                 Rechazar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Pagar Comisión */}
+      {showPagarComision && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="glass-card w-full max-w-md rounded-3xl p-8">
+            <h3 className="text-2xl font-black text-[var(--foreground)] mb-4">Pagar Comisión</h3>
+            <p className="text-[var(--muted-foreground)] mb-6">
+              ¿Confirmas que deseas marcar la comisión como pagada para la venta {venta?.codigo}?
+            </p>
+            <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl mb-6">
+              <p className="text-sm text-[var(--muted-foreground)]">Monto de comisión:</p>
+              <p className="text-2xl font-black text-purple-400">
+                ${venta?.comision_monto ? formatCurrency(venta.comision_monto) : '-'}
+              </p>
+              <p className="text-sm text-[var(--muted-foreground)] mt-1">
+                Vendedor: {cotizacion?.vendedor_nombre || '-'}
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowPagarComision(false)}
+                className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handlePagarComision}
+                className="flex-1 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold transition-all"
+              >
+                Confirmar Pago
               </button>
             </div>
           </div>
