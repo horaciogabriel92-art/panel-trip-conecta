@@ -98,6 +98,23 @@ interface Cotizacion {
   paquete?: Paquete;
   venta?: Venta;
   comprobantes_pago?: Comprobante[];
+  // Datos completos del cliente desde la BD
+  cliente?: {
+    id: string;
+    nombre: string;
+    apellido: string;
+    email?: string;
+    telefono?: string;
+    documento?: string;
+    fecha_nacimiento?: string;
+  };
+  vendedor?: {
+    id: string;
+    nombre: string;
+    apellido: string;
+    email?: string;
+    telefono?: string;
+  };
 }
 
 interface Paquete {
@@ -339,39 +356,99 @@ export default function AdminCotizacionDetalle() {
             </h3>
             <div className="p-4 bg-[var(--muted)] rounded-xl">
               <p className="font-medium text-[var(--foreground)]">{cotizacion.vendedor_nombre || 'Vendedor no encontrado'}</p>
-              <p className="text-sm text-[var(--muted-foreground)]">ID: {cotizacion.vendedor_id}</p>
+              {cotizacion.vendedor?.email && (
+                <p className="text-sm text-[var(--muted-foreground)]">{cotizacion.vendedor.email}</p>
+              )}
             </div>
           </div>
 
-          {/* Datos del cliente */}
+          {/* DATOS DEL PAQUETE - Solo nombre y días */}
+          {paquete && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-blue-400" />
+                Paquete
+              </h3>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xl font-bold text-[var(--foreground)]">{paquete.nombre}</p>
+                <div className="flex gap-4 mt-3">
+                  <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
+                    <span className="text-xs text-[var(--muted-foreground)]">DURACIÓN</span>
+                    <p className="font-bold text-[var(--foreground)]">{paquete.duracion || '-'} días</p>
+                  </div>
+                  {paquete.noches && (
+                    <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
+                      <span className="text-xs text-[var(--muted-foreground)]">NOCHES</span>
+                      <p className="font-bold text-[var(--foreground)]">{paquete.noches}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Datos del cliente - COMPLETOS */}
           <div className="glass-card rounded-2xl p-6">
             <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <User className="w-5 h-5 text-blue-400" />
               Datos del Cliente
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Nombre completo */}
               <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
                 <User className="w-5 h-5 text-[var(--muted-foreground)]" />
                 <div>
-                  <p className="text-xs text-[var(--muted-foreground)] uppercase">Nombre</p>
-                  <p className="font-medium text-[var(--foreground)]">{cotizacion.cliente_nombre}</p>
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase">Nombre Completo</p>
+                  <p className="font-medium text-[var(--foreground)]">
+                    {cotizacion.cliente?.apellido 
+                      ? `${cotizacion.cliente.nombre} ${cotizacion.cliente.apellido}`
+                      : cotizacion.cliente_nombre}
+                  </p>
                 </div>
               </div>
-              {cotizacion.cliente_email && (
+              
+              {/* Documento */}
+              {cotizacion.cliente?.documento && (
                 <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
-                  <Mail className="w-5 h-5 text-[var(--muted-foreground)]" />
+                  <FileText className="w-5 h-5 text-[var(--muted-foreground)]" />
                   <div>
-                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Email</p>
-                    <p className="font-medium text-[var(--foreground)]">{cotizacion.cliente_email}</p>
+                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Documento</p>
+                    <p className="font-medium text-[var(--foreground)]">{cotizacion.cliente.documento}</p>
                   </div>
                 </div>
               )}
-              {cotizacion.cliente_telefono && (
+              
+              {/* Email */}
+              <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
+                <Mail className="w-5 h-5 text-[var(--muted-foreground)]" />
+                <div>
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase">Email</p>
+                  <p className="font-medium text-[var(--foreground)]">
+                    {cotizacion.cliente?.email || cotizacion.cliente_email || '-'}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Teléfono */}
+              <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
+                <Phone className="w-5 h-5 text-[var(--muted-foreground)]" />
+                <div>
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase">Teléfono</p>
+                  <p className="font-medium text-[var(--foreground)]">
+                    {cotizacion.cliente?.telefono || cotizacion.cliente_telefono || '-'}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Fecha de nacimiento */}
+              {cotizacion.cliente?.fecha_nacimiento && (
                 <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
-                  <Phone className="w-5 h-5 text-[var(--muted-foreground)]" />
+                  <Calendar className="w-5 h-5 text-[var(--muted-foreground)]" />
                   <div>
-                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Teléfono</p>
-                    <p className="font-medium text-[var(--foreground)]">{cotizacion.cliente_telefono}</p>
+                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Fecha de Nacimiento</p>
+                    <p className="font-medium text-[var(--foreground)]">
+                      {new Date(cotizacion.cliente.fecha_nacimiento).toLocaleDateString('es-AR')}
+                    </p>
                   </div>
                 </div>
               )}
@@ -480,75 +557,6 @@ export default function AdminCotizacionDetalle() {
                   </div>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* ITINERARIO DEL PAQUETE */}
-          {paquete?.itinerario && (
-            <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-blue-400" />
-                Itinerario
-              </h3>
-              {(() => {
-                const itin = paquete.itinerario;
-                // Formato string (legacy)
-                if (typeof itin === 'string') {
-                  return <p className="text-[var(--foreground)] whitespace-pre-line break-words overflow-hidden">{itin}</p>;
-                }
-                // Formato {texto, dias} (nuevo formato)
-                if (itin && typeof itin === 'object' && !Array.isArray(itin) && 'texto' in itin) {
-                  const itinObj = itin as { texto?: string; dias?: any[] };
-                  return (
-                    <div className="space-y-4">
-                      {itinObj.texto && (
-                        <p className="text-[var(--foreground)] whitespace-pre-line break-words overflow-hidden">{itinObj.texto}</p>
-                      )}
-                      {Array.isArray(itinObj.dias) && itinObj.dias.length > 0 && (
-                        <div className="space-y-3">
-                          {itinObj.dias.map((dia: any, idx: number) => (
-                            <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border-l-2 border-blue-500">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
-                                  Día {dia.dia || idx + 1}
-                                </span>
-                                <span className="font-medium text-[var(--foreground)]">{dia.titulo}</span>
-                              </div>
-                              <p className="text-[var(--foreground)] text-sm break-words overflow-hidden">{dia.descripcion}</p>
-                              {dia.actividades && dia.actividades.length > 0 && (
-                                <ul className="mt-2 space-y-1">
-                                  {dia.actividades.map((act: string, actIdx: number) => (
-                                    <li key={actIdx} className="text-[var(--muted-foreground)] text-sm break-words overflow-hidden">• {act}</li>
-                                  ))}
-                                </ul>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-                // Formato array (legacy)
-                if (Array.isArray(itin) && itin.length > 0) {
-                  return (
-                    <div className="space-y-3">
-                      {itin.map((dia: any, idx: number) => (
-                        <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border-l-2 border-blue-500">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
-                              Día {dia.dia || idx + 1}
-                            </span>
-                            <span className="font-medium text-[var(--foreground)]">{dia.titulo}</span>
-                          </div>
-                          <p className="text-[var(--foreground)] text-sm break-words overflow-hidden">{dia.descripcion}</p>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                }
-                return null;
-              })()}
             </div>
           )}
 
