@@ -28,20 +28,18 @@ export default function AdminDashboard() {
       const ventasRes = await api.get('/ventas');
       const ventas = ventasRes.data || [];
       
-      // Fetch vendedores
-      const vendedoresRes = await api.get('/admin/vendedores');
+      // Fetch vendedores (desde auth/users)
+      const vendedoresRes = await api.get('/auth/users');
       const vendedores = vendedoresRes.data || [];
       
       // Fetch paquetes
       const paquetesRes = await api.get('/paquetes');
       const paquetes = paquetesRes.data || [];
       
-      // Fetch comisiones
-      const comisionesRes = await api.get('/admin/comisiones');
-      const comisiones = comisionesRes.data || [];
-      const comisionesPendientes = comisiones
-        .filter((c: any) => c.estado === 'pendiente')
-        .reduce((sum: number, c: any) => sum + (c.monto || 0), 0);
+      // Fetch comisiones pendientes
+      const comisionesRes = await api.get('/comisiones/pendientes');
+      const comisionesPendientes = (comisionesRes.data || [])
+        .reduce((sum: number, c: any) => sum + (c.comision_monto || 0), 0);
       
       setStats({
         ventasTotales: ventas.length,
