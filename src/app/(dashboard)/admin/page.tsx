@@ -49,20 +49,23 @@ export default function AdminDashboard() {
       const comisionesRes = await api.get('/comisiones/pendientes');
       console.log('[Admin Dashboard] Comisiones response:', comisionesRes.data);
       
-      // El endpoint retorna objeto agrupado por vendedor para admin
+      // Para admin: { ventas: [...], agrupadas_por_vendedor: {...} }
+      // Para vendedor: [...]
       const comisionesData = comisionesRes.data || {};
       let comisionesPendientes = 0;
       
       if (Array.isArray(comisionesData)) {
         // Si es array (vendedor), sumar directamente
         comisionesPendientes = comisionesData.reduce((sum: number, c: any) => sum + (c.comision_monto || 0), 0);
-      } else {
-        // Si es objeto agrupado (admin), sumar todas las comisiones de todos los vendedores
-        Object.values(comisionesData).forEach((grupo: any) => {
-          if (grupo.ventas && Array.isArray(grupo.ventas)) {
-            comisionesPendientes += grupo.ventas.reduce((sum: number, v: any) => sum + (v.comision_monto || 0), 0);
-          }
+      } else if (comisionesData.agrupadas_por_vendedor) {
+        // Si es objeto con agrupadas_por_vendedor (admin), sumar los totales
+        Object.values(comisionesData.agrupadas_por_vendedor).forEach((grupo: any) => {
+          comisionesPendientes += grupo.total_comision || 0;
         });
+      } else {
+        // Fallback: usar ventas directamente
+        const ventas = comisionesData.ventas || [];
+        comisionesPendientes = ventas.reduce((sum: number, v: any) => sum + (v.comision_monto || 0), 0);
       }
       
       console.log('[Admin Dashboard] Setting stats:', {
