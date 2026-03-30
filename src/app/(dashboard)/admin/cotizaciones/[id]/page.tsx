@@ -53,6 +53,7 @@ interface Comprobante {
   id: string;
   nombre_archivo: string;
   url: string;
+  ruta_archivo?: string;
 }
 
 interface Venta {
@@ -203,30 +204,42 @@ export default function AdminCotizacionDetalle() {
     return <span className="px-2 py-1 bg-slate-500/20 text-slate-400 text-xs rounded-full font-bold">PENDIENTE</span>;
   };
 
-  const handleDownloadComprobante = (url: string, filename: string) => {
-    // Construir URL completa si es relativa
-    // Las URLs de comprobantes vienen como /uploads/comprobantes/...
-    // y deben ir directo al dominio del API (sin /api/)
-    let fullUrl: string;
-    if (url.startsWith('http')) {
-      fullUrl = url;
-    } else {
-      // Quitar /api/ si está presente y usar solo el dominio base
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      const baseUrl = apiUrl.replace(/\/api\/?$/, ''); // quitar /api/ al final
-      fullUrl = `${baseUrl}${url}`;
+  const handleDownloadComprobante = async (comprobanteId: string, filename: string, rutaArchivo?: string) => {
+    try {
+      console.log('[Download] Descargando comprobante:', { comprobanteId, filename, rutaArchivo });
+      
+      let downloadUrl: string;
+      
+      // Si el ID empieza con 'comp_' es un comprobante legacy del JSON
+      // Usar endpoint de descarga por nombre de archivo
+      if (comprobanteId.startsWith('comp_') && rutaArchivo) {
+        const filenameFromPath = rutaArchivo.split('/').pop() || filename;
+        downloadUrl = `/upload/comprobante-pago/download-by-filename/${filenameFromPath}`;
+      } else {
+        // Comprobante de la tabla comprobantes_pago con ID real
+        downloadUrl = `/upload/comprobante-pago/${comprobanteId}/download`;
+      }
+      
+      // Usar el endpoint de descarga directa del backend
+      const response = await api.get(downloadUrl, {
+        responseType: 'blob'
+      });
+      
+      // Crear blob y descargar
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (err: any) {
+      console.error('Error descargando comprobante:', err);
+      alert('Error al descargar el comprobante');
     }
-    
-    console.log('[Download] URL final:', fullUrl);
-    
-    // Crear link temporal para descarga
-    const link = document.createElement('a');
-    link.href = fullUrl;
-    link.download = filename;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   if (isLoading) {
@@ -594,7 +607,7 @@ export default function AdminCotizacionDetalle() {
                         </div>
                       </div>
                       <button
-                        onClick={() => handleDownloadComprobante(comp.url, comp.nombre_archivo)}
+                        onClick={() => handleDownloadComprobante(comp.id, comp.nombre_archivo, comp.ruta_archivo || comp.url)}
                         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2 transition-all"
                       >
                         <Download className="w-4 h-4" />
