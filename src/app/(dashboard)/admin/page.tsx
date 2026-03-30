@@ -24,22 +24,39 @@ export default function AdminDashboard() {
     try {
       setIsLoading(true);
       
+      console.log('[Admin Dashboard] Fetching stats...');
+      
       // Fetch ventas
+      console.log('[Admin Dashboard] Fetching /ventas...');
       const ventasRes = await api.get('/ventas');
+      console.log('[Admin Dashboard] Ventas response:', ventasRes.data);
       const ventas = ventasRes.data || [];
       
       // Fetch vendedores (desde auth/users)
+      console.log('[Admin Dashboard] Fetching /auth/users...');
       const vendedoresRes = await api.get('/auth/users');
+      console.log('[Admin Dashboard] Vendedores response:', vendedoresRes.data);
       const vendedores = vendedoresRes.data || [];
       
       // Fetch paquetes
+      console.log('[Admin Dashboard] Fetching /paquetes...');
       const paquetesRes = await api.get('/paquetes');
+      console.log('[Admin Dashboard] Paquetes response:', paquetesRes.data);
       const paquetes = paquetesRes.data || [];
       
       // Fetch comisiones pendientes
+      console.log('[Admin Dashboard] Fetching /comisiones/pendientes...');
       const comisionesRes = await api.get('/comisiones/pendientes');
+      console.log('[Admin Dashboard] Comisiones response:', comisionesRes.data);
       const comisionesPendientes = (comisionesRes.data || [])
         .reduce((sum: number, c: any) => sum + (c.comision_monto || 0), 0);
+      
+      console.log('[Admin Dashboard] Setting stats:', {
+        ventasTotales: ventas.length,
+        vendedoresActivos: vendedores.length,
+        paquetesActivos: paquetes.length,
+        comisionesPendientes
+      });
       
       setStats({
         ventasTotales: ventas.length,
@@ -50,8 +67,9 @@ export default function AdminDashboard() {
       
       // Últimas 5 ventas
       setVentasRecientes(ventas.slice(0, 5));
-    } catch (err) {
-      console.error('Error fetching stats:', err);
+    } catch (err: any) {
+      console.error('[Admin Dashboard] Error fetching stats:', err);
+      console.error('[Admin Dashboard] Error details:', err.response?.data || err.message);
     } finally {
       setIsLoading(false);
     }
