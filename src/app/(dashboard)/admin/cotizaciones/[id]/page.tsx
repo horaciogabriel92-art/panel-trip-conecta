@@ -156,6 +156,15 @@ export default function AdminCotizacionDetalle() {
     }
   }, [params.id]);
 
+  // Detectar si la cotización tiene venta asociada (maneja inconsistencias)
+  useEffect(() => {
+    if (cotizacion?.venta && cotizacion.estado !== 'vendida') {
+      console.warn('[Admin Cotizacion] INCONSISTENCIA: Cotización tiene venta asociada pero estado es:', cotizacion.estado);
+      // Opcional: Auto-redirigir a la venta después de 3 segundos
+      // setTimeout(() => router.push(`/admin/ventas/${cotizacion.venta?.id}`), 3000);
+    }
+  }, [cotizacion]);
+
   const handleAprobar = async () => {
     try {
       await api.put(`/cotizaciones/${params.id}/aprobar`, { notas_admin: notasAdmin });
@@ -322,6 +331,32 @@ export default function AdminCotizacionDetalle() {
           </button>
         </div>
       </div>
+
+      {/* BANNER ALERTA - Si hay venta pero estado no es vendida (INCONSISTENCIA) */}
+      {!isVendida && venta && (
+        <div className="glass-card rounded-2xl p-6 bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/20">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-6 h-6 text-orange-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-orange-400">⚠️ Cotización con Venta Asociada</h3>
+              <p className="text-[var(--muted-foreground)] mt-1">
+                Esta cotización tiene una venta registrada ({venta.codigo}) pero su estado es "{cotizacion.estado}".
+              </p>
+              <div className="flex gap-3 mt-4">
+                <Link 
+                  href={`/admin/ventas/${venta.id}`}
+                  className="px-4 py-2 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-xl font-bold transition-all flex items-center gap-2"
+                >
+                  <Receipt className="w-4 h-4" />
+                  Ver Venta {venta.codigo}
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* BANNER VENTA - Solo si está vendida */}
       {isVendida && venta && (
