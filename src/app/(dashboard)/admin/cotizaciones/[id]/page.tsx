@@ -213,12 +213,17 @@ export default function AdminCotizacionDetalle() {
       // Si el ID empieza con 'comp_' es un comprobante legacy del JSON
       // Usar endpoint de descarga por nombre de archivo
       if (comprobanteId.startsWith('comp_') && rutaArchivo) {
+        // Extraer solo el nombre del archivo (sin la ruta)
         const filenameFromPath = rutaArchivo.split('/').pop() || filename;
-        downloadUrl = `/upload/comprobante-pago/download-by-filename/${filenameFromPath}`;
+        // Codificar el nombre de archivo para la URL
+        const encodedFilename = encodeURIComponent(filenameFromPath);
+        downloadUrl = `/upload/comprobante-pago/download-by-filename/${encodedFilename}`;
       } else {
         // Comprobante de la tabla comprobantes_pago con ID real
         downloadUrl = `/upload/comprobante-pago/${comprobanteId}/download`;
       }
+      
+      console.log('[Download] URL:', downloadUrl);
       
       // Usar el endpoint de descarga directa del backend
       const response = await api.get(downloadUrl, {
