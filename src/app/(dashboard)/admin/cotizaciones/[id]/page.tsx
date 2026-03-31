@@ -363,26 +363,28 @@ export default function AdminCotizacionDetalle() {
           </div>
 
           {/* DATOS DEL PAQUETE */}
-          {paquete && (
+          {(paquete || cotizacion.paquete_nombre) && (
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-blue-400" />
-                Paquete: {paquete.nombre}
+                Paquete: {paquete?.nombre || cotizacion.paquete_nombre}
               </h3>
-              <div className="p-4 bg-[var(--muted)] rounded-xl">
-                <div className="flex gap-4">
-                  <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
-                    <span className="text-xs text-[var(--muted-foreground)]">DURACIÓN</span>
-                    <p className="font-bold text-[var(--foreground)]">{paquete.duracion || '-'} días</p>
-                  </div>
-                  {paquete.noches && (
+              {paquete && (
+                <div className="p-4 bg-[var(--muted)] rounded-xl">
+                  <div className="flex gap-4">
                     <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
-                      <span className="text-xs text-[var(--muted-foreground)]">NOCHES</span>
-                      <p className="font-bold text-[var(--foreground)]">{paquete.noches}</p>
+                      <span className="text-xs text-[var(--muted-foreground)]">DURACIÓN</span>
+                      <p className="font-bold text-[var(--foreground)]">{paquete.duracion || '-'} días</p>
                     </div>
-                  )}
+                    {paquete.noches && (
+                      <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
+                        <span className="text-xs text-[var(--muted-foreground)]">NOCHES</span>
+                        <p className="font-bold text-[var(--foreground)]">{paquete.noches}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
