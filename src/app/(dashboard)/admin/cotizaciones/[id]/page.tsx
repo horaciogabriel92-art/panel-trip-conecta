@@ -119,7 +119,8 @@ interface Cotizacion {
 
 interface Paquete {
   id: string;
-  nombre: string;
+  titulo: string;
+  nombre?: string;  // fallback
   descripcion?: string;
   duracion?: number;
   noches?: number;
@@ -367,7 +368,7 @@ export default function AdminCotizacionDetalle() {
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-blue-400" />
-                Paquete: {paquete?.nombre || cotizacion.paquete_nombre}
+                Paquete: {paquete?.titulo || paquete?.nombre || cotizacion.paquete_nombre || 'No especificado'}
               </h3>
               {paquete && (
                 <div className="p-4 bg-[var(--muted)] rounded-xl">
