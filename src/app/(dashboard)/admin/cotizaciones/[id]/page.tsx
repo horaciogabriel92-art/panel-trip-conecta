@@ -362,16 +362,15 @@ export default function AdminCotizacionDetalle() {
             </div>
           </div>
 
-          {/* DATOS DEL PAQUETE - Solo nombre y días */}
+          {/* DATOS DEL PAQUETE */}
           {paquete && (
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-blue-400" />
-                Paquete
+                Paquete: {paquete.nombre}
               </h3>
               <div className="p-4 bg-[var(--muted)] rounded-xl">
-                <p className="text-xl font-bold text-[var(--foreground)]">{paquete.nombre}</p>
-                <div className="flex gap-4 mt-3">
+                <div className="flex gap-4">
                   <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
                     <span className="text-xs text-[var(--muted-foreground)]">DURACIÓN</span>
                     <p className="font-bold text-[var(--foreground)]">{paquete.duracion || '-'} días</p>
@@ -525,41 +524,6 @@ export default function AdminCotizacionDetalle() {
             </div>
           )}
 
-          {/* DATOS DEL PAQUETE */}
-          {paquete && (
-            <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-blue-400" />
-                Paquete: {paquete.nombre}
-              </h3>
-              {paquete.descripcion && (
-                <p className="text-[var(--muted-foreground)] mb-4">{paquete.descripcion}</p>
-              )}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-3 bg-[var(--muted)] rounded-xl text-center">
-                  <p className="text-xs text-[var(--muted-foreground)] uppercase">Duración</p>
-                  <p className="font-bold text-[var(--foreground)]">{paquete.duracion || '-'} días</p>
-                </div>
-                <div className="p-3 bg-[var(--muted)] rounded-xl text-center">
-                  <p className="text-xs text-[var(--muted-foreground)] uppercase">Noches</p>
-                  <p className="font-bold text-[var(--foreground)]">{paquete.noches || '-'}</p>
-                </div>
-                {paquete.categoria && (
-                  <div className="p-3 bg-[var(--muted)] rounded-xl text-center">
-                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Categoría</p>
-                    <p className="font-bold text-[var(--foreground)] capitalize">{paquete.categoria}</p>
-                  </div>
-                )}
-                {paquete.regimen && (
-                  <div className="p-3 bg-[var(--muted)] rounded-xl text-center">
-                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Régimen</p>
-                    <p className="font-bold text-[var(--foreground)] capitalize">{paquete.regimen}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* DATOS DE PAGO (solo si está vendida) */}
           {isVendida && venta && (
             <div className="glass-card rounded-2xl p-6 border-green-500/20">
@@ -631,37 +595,6 @@ export default function AdminCotizacionDetalle() {
               </div>
             </div>
           )}
-
-          {/* Detalles básicos */}
-          <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-400" />
-              Detalles de la Cotización
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-[var(--muted)] rounded-xl">
-                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Pasajeros</p>
-                <p className="text-xl font-black text-[var(--foreground)]">{cotizacion.num_pasajeros}</p>
-              </div>
-              <div className="p-4 bg-[var(--muted)] rounded-xl">
-                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Habitación</p>
-                <p className="text-xl font-black text-[var(--foreground)] capitalize">{cotizacion.tipo_habitacion}</p>
-              </div>
-              <div className="p-4 bg-[var(--muted)] rounded-xl">
-                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Paquete</p>
-                <p className="text-sm font-black text-[var(--foreground)]">{cotizacion.paquete_nombre || 'N/A'}</p>
-              </div>
-              <div className="p-4 bg-[var(--muted)] rounded-xl">
-                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Fecha Salida</p>
-                <p className="text-sm font-black text-[var(--foreground)]">
-                  {cotizacion.fecha_salida 
-                    ? new Date(cotizacion.fecha_salida).toLocaleDateString('es-AR')
-                    : 'A definir'
-                  }
-                </p>
-              </div>
-            </div>
-          </div>
 
           {/* Notas */}
           {cotizacion.notas && (
