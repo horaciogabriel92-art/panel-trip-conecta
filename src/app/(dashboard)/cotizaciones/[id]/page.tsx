@@ -320,18 +320,8 @@ export default function CotizacionDetalle() {
       console.error('Error completo:', err);
       const errorMsg = err.response?.data?.error || 'Error al convertir cotización';
       const details = err.response?.data?.details || '';
-      const ventaId = err.response?.data?.venta_id;
-      const ventaCodigo = err.response?.data?.codigo;
-      
-      // Si ya existe venta, ofrecer redirección
-      if (ventaId && errorMsg.includes('Ya existe una venta')) {
-        if (confirm(`${errorMsg}\n\n¿Deseas ver la venta existente ${ventaCodigo || ''}?`)) {
-          router.push(`/mis-ventas/${ventaId}`);
-          return;
-        }
-      } else {
-        alert(`${errorMsg}${details ? '\n\nDetalles: ' + details : ''}`);
-      }
+      const code = err.response?.data?.code || '';
+      alert(`${errorMsg}${details ? '\n\nDetalles: ' + details : ''}${code ? '\nCódigo: ' + code : ''}`);
     } finally {
       setIsConverting(false);
       setIsUploadingComprobantes(false);

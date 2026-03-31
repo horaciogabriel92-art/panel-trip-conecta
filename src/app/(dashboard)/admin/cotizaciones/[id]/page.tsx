@@ -156,15 +156,6 @@ export default function AdminCotizacionDetalle() {
     }
   }, [params.id]);
 
-  // Detectar si la cotización tiene venta asociada (maneja inconsistencias)
-  useEffect(() => {
-    if (cotizacion?.venta && cotizacion.estado !== 'vendida') {
-      console.warn('[Admin Cotizacion] INCONSISTENCIA: Cotización tiene venta asociada pero estado es:', cotizacion.estado);
-      // Opcional: Auto-redirigir a la venta después de 3 segundos
-      // setTimeout(() => router.push(`/admin/ventas/${cotizacion.venta?.id}`), 3000);
-    }
-  }, [cotizacion]);
-
   const handleAprobar = async () => {
     try {
       await api.put(`/cotizaciones/${params.id}/aprobar`, { notas_admin: notasAdmin });
@@ -332,32 +323,6 @@ export default function AdminCotizacionDetalle() {
         </div>
       </div>
 
-      {/* BANNER ALERTA - Si hay venta pero estado no es vendida (INCONSISTENCIA) */}
-      {!isVendida && venta && (
-        <div className="glass-card rounded-2xl p-6 bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/20">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
-              <AlertCircle className="w-6 h-6 text-orange-400" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-bold text-orange-400">⚠️ Cotización con Venta Asociada</h3>
-              <p className="text-[var(--muted-foreground)] mt-1">
-                Esta cotización tiene una venta registrada ({venta.codigo}) pero su estado es "{cotizacion.estado}".
-              </p>
-              <div className="flex gap-3 mt-4">
-                <Link 
-                  href={`/admin/ventas/${venta.id}`}
-                  className="px-4 py-2 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-xl font-bold transition-all flex items-center gap-2"
-                >
-                  <Receipt className="w-4 h-4" />
-                  Ver Venta {venta.codigo}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* BANNER VENTA - Solo si está vendida */}
       {isVendida && venta && (
         <div className="glass-card rounded-2xl p-6 bg-gradient-to-r from-green-500/10 to-purple-500/10 border-green-500/20">
@@ -405,13 +370,11 @@ export default function AdminCotizacionDetalle() {
                 Paquete
               </h3>
               <div className="p-4 bg-[var(--muted)] rounded-xl">
-                <p className="text-xl font-bold text-[var(--foreground)]">
-                  {paquete.nombre || paquete.titulo || 'Paquete sin nombre'}
-                </p>
+                <p className="text-xl font-bold text-[var(--foreground)]">{paquete.nombre}</p>
                 <div className="flex gap-4 mt-3">
                   <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
                     <span className="text-xs text-[var(--muted-foreground)]">DURACIÓN</span>
-                    <p className="font-bold text-[var(--foreground)]">{paquete.duracion || paquete.duracion_dias || '-'} días</p>
+                    <p className="font-bold text-[var(--foreground)]">{paquete.duracion || '-'} días</p>
                   </div>
                   {paquete.noches && (
                     <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
@@ -669,7 +632,38 @@ export default function AdminCotizacionDetalle() {
             </div>
           )}
 
-          {/* Notas -->
+          {/* Detalles básicos */}
+          <div className="glass-card rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-400" />
+              Detalles de la Cotización
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Pasajeros</p>
+                <p className="text-xl font-black text-[var(--foreground)]">{cotizacion.num_pasajeros}</p>
+              </div>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Habitación</p>
+                <p className="text-xl font-black text-[var(--foreground)] capitalize">{cotizacion.tipo_habitacion}</p>
+              </div>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Paquete</p>
+                <p className="text-sm font-black text-[var(--foreground)]">{cotizacion.paquete_nombre || 'N/A'}</p>
+              </div>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Fecha Salida</p>
+                <p className="text-sm font-black text-[var(--foreground)]">
+                  {cotizacion.fecha_salida 
+                    ? new Date(cotizacion.fecha_salida).toLocaleDateString('es-AR')
+                    : 'A definir'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Notas */}
           {cotizacion.notas && (
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Notas del Vendedor</h3>
