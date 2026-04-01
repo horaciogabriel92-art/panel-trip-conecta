@@ -182,7 +182,8 @@ export default function CotizacionDetalle() {
     tipo_pago: 'total' as 'total' | 'adelanto' | 'pendiente',
     medio_pago: 'transferencia',
     datos_pasajeros: '',
-    observaciones_pago: ''
+    observaciones_pago: '',
+    fecha_pago_resto: ''
   });
   
   // Estado para comprobantes
@@ -303,13 +304,25 @@ export default function CotizacionDetalle() {
         setIsUploadingComprobantes(false);
       }
       
-      // 2. Convertir a venta con datos de pago
+      // 2. Calcular monto restante
+      const montoPagadoNum = ventaData.pago_realizado ? parseFloat(ventaData.monto_pagado) || 0 : 0;
+      const montoRestante = Math.max(0, (cotizacion?.precio_total || 0) - montoPagadoNum);
+      
+      // 3. Validar fecha_pago_resto si hay restante
+      if (montoRestante > 0 && !ventaData.fecha_pago_resto) {
+        alert('Debes indicar la fecha de pago del restante');
+        setIsConverting(false);
+        return;
+      }
+      
+      // 4. Convertir a venta con datos de pago
       await api.put(`/cotizaciones/${params.id}/convertir`, {
         pago_realizado: ventaData.pago_realizado,
-        monto_pagado: ventaData.pago_realizado ? parseFloat(ventaData.monto_pagado) || 0 : 0,
+        monto_pagado: montoPagadoNum,
         tipo_pago: ventaData.pago_realizado ? ventaData.tipo_pago : 'pendiente',
         medio_pago: ventaData.medio_pago,
         observaciones_pago: ventaData.observaciones_pago,
+        fecha_pago_resto: montoRestante > 0 ? ventaData.fecha_pago_resto : null,
         datos_pasajeros: ventaData.datos_pasajeros
       });
       
@@ -1354,12 +1367,33 @@ export default function CotizacionDetalle() {
                     </select>
                   </div>
 
+                  {/* Monto restante y fecha pago - solo si es adelanto */}
                   {ventaData.tipo_pago === 'adelanto' && ventaData.monto_pagado && (
-                    <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl">
-                      <p className="text-sm text-orange-400">
-                        <strong>Resta cobrar:</strong> ${formatCurrency(cotizacion.precio_total - (parseFloat(ventaData.monto_pagado) || 0))}
-                      </p>
-                    </div>
+                    <>
+                      <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                        <p className="text-sm text-orange-400">
+                          <strong>Resta cobrar:</strong> ${formatCurrency(cotizacion.precio_total - (parseFloat(ventaData.monto_pagado) || 0))}
+                        </p>
+                      </div>
+                      
+                      {/* NUEVO: Fecha de pago del restante */}
+                      <div>
+                        <label className="text-sm text-[var(--muted-foreground)] mb-1 block">
+                          Fecha de pago del restante *
+                        </label>
+                        <input
+                          type="date"
+                          required
+                          value={ventaData.fecha_pago_resto}
+                          onChange={(e) => setVentaData({...ventaData, fecha_pago_resto: e.target.value})}
+                          min={new Date().toISOString().split('T')[0]}
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+                        />
+                        <p className="text-xs text-[var(--muted-foreground)] mt-1">
+                          Indica cuándo el cliente pagará el saldo restante
+                        </p>
+                      </div>
+                    </>
                   )}
                   
                   {/* Upload de comprobantes */}
@@ -1479,18 +1513,61 @@ export default function CotizacionDetalle() {
                 </div>
               </div>
 
-              {/* Resumen */}
+              {/* Resumen de Pago */}
               <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-[var(--foreground)]">Total del viaje:</span>
                   <span className="text-xl font-black text-[var(--foreground)]">${formatCurrency(cotizacion.precio_total)}</span>
                 </div>
+                
                 {ventaData.pago_realizado && ventaData.monto_pagado && (
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-green-400">Recibido:</span>
-                    <span className="text-green-400 font-medium">${formatCurrency(parseFloat(ventaData.monto_pagado) || 0)}</span>
-                  </div>
+                  <>
+                    <div className="flex justify-between items-center text-sm mb-2">
+                      <span className="text-green-400">Recibido:</span>
+                      <span className="text-green-400 font-medium">${formatCurrency(parseFloat(ventaData.monto_pagado) || 0)}</span>
+                    </div>
+                    
+                    {/* NUEVO: Monto restante */}
+                    {(() => {
+                      const montoRestante = Math.max(0, cotizacion.precio_total - (parseFloat(ventaData.monto_pagado) || 0));
+                      return montoRestante > 0 ? (
+                        <div className="flex justify-between items-center text-sm mb-2">
+                          <span className="text-orange-400">Restante:</span>
+                          <span className="text-orange-400 font-medium">${formatCurrency(montoRestante)}</span>
+                        </div>
+                      ) : null;
+                    })()}
+                  </>
                 )}
+                
+                {/* NUEVO: Badge de tipo de pago */}
+                <div className="mt-3 pt-3 border-t border-[var(--border)]">
+                  {(() => {
+                    if (!ventaData.pago_realizado) {
+                      return (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400">
+                          Sin pago - se enviará a administrador
+                        </span>
+                      );
+                    }
+                    const montoRestante = Math.max(0, cotizacion.precio_total - (parseFloat(ventaData.monto_pagado) || 0));
+                    if (montoRestante === 0) {
+                      return (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          PAGO TOTAL
+                        </span>
+                      );
+                    } else {
+                      return (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400">
+                          <AlertCircle className="w-3 h-3 mr-1" />
+                          PAGO PARCIAL - Resta ${formatCurrency(montoRestante)}
+                        </span>
+                      );
+                    }
+                  })()}
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4">
