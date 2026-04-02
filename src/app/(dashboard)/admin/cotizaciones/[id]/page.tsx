@@ -158,7 +158,7 @@ export default function AdminCotizacionDetalle() {
   // Estados para vouchers
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [isLoadingVouchers, setIsLoadingVouchers] = useState(false);
-  const [tipoVoucher, setTipoVoucher] = useState<'vuelo' | 'hotel' | 'seguro' | 'otro'>('vuelo');
+  const [tipoVoucher, setTipoVoucher] = useState<'boleto_aereo' | 'voucher_hotel' | 'voucher_actividad' | 'seguro' | 'itinerario_final' | 'e_ticket' | 'boarding_pass' | 'otro'>('boleto_aereo');
   const [isUploadingVoucher, setIsUploadingVoucher] = useState(false);
 
   useEffect(() => {
@@ -814,9 +814,13 @@ export default function AdminCotizacionDetalle() {
                     onChange={(e) => setTipoVoucher(e.target.value as any)}
                     className="bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-purple-500"
                   >
-                    <option value="vuelo">✈️ Vuelo</option>
-                    <option value="hotel">🏨 Hotel</option>
+                    <option value="boleto_aereo">✈️ Vuelo</option>
+                    <option value="voucher_hotel">🏨 Hotel</option>
+                    <option value="voucher_actividad">🎯 Actividad</option>
                     <option value="seguro">🛡️ Seguro</option>
+                    <option value="itinerario_final">📋 Itinerario</option>
+                    <option value="e_ticket">🎫 E-Ticket</option>
+                    <option value="boarding_pass">🛂 Boarding Pass</option>
                     <option value="otro">📄 Otro</option>
                   </select>
                   <div className="flex-1">
