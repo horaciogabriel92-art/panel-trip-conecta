@@ -71,6 +71,16 @@ interface Venta {
   comision_monto: number;
 }
 
+interface Voucher {
+  id: string;
+  tipo_documento: 'vuelo' | 'hotel' | 'seguro' | 'otro';
+  nombre_archivo: string;
+  ruta_archivo: string;
+  descripcion?: string;
+  fecha_subida: string;
+  url: string;
+}
+
 interface Cotizacion {
   id: string;
   codigo: string;
@@ -92,12 +102,18 @@ interface Cotizacion {
   fecha_expiracion?: string;
   fecha_envio?: string;
   fecha_venta?: string;
+  // Campos de pago
+  monto_pagado?: number;
+  monto_restante?: number;
+  fecha_pago_resto?: string;
+  tipo_pago?: string;
   // Relaciones enriquecidas
   pasajeros?: Pasajero[];
   vuelos?: Vuelo[];
   paquete?: Paquete;
   venta?: Venta;
   comprobantes_pago?: Comprobante[];
+  vouchers?: Voucher[];
   // Datos completos del cliente desde la BD
   cliente?: {
     id: string;
@@ -138,6 +154,12 @@ export default function AdminCotizacionDetalle() {
   const [showRechazarModal, setShowRechazarModal] = useState(false);
   const [showPagarComision, setShowPagarComision] = useState(false);
   const [notasAdmin, setNotasAdmin] = useState('');
+  
+  // Estados para vouchers
+  const [vouchers, setVouchers] = useState<Voucher[]>([]);
+  const [isLoadingVouchers, setIsLoadingVouchers] = useState(false);
+  const [tipoVoucher, setTipoVoucher] = useState<'vuelo' | 'hotel' | 'seguro' | 'otro'>('vuelo');
+  const [isUploadingVoucher, setIsUploadingVoucher] = useState(false);
 
   useEffect(() => {
     const fetchCotizacion = async () => {
@@ -261,6 +283,99 @@ export default function AdminCotizacionDetalle() {
     } catch (err: any) {
       console.error('Error descargando comprobante:', err);
       alert('Error al descargar el comprobante');
+    }
+  };
+
+  // ============================================
+  // FUNCIONES PARA VOUCHERS
+  // ============================================
+  
+  // Cargar vouchers cuando hay venta
+  useEffect(() => {
+    const fetchVouchers = async () => {
+      if (cotizacion?.venta?.id) {
+        setIsLoadingVouchers(true);
+        try {
+          const res = await api.get(`/upload/vouchers/${cotizacion.venta.id}`);
+          setVouchers(res.data);
+        } catch (err) {
+          console.error('Error cargando vouchers:', err);
+        } finally {
+          setIsLoadingVouchers(false);
+        }
+      }
+    };
+    
+    fetchVouchers();
+  }, [cotizacion?.venta?.id]);
+  
+  // Subir voucher
+  const handleVoucherUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !cotizacion?.venta?.id) return;
+    
+    setIsUploadingVoucher(true);
+    try {
+      const formData = new FormData();
+      formData.append('voucher', file);
+      formData.append('tipo_documento', tipoVoucher);
+      
+      await api.post(`/upload/voucher/${cotizacion.venta.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      // Recargar vouchers
+      const res = await api.get(`/upload/vouchers/${cotizacion.venta.id}`);
+      setVouchers(res.data);
+      
+      alert('Voucher subido exitosamente');
+    } catch (err: any) {
+      console.error('Error subiendo voucher:', err);
+      alert(err.response?.data?.error || 'Error al subir voucher');
+    } finally {
+      setIsUploadingVoucher(false);
+    }
+  };
+  
+  // Descargar voucher
+  const handleDownloadVoucher = async (voucherId: string, filename: string) => {
+    try {
+      const response = await api.get(`/upload/voucher/${voucherId}/download`, {
+        responseType: 'blob'
+      });
+      
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error('Error descargando voucher:', err);
+      alert('Error al descargar voucher');
+    }
+  };
+  
+  // Eliminar voucher
+  const handleDeleteVoucher = async (voucherId: string) => {
+    if (!confirm('¿Estás seguro de eliminar este voucher?')) return;
+    
+    try {
+      await api.delete(`/upload/voucher/${voucherId}`);
+      
+      // Recargar vouchers
+      if (cotizacion?.venta?.id) {
+        const res = await api.get(`/upload/vouchers/${cotizacion.venta.id}`);
+        setVouchers(res.data);
+      }
+      
+      alert('Voucher eliminado exitosamente');
+    } catch (err: any) {
+      console.error('Error eliminando voucher:', err);
+      alert(err.response?.data?.error || 'Error al eliminar voucher');
     }
   };
 
@@ -547,12 +662,40 @@ export default function AdminCotizacionDetalle() {
                     <p className="text-xl font-black text-green-400">${formatCurrency(venta.monto_pagado_heredado)}</p>
                   </div>
                 )}
+                {/* NUEVO: Monto Restante */}
+                {(() => {
+                  const montoRestante = Math.max(0, (cotizacion?.precio_total || 0) - (venta?.monto_pagado_heredado || 0));
+                  return montoRestante > 0 ? (
+                    <div className="p-4 bg-[var(--muted)] rounded-xl border border-orange-500/20">
+                      <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Monto Restante</p>
+                      <p className="text-xl font-black text-orange-400">${formatCurrency(montoRestante)}</p>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-[var(--muted)] rounded-xl border border-green-500/20">
+                      <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Monto Restante</p>
+                      <p className="text-xl font-black text-green-400">$0</p>
+                      <p className="text-xs text-green-400 mt-1">Pago completo</p>
+                    </div>
+                  );
+                })()}
                 {venta.medio_pago_heredado && (
                   <div className="p-4 bg-[var(--muted)] rounded-xl">
                     <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Medio de Pago</p>
                     <p className="font-medium text-[var(--foreground)] capitalize">{venta.medio_pago_heredado}</p>
                   </div>
                 )}
+                {/* NUEVO: Fecha pago resto */}
+                {(() => {
+                  const montoRestante = Math.max(0, (cotizacion?.precio_total || 0) - (venta?.monto_pagado_heredado || 0));
+                  return montoRestante > 0 && cotizacion?.fecha_pago_resto ? (
+                    <div className="p-4 bg-[var(--muted)] rounded-xl border border-orange-500/20">
+                      <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Fecha Pago Resto</p>
+                      <p className="text-lg font-bold text-orange-400">
+                        {new Date(cotizacion.fecha_pago_resto).toLocaleDateString('es-AR')}
+                      </p>
+                    </div>
+                  ) : null;
+                })()}
               </div>
               {venta.observaciones_pago_heredado && (
                 <div className="p-4 bg-[var(--muted)] rounded-xl">
@@ -595,6 +738,105 @@ export default function AdminCotizacionDetalle() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* VOUCHERS DE VIAJE - Solo admin puede subir */}
+          {isVendida && venta && (
+            <div className="glass-card rounded-2xl p-6 border-purple-500/20">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-purple-400" />
+                Vouchers de Viaje ({vouchers.length})
+              </h3>
+              
+              {/* Lista de vouchers */}
+              {isLoadingVouchers ? (
+                <div className="flex justify-center py-4">
+                  <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : vouchers.length > 0 ? (
+                <div className="space-y-3 mb-6">
+                  {vouchers.map((v) => (
+                    <div key={v.id} className="p-4 bg-[var(--muted)] rounded-xl">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                            <FileDown className="w-5 h-5 text-purple-400" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-[var(--foreground)] truncate max-w-[200px]">
+                              {v.nombre_archivo}
+                            </p>
+                            <p className="text-xs text-[var(--muted-foreground)] capitalize">
+                              {v.tipo_documento === 'vuelo' && '✈️ Vuelo'}
+                              {v.tipo_documento === 'hotel' && '🏨 Hotel'}
+                              {v.tipo_documento === 'seguro' && '🛡️ Seguro'}
+                              {v.tipo_documento === 'otro' && '📄 Otro'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleDownloadVoucher(v.id, v.nombre_archivo)}
+                            className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl flex items-center gap-2 transition-all"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteVoucher(v.id)}
+                            className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-xl flex items-center gap-2 transition-all"
+                          >
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 bg-[var(--muted)] rounded-xl text-center mb-6">
+                  <p className="text-[var(--muted-foreground)] text-sm">
+                    No hay vouchers subidos aún
+                  </p>
+                  <p className="text-xs text-[var(--muted-foreground)] mt-1">
+                    Sube los vouchers de vuelo, hotel, etc.
+                  </p>
+                </div>
+              )}
+              
+              {/* Formulario subir nuevo voucher */}
+              <div className="border-t border-[var(--border)] pt-4">
+                <h4 className="text-sm font-medium text-[var(--foreground)] mb-3">Subir nuevo voucher</h4>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <select
+                    value={tipoVoucher}
+                    onChange={(e) => setTipoVoucher(e.target.value as any)}
+                    className="bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-purple-500"
+                  >
+                    <option value="vuelo">✈️ Vuelo</option>
+                    <option value="hotel">🏨 Hotel</option>
+                    <option value="seguro">🛡️ Seguro</option>
+                    <option value="otro">📄 Otro</option>
+                  </select>
+                  <div className="flex-1">
+                    <label className="flex items-center justify-center w-full h-12 px-4 bg-[var(--muted)] border border-[var(--border)] border-dashed rounded-xl cursor-pointer hover:bg-[var(--muted)]/80 transition-all">
+                      <span className="text-sm text-[var(--muted-foreground)]">
+                        {isUploadingVoucher ? 'Subiendo...' : 'Seleccionar archivo (PDF, JPG, PNG)'}
+                      </span>
+                      <input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={handleVoucherUpload}
+                        disabled={isUploadingVoucher}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+                <p className="text-xs text-[var(--muted-foreground)] mt-2">
+                  Al subir un voucher, el estado de la venta cambiará a "Emitida"
+                </p>
               </div>
             </div>
           )}
