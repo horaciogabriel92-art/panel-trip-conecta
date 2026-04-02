@@ -27,7 +27,8 @@ import {
   Edit,
   Printer,
   CreditCard,
-  Plane
+  Plane,
+  Download
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -138,6 +139,16 @@ interface Cotizacion {
   itinerario_manual?: string;
   incluye?: string[];
   no_incluye?: string[];
+  // Campos de pago y venta
+  monto_pagado?: number;
+  monto_restante?: number;
+  fecha_pago_resto?: string;
+  tipo_pago?: string;
+  venta?: {
+    id: string;
+    codigo: string;
+    estado: string;
+  };
 }
 
 interface Paquete {
@@ -205,6 +216,9 @@ export default function CotizacionDetalle() {
     vuelos?: any[];
     hospedaje?: any[];
   } | null>(null);
+  
+  // Estado para vouchers
+  const [vouchers, setVouchers] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchCotizacion = async () => {
@@ -282,6 +296,22 @@ export default function CotizacionDetalle() {
       fetchCotizacion();
     }
   }, [params.id, accion]);
+  
+  // Cargar vouchers cuando la cotización está vendida
+  useEffect(() => {
+    const fetchVouchers = async () => {
+      if (cotizacion?.estado === 'vendida' && cotizacion?.venta?.id) {
+        try {
+          const res = await api.get(`/upload/vouchers/${cotizacion.venta.id}`);
+          setVouchers(res.data);
+        } catch (err) {
+          console.error('Error cargando vouchers:', err);
+        }
+      }
+    };
+    
+    fetchVouchers();
+  }, [cotizacion?.estado, cotizacion?.venta?.id]);
 
   const handleConvertirAVenta = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -390,6 +420,28 @@ export default function CotizacionDetalle() {
       alert('Cotización actualizada');
     } catch (err: any) {
       alert(err.response?.data?.error || 'Error al actualizar');
+    }
+  };
+  
+  // Descargar voucher
+  const handleDownloadVoucher = async (voucherId: string, filename: string) => {
+    try {
+      const response = await api.get(`/upload/voucher/${voucherId}/download`, {
+        responseType: 'blob'
+      });
+      
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error('Error descargando voucher:', err);
+      alert('Error al descargar voucher');
     }
   };
 
@@ -1165,12 +1217,75 @@ export default function CotizacionDetalle() {
             )}
 
             {cotizacion.estado === 'vendida' && (
-              <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-center">
-                <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                <p className="text-green-400 font-medium">Esta cotización ya fue convertida en venta</p>
-                <Link href="/mis-ventas" className="text-blue-400 hover:text-blue-300 text-sm mt-2 inline-block">
-                  Ver mis ventas →
-                </Link>
+              <div className="space-y-4">
+                {/* Banner venta confirmada */}
+                <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-center">
+                  <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                  <p className="text-green-400 font-medium">Esta cotización ya fue convertida en venta</p>
+                  <Link href="/mis-ventas" className="text-blue-400 hover:text-blue-300 text-sm mt-2 inline-block">
+                    Ver mis ventas →
+                  </Link>
+                </div>
+                
+                {/* Información de Pago Restante */}
+                {(() => {
+                  const montoRestante = Math.max(0, (cotizacion?.precio_total || 0) - (cotizacion?.monto_pagado || 0));
+                  return montoRestante > 0 ? (
+                    <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                      <h4 className="text-sm font-medium text-orange-400 mb-2">💰 Pago Pendiente</h4>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[var(--foreground)]">Monto restante:</span>
+                        <span className="text-xl font-black text-orange-400">${formatCurrency(montoRestante)}</span>
+                      </div>
+                      {cotizacion?.fecha_pago_resto && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-[var(--foreground)]">Fecha de pago:</span>
+                          <span className="text-lg font-bold text-orange-400">
+                            {new Date(cotizacion.fecha_pago_resto).toLocaleDateString('es-AR')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+                      <h4 className="text-sm font-medium text-green-400 mb-2">✅ Pago Completo</h4>
+                      <p className="text-[var(--foreground)]">El cliente ha pagado el total del viaje.</p>
+                    </div>
+                  );
+                })()}
+                
+                {/* VOUCHERS - Solo lectura para vendedor */}
+                {vouchers.length > 0 && (
+                  <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                    <h4 className="text-sm font-medium text-purple-400 mb-3">📄 Vouchers de Viaje ({vouchers.length})</h4>
+                    <div className="space-y-2">
+                      {vouchers.map((v) => (
+                        <div key={v.id} className="flex items-center justify-between p-3 bg-[var(--muted)] rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+                              <FileText className="w-4 h-4 text-purple-400" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-[var(--foreground)] truncate max-w-[150px]">{v.nombre_archivo}</p>
+                              <p className="text-xs text-[var(--muted-foreground)] capitalize">
+                                {v.tipo_documento === 'vuelo' && '✈️ Vuelo'}
+                                {v.tipo_documento === 'hotel' && '🏨 Hotel'}
+                                {v.tipo_documento === 'seguro' && '🛡️ Seguro'}
+                                {v.tipo_documento === 'otro' && '📄 Otro'}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleDownloadVoucher(v.id, v.nombre_archivo)}
+                            className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2 transition-all"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
