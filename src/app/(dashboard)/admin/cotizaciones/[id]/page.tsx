@@ -155,6 +155,11 @@ export default function AdminCotizacionDetalle() {
   const [showPagarComision, setShowPagarComision] = useState(false);
   const [notasAdmin, setNotasAdmin] = useState('');
   
+  // Estados para formulario de pago de comisión
+  const [metodoPagoComision, setMetodoPagoComision] = useState('transferencia');
+  const [referenciaPagoComision, setReferenciaPagoComision] = useState('');
+  const [notasPagoComision, setNotasPagoComision] = useState('');
+  
   // Estados para vouchers
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [isLoadingVouchers, setIsLoadingVouchers] = useState(false);
@@ -204,9 +209,17 @@ export default function AdminCotizacionDetalle() {
   const handlePagarComision = async () => {
     if (!venta?.id) return;
     try {
-      await api.put(`/ventas/${venta.id}/pagar-comision`);
+      await api.put(`/ventas/${venta.id}/pagar-comision`, {
+        metodo_pago: metodoPagoComision,
+        referencia_pago: referenciaPagoComision || null,
+        notas: notasPagoComision || null
+      });
       alert('Comisión marcada como pagada');
       setShowPagarComision(false);
+      // Limpiar formulario
+      setMetodoPagoComision('transferencia');
+      setReferenciaPagoComision('');
+      setNotasPagoComision('');
       // Refrescar datos
       const res = await api.get(`/cotizaciones/${params.id}`);
       setCotizacion(res.data);
@@ -1032,11 +1045,10 @@ export default function AdminCotizacionDetalle() {
       {/* Modal Pagar Comisión */}
       {showPagarComision && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="glass-card w-full max-w-md rounded-3xl p-8">
+          <div className="glass-card w-full max-w-md rounded-3xl p-8 max-h-[90vh] overflow-y-auto">
             <h3 className="text-2xl font-black text-[var(--foreground)] mb-4">Pagar Comisión</h3>
-            <p className="text-[var(--muted-foreground)] mb-6">
-              ¿Confirmas que deseas marcar la comisión como pagada para la venta {venta?.codigo}?
-            </p>
+            
+            {/* Info de la comisión */}
             <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl mb-6">
               <p className="text-sm text-[var(--muted-foreground)]">Monto de comisión:</p>
               <p className="text-2xl font-black text-purple-400">
@@ -1045,7 +1057,57 @@ export default function AdminCotizacionDetalle() {
               <p className="text-sm text-[var(--muted-foreground)] mt-1">
                 Vendedor: {cotizacion?.vendedor_nombre || '-'}
               </p>
+              <p className="text-sm text-[var(--muted-foreground)]">
+                Venta: {venta?.codigo || '-'}
+              </p>
             </div>
+
+            {/* Formulario de pago */}
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                  Método de pago *
+                </label>
+                <select
+                  value={metodoPagoComision}
+                  onChange={(e) => setMetodoPagoComision(e.target.value)}
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-purple-500"
+                >
+                  <option value="transferencia">Transferencia bancaria</option>
+                  <option value="efectivo">Efectivo</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="mercadopago">MercadoPago</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                  Referencia de pago
+                </label>
+                <input
+                  type="text"
+                  value={referenciaPagoComision}
+                  onChange={(e) => setReferenciaPagoComision(e.target.value)}
+                  placeholder="Ej: Transferencia #12345"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                  Notas adicionales
+                </label>
+                <textarea
+                  value={notasPagoComision}
+                  onChange={(e) => setNotasPagoComision(e.target.value)}
+                  placeholder="Notas sobre el pago..."
+                  rows={3}
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-purple-500 resize-none"
+                />
+              </div>
+            </div>
+
             <div className="flex gap-3">
               <button
                 onClick={() => setShowPagarComision(false)}
