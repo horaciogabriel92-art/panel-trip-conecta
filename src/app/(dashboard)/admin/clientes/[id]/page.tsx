@@ -67,7 +67,6 @@ interface Nota {
     id: string;
     nombre: string;
     apellido: string;
-    avatar_url: string | null;
   };
 }
 
