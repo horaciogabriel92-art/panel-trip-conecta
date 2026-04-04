@@ -78,10 +78,18 @@ export default function Sidebar({ role = 'vendedor' }: { role?: 'admin' | 'vende
       </nav>
 
       <div className="p-4 border-t border-[var(--border)] space-y-2">
-        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)] transition-all">
-          <Settings className="w-5 h-5" />
+        <Link 
+          href="/configuracion"
+          className={cn(
+            "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
+            pathname === '/configuracion'
+              ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/20"
+              : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+          )}
+        >
+          <Settings className={cn("w-5 h-5", pathname === '/configuracion' ? "text-white" : "")} />
           <span className="font-medium">Configuración</span>
-        </button>
+        </Link>
         <button 
           onClick={logout}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all"
