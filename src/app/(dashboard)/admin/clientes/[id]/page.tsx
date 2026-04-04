@@ -50,9 +50,9 @@ interface Cliente {
   fuente_lead: string | null;
   referido_por: string | null;
   tags: string[] | null;
-  prioridad: 'ALTA' | 'MEDIA' | 'BAJA' | null;
+  prioridad: 'alta' | 'media' | 'baja' | null;
   fecha_proximo_viaje_ideal: string | null;
-  estado: 'ACTIVO' | 'INACTIVO' | 'PROSPECTO' | 'FRECUENTE' | null;
+  estado: 'activo' | 'inactivo' | 'bloqueado' | null;
   created_at: string;
   updated_at: string;
 }
@@ -180,21 +180,50 @@ export default function ClienteDetallePage() {
   };
   
   const getPrioridadColor = (prioridad: string | null) => {
-    switch (prioridad) {
-      case "ALTA": return "bg-red-500/10 text-red-400 border-red-500/20";
-      case "BAJA": return "bg-green-500/10 text-green-400 border-green-500/20";
+    switch (prioridad?.toLowerCase()) {
+      case "alta": return "bg-red-500/10 text-red-400 border-red-500/20";
+      case "baja": return "bg-green-500/10 text-green-400 border-green-500/20";
       default: return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
     }
   };
   
   const getEstadoClienteColor = (estado: string | null) => {
-    switch (estado) {
-      case "ACTIVO": return "bg-green-500/10 text-green-400 border-green-500/20";
-      case "FRECUENTE": return "bg-purple-500/10 text-purple-400 border-purple-500/20";
-      case "PROSPECTO": return "bg-blue-500/10 text-blue-400 border-blue-500/20";
-      case "INACTIVO": return "bg-gray-500/10 text-gray-400 border-gray-500/20";
+    switch (estado?.toLowerCase()) {
+      case "activo": return "bg-green-500/10 text-green-400 border-green-500/20";
+      case "bloqueado": return "bg-red-500/10 text-red-400 border-red-500/20";
+      case "inactivo": return "bg-gray-500/10 text-gray-400 border-gray-500/20";
       default: return "bg-slate-500/10 text-slate-400 border-slate-500/20";
     }
+  };
+
+  // Helpers para formatear valores de visualización
+  const formatPrioridad = (prioridad: string | null) => {
+    const map: Record<string, string> = {
+      alta: "Alta",
+      media: "Media", 
+      baja: "Baja"
+    };
+    return map[prioridad?.toLowerCase() || ""] || prioridad || "";
+  };
+
+  const formatEstado = (estado: string | null) => {
+    const map: Record<string, string> = {
+      activo: "Activo",
+      inactivo: "Inactivo",
+      bloqueado: "Bloqueado"
+    };
+    return map[estado?.toLowerCase() || ""] || estado || "";
+  };
+
+  const formatTemporada = (temporada: string | null) => {
+    const map: Record<string, string> = {
+      verano: "Verano",
+      invierno: "Invierno",
+      primavera: "Primavera",
+      otono: "Otoño",
+      cualquiera: "Cualquiera"
+    };
+    return map[temporada?.toLowerCase() || ""] || temporada || "";
   };
 
   // Helper para formatear fechas de forma segura
@@ -276,12 +305,12 @@ export default function ClienteDetallePage() {
             </h2>
             {cliente.prioridad && (
               <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase border ${getPrioridadColor(cliente.prioridad)}`}>
-                {cliente.prioridad}
+                {formatPrioridad(cliente.prioridad)}
               </span>
             )}
             {cliente.estado && (
               <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase border ${getEstadoClienteColor(cliente.estado)}`}>
-                {cliente.estado}
+                {formatEstado(cliente.estado)}
               </span>
             )}
           </div>
@@ -494,7 +523,7 @@ export default function ClienteDetallePage() {
                     <Calendar className="w-5 h-5 text-[var(--muted-foreground)]" />
                     <div>
                       <p className="text-xs text-[var(--muted-foreground)]">Temporada preferida</p>
-                      <p className="font-medium text-[var(--foreground)]">{cliente.temporada_preferida}</p>
+                      <p className="font-medium text-[var(--foreground)]">{formatTemporada(cliente.temporada_preferida)}</p>
                     </div>
                   </div>
                 )}

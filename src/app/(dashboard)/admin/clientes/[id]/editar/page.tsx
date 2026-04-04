@@ -41,9 +41,9 @@ interface Cliente {
   fuente_lead: string | null;
   referido_por: string | null;
   tags: string[] | null;
-  prioridad: 'ALTA' | 'MEDIA' | 'BAJA' | null;
+  prioridad: 'alta' | 'media' | 'baja' | null;
   fecha_proximo_viaje_ideal: string | null;
-  estado: 'ACTIVO' | 'INACTIVO' | 'PROSPECTO' | 'FRECUENTE' | null;
+  estado: 'activo' | 'inactivo' | 'bloqueado' | null;
 }
 
 export default function EditarClientePage() {
@@ -172,11 +172,12 @@ export default function EditarClientePage() {
               <select
                 value={cliente.tipo_documento || "CI"}
                 onChange={(e) => handleChange("tipo_documento", e.target.value)}
-                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none [&>option]:bg-[var(--card)] [&>option]:text-[var(--foreground)]"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none appearance-none cursor-pointer"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
               >
                 <option value="CI">CI</option>
-                <option value="PASAPORTE">Pasaporte</option>
-                <option value="OTRO">Otro</option>
+                <option value="Pasaporte">Pasaporte</option>
+                <option value="Otro">Otro</option>
               </select>
             </div>
             <div>
@@ -325,14 +326,14 @@ export default function EditarClientePage() {
                 Estado
               </label>
               <select
-                value={cliente.estado || "ACTIVO"}
+                value={cliente.estado || "activo"}
                 onChange={(e) => handleChange("estado", e.target.value)}
-                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none [&>option]:bg-[var(--card)] [&>option]:text-[var(--foreground)]"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none appearance-none cursor-pointer"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
               >
-                <option value="ACTIVO">Activo</option>
-                <option value="INACTIVO">Inactivo</option>
-                <option value="PROSPECTO">Prospecto</option>
-                <option value="FRECUENTE">Frecuente</option>
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+                <option value="bloqueado">Bloqueado</option>
               </select>
             </div>
             <div>
@@ -340,13 +341,14 @@ export default function EditarClientePage() {
                 Prioridad
               </label>
               <select
-                value={cliente.prioridad || "MEDIA"}
+                value={cliente.prioridad || "media"}
                 onChange={(e) => handleChange("prioridad", e.target.value)}
-                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none [&>option]:bg-[var(--card)] [&>option]:text-[var(--foreground)]"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none appearance-none cursor-pointer"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
               >
-                <option value="ALTA">Alta</option>
-                <option value="MEDIA">Media</option>
-                <option value="BAJA">Baja</option>
+                <option value="alta">Alta</option>
+                <option value="media">Media</option>
+                <option value="baja">Baja</option>
               </select>
             </div>
             <div>
@@ -356,16 +358,15 @@ export default function EditarClientePage() {
               <select
                 value={cliente.temporada_preferida || ""}
                 onChange={(e) => handleChange("temporada_preferida", e.target.value || null)}
-                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none [&>option]:bg-[var(--card)] [&>option]:text-[var(--foreground)]"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none appearance-none cursor-pointer"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
               >
                 <option value="">Sin preferencia</option>
-                <option value="VERANO">Verano</option>
-                <option value="INVIERNO">Invierno</option>
-                <option value="PRIMAVERA">Primavera</option>
-                <option value="OTONO">Otoño</option>
-                <option value="FIN_DE_ANO">Fin de año</option>
-                <option value="CARNAVAL">Carnaval</option>
-                <option value="SEMANA_SANTA">Semana Santa</option>
+                <option value="verano">Verano</option>
+                <option value="invierno">Invierno</option>
+                <option value="primavera">Primavera</option>
+                <option value="otono">Otoño</option>
+                <option value="cualquiera">Cualquiera</option>
               </select>
             </div>
             <div>
@@ -386,16 +387,17 @@ export default function EditarClientePage() {
               <select
                 value={cliente.fuente_lead || ""}
                 onChange={(e) => handleChange("fuente_lead", e.target.value || null)}
-                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none [&>option]:bg-[var(--card)] [&>option]:text-[var(--foreground)]"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none appearance-none cursor-pointer"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '20px' }}
               >
                 <option value="">Seleccionar...</option>
-                <option value="WEB">Web</option>
-                <option value="INSTAGRAM">Instagram</option>
-                <option value="FACEBOOK">Facebook</option>
-                <option value="WHATSAPP">WhatsApp</option>
-                <option value="REFERIDO">Referido</option>
-                <option value="EVENTO">Evento</option>
-                <option value="OTRO">Otro</option>
+                <option value="Web">Web</option>
+                <option value="Instagram">Instagram</option>
+                <option value="Facebook">Facebook</option>
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="Referido">Referido</option>
+                <option value="Evento">Evento</option>
+                <option value="Otro">Otro</option>
               </select>
             </div>
             <div className="md:col-span-2">
