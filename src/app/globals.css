@@ -199,6 +199,22 @@
     box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
   }
 
+  /* Select Dark Mode Fix */
+  select {
+    background-color: var(--card) !important;
+    color: var(--foreground) !important;
+  }
+  
+  select option {
+    background-color: var(--popover) !important;
+    color: var(--foreground) !important;
+  }
+  
+  [data-theme="dark"] select option {
+    background-color: #1e293b !important;
+    color: #fafafa !important;
+  }
+
   /* Theme Ripple Effect */
   .theme-ripple {
     position: relative;
