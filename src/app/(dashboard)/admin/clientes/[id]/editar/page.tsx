@@ -172,7 +172,7 @@ export default function EditarClientePage() {
               <select
                 value={cliente.tipo_documento || "CI"}
                 onChange={(e) => handleChange("tipo_documento", e.target.value)}
-                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none [&>option]:bg-[var(--card)] [&>option]:text-[var(--foreground)]"
               >
                 <option value="CI">CI</option>
                 <option value="PASAPORTE">Pasaporte</option>
@@ -327,7 +327,7 @@ export default function EditarClientePage() {
               <select
                 value={cliente.estado || "ACTIVO"}
                 onChange={(e) => handleChange("estado", e.target.value)}
-                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none [&>option]:bg-[var(--card)] [&>option]:text-[var(--foreground)]"
               >
                 <option value="ACTIVO">Activo</option>
                 <option value="INACTIVO">Inactivo</option>
@@ -342,7 +342,7 @@ export default function EditarClientePage() {
               <select
                 value={cliente.prioridad || "MEDIA"}
                 onChange={(e) => handleChange("prioridad", e.target.value)}
-                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none [&>option]:bg-[var(--card)] [&>option]:text-[var(--foreground)]"
               >
                 <option value="ALTA">Alta</option>
                 <option value="MEDIA">Media</option>
@@ -356,7 +356,7 @@ export default function EditarClientePage() {
               <select
                 value={cliente.temporada_preferida || ""}
                 onChange={(e) => handleChange("temporada_preferida", e.target.value || null)}
-                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none [&>option]:bg-[var(--card)] [&>option]:text-[var(--foreground)]"
               >
                 <option value="">Sin preferencia</option>
                 <option value="VERANO">Verano</option>
@@ -386,7 +386,7 @@ export default function EditarClientePage() {
               <select
                 value={cliente.fuente_lead || ""}
                 onChange={(e) => handleChange("fuente_lead", e.target.value || null)}
-                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none [&>option]:bg-[var(--card)] [&>option]:text-[var(--foreground)]"
               >
                 <option value="">Seleccionar...</option>
                 <option value="WEB">Web</option>

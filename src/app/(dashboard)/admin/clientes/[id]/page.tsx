@@ -197,6 +197,18 @@ export default function ClienteDetallePage() {
     }
   };
 
+  // Helper para formatear fechas de forma segura
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return "No disponible";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "Fecha inválida";
+      return date.toLocaleDateString("es-AR");
+    } catch {
+      return "Fecha inválida";
+    }
+  };
+
   const getEstadoColor = (estado: string) => {
     switch (estado) {
       case "convertida":
@@ -274,7 +286,7 @@ export default function ClienteDetallePage() {
             )}
           </div>
           <p className="text-[var(--muted-foreground)] text-sm">
-            Cliente desde {new Date(cliente.created_at).toLocaleDateString("es-AR")}
+            Cliente desde {formatDate(cliente.created_at)}
           </p>
         </div>
         <Link
@@ -345,7 +357,7 @@ export default function ClienteDetallePage() {
                   <div>
                     <p className="text-xs text-[var(--muted-foreground)]">Fecha de nacimiento</p>
                     <p className="font-medium text-[var(--foreground)]">
-                      {new Date(cliente.fecha_nacimiento).toLocaleDateString("es-AR")}
+                      {formatDate(cliente.fecha_nacimiento)}
                     </p>
                   </div>
                 </div>
@@ -493,7 +505,7 @@ export default function ClienteDetallePage() {
                     <div>
                       <p className="text-xs text-[var(--muted-foreground)]">Próximo viaje ideal</p>
                       <p className="font-medium text-[var(--foreground)]">
-                        {new Date(cliente.fecha_proximo_viaje_ideal).toLocaleDateString("es-AR")}
+                        {formatDate(cliente.fecha_proximo_viaje_ideal)}
                       </p>
                     </div>
                   </div>
@@ -564,7 +576,7 @@ export default function ClienteDetallePage() {
                       </p>
                       <p className="text-sm text-[var(--muted-foreground)]">
                         {cot.num_pasajeros || 1} pasajeros •{" "}
-                        {new Date(cot.fecha_creacion).toLocaleDateString("es-AR")}
+                        {formatDate(cot.fecha_creacion)}
                       </p>
                     </div>
                   </div>
@@ -665,13 +677,12 @@ export default function ClienteDetallePage() {
                           </span>
                         )}
                         <span className="text-xs text-[var(--muted-foreground)]">
-                          {new Date(nota.created_at).toLocaleDateString("es-AR", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {(() => {
+                              const d = nota.created_at ? new Date(nota.created_at) : null;
+                              return d && !isNaN(d.getTime()) 
+                                ? d.toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                                : "Fecha inválida";
+                            })()}
                         </span>
                       </div>
                       <p className="text-[var(--foreground)] whitespace-pre-wrap">{nota.contenido}</p>
@@ -715,13 +726,12 @@ export default function ClienteDetallePage() {
                   <div className="flex-1">
                     <p className="font-medium text-[var(--foreground)]">{item.descripcion}</p>
                     <p className="text-sm text-[var(--muted-foreground)]">
-                      {new Date(item.fecha).toLocaleDateString("es-AR", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {(() => {
+                        const d = item.fecha ? new Date(item.fecha) : null;
+                        return d && !isNaN(d.getTime())
+                          ? d.toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                          : "Fecha inválida";
+                      })()}
                       {item.vendedor_nombre && ` • ${item.vendedor_nombre}`}
                     </p>
                   </div>
