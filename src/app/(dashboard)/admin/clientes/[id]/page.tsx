@@ -130,7 +130,7 @@ export default function ClienteDetallePage() {
         setCotizaciones(data.cotizaciones || []);
         setHistorial(data.historial || []);
         
-        // Cargar notas
+        // Cargar notas (usando el mismo endpoint con :id/notas)
         const notasRes = await api.get(`/clientes/${clienteId}/notas`);
         setNotas(notasRes.data?.notas || []);
       } catch (error) {
