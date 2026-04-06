@@ -10,6 +10,8 @@ interface User {
   nombre: string;
   apellido: string;
   rol: 'admin' | 'vendedor';
+  comision_porcentaje?: number;
+  telefono?: string;
 }
 
 interface AuthContextType {
