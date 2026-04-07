@@ -115,10 +115,9 @@ export default function VentaDetalle() {
     setDownloadingId(docId);
     try {
       const response = await api.get(`/documentos/${docId}/download`, {
-        responseType: 'blob', // Importante para recibir el archivo como blob
+        responseType: 'blob',
       });
       
-      // Crear URL del blob y descargar
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -130,6 +129,29 @@ export default function VentaDetalle() {
     } catch (err) {
       console.error('Error descargando:', err);
       alert('Error al descargar el documento');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const handleDownloadComprobante = async (comprobanteId: string, fileName: string) => {
+    setDownloadingId(`comp-${comprobanteId}`);
+    try {
+      const response = await api.get(`/upload/comprobante-pago/${comprobanteId}/download`, {
+        responseType: 'blob',
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error descargando comprobante:', err);
+      alert('Error al descargar el comprobante');
     } finally {
       setDownloadingId(null);
     }
@@ -227,14 +249,17 @@ export default function VentaDetalle() {
                         )}
                       </div>
                     </div>
-                    <a
-                      href={`https://api.tripconecta.com${comp.url}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-3 bg-green-600 hover:bg-green-700 rounded-xl transition-all"
+                    <button
+                      onClick={() => handleDownloadComprobante(comp.id, comp.nombre_archivo)}
+                      disabled={downloadingId === `comp-${comp.id}`}
+                      className="p-3 bg-green-600 hover:bg-green-700 disabled:bg-green-600/50 rounded-xl transition-all"
                     >
-                      <Download className="w-4 h-4 text-white" />
-                    </a>
+                      {downloadingId === `comp-${comp.id}` ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4 text-white" />
+                      )}
+                    </button>
                   </div>
                 ))}
               </div>
