@@ -206,12 +206,27 @@ function parseAmadeusPNRToVuelos(pnrText: string): Vuelo[] {
   const lineas = pnrText.split('\n').filter(l => l.trim());
   const vuelos: Vuelo[] = [];
 
-  // Regex para detectar líneas de vuelo (formato común de Amadeus)
-  // Ej: 1. AA1234 Y 15JAN 1 BUEEZE HK1  1030 1300  777 J
-  const vueloRegex = /(\d+)\.\s+([A-Z]{2})(\d{1,4})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+\d?\s+([A-Z]{3})([A-Z]{3})\s+HK\d+\s+(\d{4})\s+(\d{4})/i;
+  // Regex más flexible para detectar líneas de vuelo de Amadeus
+  // Soporta múltiples formatos:
+  // - Formato con punto: 1. AA1234 Y 15JAN 1 BUEEZE HK1  1030 1300
+  // - Formato sin punto: 1  UX 046 Z 17OCT 6 MVDMAD DK1  1220 0510  18OCT
+  // - Formato con espacios variables
+  const vueloRegex = /\s*(\d+)\.?\s+([A-Z]{2})\s+(\d{1,4})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+\d?\s+([A-Z]{3})([A-Z]{3})\s+[A-Z]{2}\d+\s+(\d{4})\s+(\d{4})/i;
+  // Regex alternativo para formatos donde origen/destino están juntos sin espacio (MVDMAD)
+  const vueloRegexCompacto = /\s*(\d+)\.?\s+([A-Z]{2})\s+(\d{1,4})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+\d?\s+([A-Z]{3})([A-Z]{3})\s+\w+\s+(\d{4})\s+(\d{4})/i;
 
   lineas.forEach((linea, idx) => {
-    const match = linea.match(vueloRegex);
+    // Limpiar la línea
+    const lineaLimpia = linea.trim();
+    
+    // Intentar primero con el regex normal
+    let match = lineaLimpia.match(vueloRegex);
+    
+    // Si no matchea, intentar con el regex compacto
+    if (!match) {
+      match = lineaLimpia.match(vueloRegexCompacto);
+    }
+    
     if (match) {
       const [_, num, aerolinea, numeroVuelo, clase, fecha, origen, destino, horaSalida, horaLlegada] = match;
       
