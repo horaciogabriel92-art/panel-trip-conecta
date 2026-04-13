@@ -60,8 +60,10 @@ interface CotizacionData {
   precios?: {
     vuelos?: number;
     hospedajes?: number;
+    extras?: number;
     servicios?: number;
     traslados?: number;
+    subtotal?: number;
     impuestos?: number;
     total?: number;
     moneda?: string;
@@ -126,10 +128,10 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
     vuelos: data.vuelos || [],
     precios: {
       moneda: data.precios?.moneda || 'USD',
-      precio_unitario: ((data.precio_total || 0) / (data.num_pasajeros || 1)).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
-      subtotal: (data.precio_total || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
+      precio_unitario: ((data.precios?.total || data.precio_total || 0) / (data.num_pasajeros || 1)).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
+      subtotal: (data.precios?.subtotal ?? (data.precios?.total || data.precio_total || 0)).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
       impuestos: (data.precios?.impuestos || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
-      extras: '0.00',
+      extras: (data.precios?.extras || 0) > 0 ? (data.precios?.extras || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }) : '0.00',
       total: (data.precios?.total || data.precio_total || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
       anticipo: ((data.precios?.total || data.precio_total || 0) * 0.3).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
       saldo: ((data.precios?.total || data.precio_total || 0) * 0.7).toLocaleString('es-UY', { minimumFractionDigits: 2 }),

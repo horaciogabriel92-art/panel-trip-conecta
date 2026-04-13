@@ -949,11 +949,55 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
           </View>
         )}
 
-        {/* Detalle de Precios - Simple y claro */}
+        {/* Detalle de Precios */}
         <View style={styles.section} wrap={false}>
           <Text style={styles.sectionTitle}>Detalle de Precios</Text>
           
           <View style={styles.priceBreakdownSection}>
+            {esCotizacionManual && (
+              <>
+                {/* Vuelos */}
+                {parsePrice(precios.vuelos || '0') > 0 && (
+                  <View style={styles.priceBreakdownRow}>
+                    <Text style={styles.priceBreakdownLabel}>Vuelos</Text>
+                    <Text style={styles.priceBreakdownValue}>${formatPrice(precios.vuelos || '0')} {precios.moneda}</Text>
+                  </View>
+                )}
+
+                {/* Hospedajes */}
+                {parsePrice(precios.hospedajes || '0') > 0 && (
+                  <View style={styles.priceBreakdownRow}>
+                    <Text style={styles.priceBreakdownLabel}>Hospedajes</Text>
+                    <Text style={styles.priceBreakdownValue}>${formatPrice(precios.hospedajes || '0')} {precios.moneda}</Text>
+                  </View>
+                )}
+
+                {/* Extras / Servicios */}
+                {(parsePrice(precios.extras || '0') > 0 || parsePrice(precios.servicios || '0') > 0) && (
+                  <View style={styles.priceBreakdownRow}>
+                    <Text style={styles.priceBreakdownLabel}>Extras / Servicios</Text>
+                    <Text style={styles.priceBreakdownValue}>${formatPrice(precios.extras || precios.servicios || '0')} {precios.moneda}</Text>
+                  </View>
+                )}
+
+                {/* Subtotal */}
+                <View style={styles.priceBreakdownRow}>
+                  <Text style={styles.priceBreakdownLabel}>Subtotal</Text>
+                  <Text style={styles.priceBreakdownValue}>${formatPrice(precios.subtotal || '0')} {precios.moneda}</Text>
+                </View>
+
+                {/* Impuestos */}
+                {parsePrice(precios.impuestos || '0') > 0 && (
+                  <View style={styles.priceBreakdownRow}>
+                    <Text style={styles.priceBreakdownLabel}>Impuestos</Text>
+                    <Text style={styles.priceBreakdownValue}>${formatPrice(precios.impuestos || '0')} {precios.moneda}</Text>
+                  </View>
+                )}
+
+                <View style={styles.priceBreakdownDivider} />
+              </>
+            )}
+
             {/* Precio por persona */}
             <View style={styles.priceBreakdownRow}>
               <Text style={styles.priceBreakdownLabel}>Precio por persona</Text>

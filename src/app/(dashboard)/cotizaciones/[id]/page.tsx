@@ -105,6 +105,8 @@ interface Cotizacion {
   precio_moneda?: string;
   precio_vuelos?: number;
   precio_hospedajes?: number;
+  precio_subtotal?: number;
+  precio_impuestos?: number;
   comision_vendedor?: number;
   estado: 'nueva' | 'enviada' | 'vendida' | 'perdida';
   notas?: string;
@@ -604,8 +606,11 @@ export default function CotizacionDetalle() {
               })(),
               // Desglose de precios
               precios: {
-                vuelos: cotizacion.precio_vuelos,
-                hospedajes: cotizacion.precio_hospedajes,
+                vuelos: cotizacion.precio_vuelos ?? (cotizacion.paquete_data as any)?.precio_vuelos,
+                hospedajes: cotizacion.precio_hospedajes ?? (cotizacion.paquete_data as any)?.precio_hospedajes,
+                extras: (cotizacion.paquete_data as any)?.precio_extras,
+                subtotal: cotizacion.precio_subtotal ?? (cotizacion.paquete_data as any)?.precio_subtotal,
+                impuestos: cotizacion.precio_impuestos ?? (cotizacion.paquete_data as any)?.precio_impuestos,
                 total: cotizacion.precio_total,
                 moneda: cotizacion.precio_moneda || 'USD'
               },
