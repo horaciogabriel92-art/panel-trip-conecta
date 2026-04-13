@@ -23,7 +23,7 @@ export function AdminNuevaCotizacionModal({ isOpen, onClose }: AdminNuevaCotizac
   if (!isOpen) return null;
 
   const handleSelectCatalogo = () => {
-    router.push('/admin/paquetes');
+    router.push('/paquetes');
     onClose();
   };
 
