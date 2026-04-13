@@ -128,7 +128,7 @@ export default function CotizarPaquete() {
           apellido: '',
           documento: '',
           fecha_nacimiento: '',
-          nacionalidad: 'Argentina',
+          nacionalidad: 'Uruguay',
           telefono: '',
           email: ''
         });
@@ -462,6 +462,27 @@ export default function CotizarPaquete() {
                           }}
                           className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                         />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Nacionalidad</label>
+                        <select
+                          value={pasajero.nacionalidad}
+                          onChange={(e) => {
+                            const nuevos = [...pasajeros];
+                            nuevos[index].nacionalidad = e.target.value;
+                            setPasajeros(nuevos);
+                          }}
+                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+                        >
+                          <option value="Uruguay">Uruguay</option>
+                          <option value="Argentina">Argentina</option>
+                          <option value="Brasil">Brasil</option>
+                          <option value="Chile">Chile</option>
+                          <option value="Paraguay">Paraguay</option>
+                          <option value="España">España</option>
+                          <option value="Estados Unidos">Estados Unidos</option>
+                          <option value="Otro">Otro</option>
+                        </select>
                       </div>
                     </div>
                   </div>
