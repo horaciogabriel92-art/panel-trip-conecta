@@ -21,6 +21,9 @@ import {
 import { parseAmadeusPNR } from '@/lib/amadeus-parser';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import BuscarCliente from '@/components/cotizaciones/BuscarCliente';
+import CrearClienteModal from '@/components/cotizaciones/CrearClienteModal';
+import { Cliente } from '@/lib/api-clientes';
 
 // ============================================
 // TIPOS
@@ -63,6 +66,10 @@ export default function AdminNuevaCotizacion() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [vendedores, setVendedores] = useState<Vendedor[]>([]);
   const [vendedorSeleccionado, setVendedorSeleccionado] = useState<string>('');
+
+  // Cliente CRM
+  const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null);
+  const [showCrearCliente, setShowCrearCliente] = useState(false);
 
   // Datos del formulario
   const [cliente, setCliente] = useState({
@@ -125,6 +132,21 @@ export default function AdminNuevaCotizacion() {
     };
     fetchVendedores();
   }, []);
+
+  // Sincronizar datos del cliente seleccionado al formulario
+  useEffect(() => {
+    if (clienteSeleccionado) {
+      setCliente({
+        nombre: clienteSeleccionado.nombre || '',
+        apellido: clienteSeleccionado.apellido || '',
+        documento: clienteSeleccionado.documento || '',
+        email: clienteSeleccionado.email || '',
+        telefono: clienteSeleccionado.telefono || '',
+        fecha_nacimiento: clienteSeleccionado.fecha_nacimiento || '',
+        nacionalidad: clienteSeleccionado.nacionalidad || 'Uruguay',
+      });
+    }
+  }, [clienteSeleccionado]);
 
   // ============================================
   // PASOS DEL WIZARD
@@ -229,16 +251,37 @@ export default function AdminNuevaCotizacion() {
       return;
     }
 
+    // Validar que haya un cliente seleccionado o datos manuales del titular
+    const tieneClienteManual = cliente.nombre.trim() && cliente.apellido.trim();
+    if (!clienteSeleccionado && !tieneClienteManual) {
+      alert('Debes seleccionar un cliente existente o completar los datos del titular');
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      const cotizacionData = {
+      const cotizacionData: any = {
         vendedor_id: vendedorIdFinal,
         nombre_cotizacion: nombreCotizacion || `Viaje a ${hospedajes[0]?.ciudad || parsedFlights[0]?.destino_ciudad || 'Destino'}`,
-        cliente,
-        pasajeros,
+        pasajeros_nuevos: pasajeros.map(p => ({
+          nombre: p.nombre,
+          apellido: p.apellido,
+          documento: p.documento,
+          fecha_nacimiento: p.fecha_nacimiento,
+          nacionalidad: p.nacionalidad,
+        })),
         vuelos: useAmadeus ? parsedFlights : [],
-        hospedaje: hospedajes,
+        hospedajes: hospedajes.map(h => ({
+          nombre_hotel: h.nombre_hotel,
+          link_hotel: h.link_hotel,
+          ciudad: h.ciudad,
+          fecha_checkin: h.fecha_checkin,
+          fecha_checkout: h.fecha_checkout,
+          tipo_habitacion: h.tipo_habitacion,
+          regimen: h.regimen,
+          noches: h.noches,
+        })),
         itinerario_manual: itinerario,
         incluye: incluye.filter(i => i.trim() !== ''),
         no_incluye: noIncluye.filter(i => i.trim() !== ''),
@@ -252,6 +295,21 @@ export default function AdminNuevaCotizacion() {
         origen_datos: useAmadeus && amadeusText ? 'amadeus' : 'manual',
         amadeus_pnr_raw: useAmadeus ? amadeusText : null,
       };
+
+      if (clienteSeleccionado) {
+        cotizacionData.cliente_id = clienteSeleccionado.id;
+      } else {
+        cotizacionData.cliente_nuevo = {
+          tipo_documento: 'CI',
+          documento: cliente.documento,
+          nombre: cliente.nombre,
+          apellido: cliente.apellido,
+          email: cliente.email,
+          telefono: cliente.telefono,
+          fecha_nacimiento: cliente.fecha_nacimiento,
+          nacionalidad: cliente.nacionalidad,
+        };
+      }
 
       console.log('Enviando datos:', cotizacionData);
       const response = await api.post('/cotizaciones/manual', cotizacionData);
@@ -384,16 +442,27 @@ export default function AdminNuevaCotizacion() {
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
           <User className="w-5 h-5 text-blue-400" />
-          Pasajero 1 (Titular)
+          Cliente (Titular)
         </h3>
+
+        {/* Buscar o Crear Cliente */}
+        <div className="mb-6">
+          <BuscarCliente
+            onSelect={setClienteSeleccionado}
+            onNuevoCliente={() => setShowCrearCliente(true)}
+            selectedClienteId={clienteSeleccionado?.id}
+          />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Nombre *</label>
             <input
               type="text"
               value={cliente.nombre}
+              readOnly={!!clienteSeleccionado}
               onChange={(e) => setCliente({ ...cliente, nombre: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+              className={`w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 ${clienteSeleccionado ? 'opacity-70 cursor-not-allowed' : ''}`}
               placeholder="Ej: Juan"
             />
           </div>
@@ -402,8 +471,9 @@ export default function AdminNuevaCotizacion() {
             <input
               type="text"
               value={cliente.apellido}
+              readOnly={!!clienteSeleccionado}
               onChange={(e) => setCliente({ ...cliente, apellido: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+              className={`w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 ${clienteSeleccionado ? 'opacity-70 cursor-not-allowed' : ''}`}
               placeholder="Ej: Pérez"
             />
           </div>
@@ -412,8 +482,9 @@ export default function AdminNuevaCotizacion() {
             <input
               type="text"
               value={cliente.documento}
+              readOnly={!!clienteSeleccionado}
               onChange={(e) => setCliente({ ...cliente, documento: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+              className={`w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 ${clienteSeleccionado ? 'opacity-70 cursor-not-allowed' : ''}`}
               placeholder="CI / Pasaporte"
             />
           </div>
@@ -422,8 +493,9 @@ export default function AdminNuevaCotizacion() {
             <input
               type="date"
               value={cliente.fecha_nacimiento}
+              readOnly={!!clienteSeleccionado}
               onChange={(e) => setCliente({ ...cliente, fecha_nacimiento: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+              className={`w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 ${clienteSeleccionado ? 'opacity-70 cursor-not-allowed' : ''}`}
             />
           </div>
           <div>
@@ -431,8 +503,9 @@ export default function AdminNuevaCotizacion() {
             <input
               type="email"
               value={cliente.email}
+              readOnly={!!clienteSeleccionado}
               onChange={(e) => setCliente({ ...cliente, email: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+              className={`w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 ${clienteSeleccionado ? 'opacity-70 cursor-not-allowed' : ''}`}
               placeholder="juan@email.com"
             />
           </div>
@@ -441,8 +514,9 @@ export default function AdminNuevaCotizacion() {
             <input
               type="tel"
               value={cliente.telefono}
+              readOnly={!!clienteSeleccionado}
               onChange={(e) => setCliente({ ...cliente, telefono: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+              className={`w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 ${clienteSeleccionado ? 'opacity-70 cursor-not-allowed' : ''}`}
               placeholder="099 123 456"
             />
           </div>
@@ -450,8 +524,9 @@ export default function AdminNuevaCotizacion() {
             <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Nacionalidad</label>
             <select
               value={cliente.nacionalidad}
+              disabled={!!clienteSeleccionado}
               onChange={(e) => setCliente({ ...cliente, nacionalidad: e.target.value })}
-              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+              className={`w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 ${clienteSeleccionado ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               <option value="Uruguay" className="bg-[var(--background)]">Uruguay</option>
               <option value="Argentina" className="bg-[var(--background)]">Argentina</option>
@@ -1089,6 +1164,16 @@ RP/DZOUY2100/
           )}
         </div>
       </div>
+
+      {/* Modal Crear Cliente */}
+      <CrearClienteModal
+        isOpen={showCrearCliente}
+        onClose={() => setShowCrearCliente(false)}
+        onClienteCreado={(cliente) => {
+          setClienteSeleccionado(cliente);
+          setShowCrearCliente(false);
+        }}
+      />
     </div>
   );
 }
