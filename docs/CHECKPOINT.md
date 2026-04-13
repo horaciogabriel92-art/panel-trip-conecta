@@ -1,7 +1,7 @@
 # Checkpoint - Estado Actual del Sistema
 
-> **Fecha:** 30 Marzo 2026 (Checkpoint)  
-> **Commits de referencia:** api@dd9eda2, panel@a43cbb4
+> **Fecha:** 22 Marzo 2026 (Checkpoint Actual)  
+> **Commits de referencia:** api@415b539, panel@8470a7b
 
 ---
 
@@ -11,14 +11,13 @@
 
 | Servicio | URL | Estado | Último Deploy |
 |----------|-----|--------|---------------|
-| Panel B2B | https://panel.tripconecta.com | ✅ Online | 30 Mar (a43cbb4) |
-| API Backend | https://api.tripconecta.com | ✅ Online | 30 Mar (dd9eda2) |
+| Panel B2B | https://panel.tripconecta.com | ✅ Online | 22 Mar (8470a7b) |
+| API Backend | https://api.tripconecta.com | ✅ Online | 22 Mar (415b539) |
 | Landing | https://tripconecta.com | ✅ Online | 20 Mar (18154eb) |
 | Database | Supabase PostgreSQL | ✅ Conectado | - |
 
 ### 🔄 Deploy Pendiente en Coolify
-- Panel: Commit `a43cbb4` - UI simplificada, fix paquete
-- API: Commit `dd9eda2` - Fixes notificaciones, sincronización venta
+- Ninguno. Todos los commits recientes están deployados en producción.
 
 ### ⚠️ SQL Pendiente en Producción
 ```sql
@@ -283,8 +282,84 @@ WHERE id = '20038bc7-7c1b-4b82-b337-e355e08edc3a';
 - Eliminada sección "Detalles de la Cotización" duplicada
 
 ### Fix 5: Build Error (Syntax)
+**Fecha:** 30 Marzo 2026
 **Problema:** Desbalance de llaves en `admin/cotizaciones/[id]/page.tsx`.
 **Solución:** Revertido a commit estable y re-aplicados cambios limpios.
+
+### Fix 6: Perfil de Usuario (`/configuracion`)
+**Fecha:** 22 Marzo 2026
+**Solución:**
+- Nueva página `/configuracion` para editar nombre, apellido y teléfono del usuario logueado.
+- Link agregado en el Sidebar.
+- Fix TypeScript: agregados `comision_porcentaje` y `telefono` a la interfaz `User` en `AuthContext`.
+
+### Fix 7: Seguridad en Listado de Clientes
+**Fecha:** 22 Marzo 2026
+**Problema:** Vendedores podían ver clientes de otros vendedores.
+**Solución:**
+- `GET /clientes` y `GET /clientes/buscar` filtran por `registrado_por` para usuarios no-admin.
+- `getClienteById` y `updateCliente` verifican ownership antes de responder o modificar.
+
+### Fix 8: Documentos Perdidos en Redeploys (Bug #7)
+**Fecha:** 22 Marzo 2026
+**Problema:** Archivos subidos desaparecían al redeployar en Coolify.
+**Solución:**
+- Configurado **Coolify Directory Mount** persistente: host `/data/coolify/applications/.../storage/uploads` → contenedor `/app/storage/uploads`.
+- Variable de entorno `STORAGE_PATH=/app/storage/uploads`.
+- Estrategia de paths: DB guarda solo `basename`, backend resuelve ubicación real buscando múltiples paths posibles.
+- Endpoint de limpieza: `POST /api/admin/cleanup-documentos` para purgar registros huérfanos.
+
+### Fix 9: Truncado de Campos en Paquetes
+**Fecha:** 22 Marzo 2026
+**Problema:** Error PostgreSQL 22001 (value too long) al crear paquetes con datos extensos.
+**Solución:** Helper `truncar()` en `paquetes.controller.ts` que limita strings antes del insert (ej. `titulo` a 255 chars).
+
+### Fix 10: Parser Amadeus Unificado
+**Fecha:** 22 Marzo 2026
+**Problema:** Parser local en admin paquetes inconsistente con el resto del sistema.
+**Solución:** Reemplazado parser local por `parseAmadeusPNR` desde `@/lib/amadeus-parser` en la creación de paquetes admin.
+
+### Fix 11: Redirect Admin "Desde Catálogo"
+**Fecha:** 22 Marzo 2026
+**Problema:** Al crear cotización desde `/admin/paquetes`, el redirect caía en ruta rota.
+**Solución:** Redirige a `/paquetes` (catálogo público) en lugar de `/admin/paquetes`.
+
+### Fix 12: Enum Case Mismatch en Clientes
+**Fecha:** 22 Marzo 2026
+**Problema:** Creación de clientes fallaba por constraints lowercase en PostgreSQL.
+**Solución:** Valores default corregidos a `estado: 'activo'`, `prioridad: 'media'`.
+
+### Fix 13: Nacionalidad en Pasajeros Adicionales
+**Fecha:** 22 Marzo 2026
+**Solución:** Agregado select de nacionalidad para pasajeros adicionales en el formulario de cotización de paquetes.
+
+### Fix 14: Precio por Persona en PDF
+**Fecha:** 22 Marzo 2026
+**Problema:** `parseFloat("1.234,56")` truncaba en la coma, dando cálculos incorrectos en `Precio por persona`.
+**Solución:** Usar helpers `parsePrice` y `formatPrice` (manejan formato `es-UY`) en `CotizacionPDF.tsx`.
+
+---
+
+## 🛡️ Directiva de Trabajo para Agentes (NO NEGOCIABLE)
+
+> **Cada edit, cada cambio y cada fix debe ser revisado 2 veces antes de ser commiteado.**  
+> El objetivo es detectar errores de sintaxis, tipos, lógica o deployments **antes** de que toquen producción.
+
+### Checklist de Auto-Auditoría (obligatorio antes de commit)
+- [ ] **Sintaxis:** ¿Paréntesis, llaves, comas y punto y coma están balanceados?
+- [ ] **Tipos TypeScript:** ¿No hay `any` ocultos ni errores de compilación (`tsc --noEmit`)?
+- [ ] **Variables:** ¿Todas las variables usadas están definidas e importadas?
+- [ ] **Lógica:** ¿El cambio no rompe integridad de datos ni borra información accidentalmente?
+- [ ] **Backward Compatibility:** ¿Los cambios en JSON/DB no invalidan datos existentes?
+- [ ] **Deploy-safe:** ¿No hay cambios que requieran migraciones no planificadas?
+
+### Protocolo de Aprobación
+1. **Preguntar primero:** Antes de aplicar cualquier solución que toque lógica de negocio, DB o deploy, se debe proponer al usuario y esperar aprobación explícita.
+2. **Aplicar con minimalismo:** Solo el cambio estrictamente necesario.
+3. **Revisar 2 veces:** Una vez escrito, releer línea por línea buscando errores.
+4. **Commit y Push:** Solo después de la revisión, al repo correspondiente (`api` o `panel`).
+
+**Primamos siempre fixes que no destruyan la integridad del sistema.**
 
 ---
 

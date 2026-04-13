@@ -108,15 +108,34 @@ Supabase Storage
         └── galeria-2.jpg
 ```
 
-### Volumen Docker (Persistencia)
+### Volumen Docker / Coolify Directory Mount (Persistencia)
 
-El contenedor de la API tiene montado:
+El contenedor de la API tiene montado un **Coolify Directory Mount** persistente:
 ```yaml
 volumes:
-  - /data/trip-conecta/uploads:/app/storage/uploads
+  - /data/coolify/applications/xqg9olisi2yu4ttfqyg6lgtl/storage/uploads:/app/storage/uploads
 ```
 
-**Importante:** Sin este volumen, los archivos se pierden al reiniciar el contenedor.
+**Variable de entorno requerida:**
+```env
+STORAGE_PATH=/app/storage/uploads
+```
+
+**Importante:** Sin este volumen montado en Coolify, los archivos se pierden al redeployar el contenedor.
+
+### Estrategia de Paths (Basename)
+
+Para evitar rutas absolutas frágiles en la base de datos:
+- La DB almacena **solo el basename** del archivo (ej. `voucher-123.pdf`).
+- El backend resuelve la ubicación física buscando múltiples paths posibles al momento de descargar:
+  1. `/app/storage/uploads/<filename>`
+  2. `/data/trip-conecta/uploads/<filename>`
+  3. `<cwd>/storage/uploads/<filename>`
+
+### Endpoints de Mantenimiento
+- `POST /api/admin/cleanup-documentos` - Limpia registros huérfanos de `documentos_viaje`.
+- `POST /api/admin/cleanup-comprobantes` - Limpia registros huérfanos de `comprobantes_pago`.
+- `GET /api/admin/debug-vouchers` - Diagnóstico de paths y archivos.
 
 ### Límites y Capacidades
 

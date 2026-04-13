@@ -56,6 +56,26 @@ trip-conecta-b2b/
 
 ---
 
+## 🛡️ Directiva para Agentes de IA (OBLIGATORIA)
+
+> **⚠️ ANTES de cualquier modificación, leer y aplicar estrictamente:**
+
+1. **Proponer antes de actuar:** Cualquier fix que toque lógica de negocio, base de datos o infraestructura debe ser propuesto al usuario y **esperar aprobación explícita** antes de escribir código.
+2. **Revisar 2 veces:** Cada edit, cambio o fix debe ser releído línea por línea buscando errores de sintaxis, tipos, imports o lógica **antes** de hacer commit.
+3. **Minimalismo:** Aplicar solo el cambio estrictamente necesario. No refactorizar por gusto.
+4. **Integridad primero:** Primar siempre soluciones que no destruyan datos ni rompan compatibilidad hacia atrás.
+5. **Checklist pre-commit:**
+   - [ ] Sintaxis correcta (paréntesis, llaves, comas)
+   - [ ] Tipos TypeScript válidos (`tsc --noEmit` sin errores)
+   - [ ] Variables definidas e importadas
+   - [ ] Lógica de negocio correcta
+   - [ ] No hay código duplicado ni anti-patterns
+   - [ ] Cambio aprobado por el usuario
+
+El incumplimiento de esta directiva puede resultar en deployments rotos y pérdida de datos.
+
+---
+
 ## 🆘 Soporte
 
 - **Problemas con documentos/archivos:** Ver `01-ARQUITECTURA.md` sección Storage
