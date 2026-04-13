@@ -700,6 +700,23 @@ interface CotizacionPDFProps {
 }
 
 // ============================================
+// HELPERS DE PRECIO (manejan strings formateados y números)
+// ============================================
+function parsePrice(value: string | number): number {
+  if (typeof value === 'number') return value;
+  // Convierte "5.980,00" -> 5980.00
+  const clean = value.replace(/\./g, '').replace(',', '.');
+  return parseFloat(clean) || 0;
+}
+
+function formatPrice(value: string | number): string {
+  const num = typeof value === 'string' ? parsePrice(value) : value;
+  const parts = num.toFixed(2).split('.');
+  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return `${integerPart},${parts[1]}`;
+}
+
+// ============================================
 // COMPONENTE PDF
 // ============================================
 export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
@@ -941,7 +958,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
             <View style={styles.priceBreakdownRow}>
               <Text style={styles.priceBreakdownLabel}>Precio por persona</Text>
               <Text style={styles.priceBreakdownValue}>
-                ${(parseFloat(precios.total) / (cotizacion.num_pasajeros || 1)).toFixed(2)} {precios.moneda}
+                ${precios.precio_unitario ? formatPrice(precios.precio_unitario) : formatPrice(parsePrice(precios.total) / (cotizacion.num_pasajeros || 1))} {precios.moneda}
               </Text>
             </View>
             
@@ -950,7 +967,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
             {/* Total */}
             <View style={styles.priceBreakdownTotal}>
               <Text style={styles.priceBreakdownTotalLabel}>TOTAL ({cotizacion.num_pasajeros} pasajeros)</Text>
-              <Text style={styles.priceBreakdownTotalValue}>${precios.total} {precios.moneda}</Text>
+              <Text style={styles.priceBreakdownTotalValue}>${formatPrice(precios.total)} {precios.moneda}</Text>
             </View>
           </View>
         </View>
