@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import api from '@/lib/api';
 import { Package, Search, Filter, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Download, Upload, X, ImageIcon } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
+import { parseAmadeusPNR } from '@/lib/amadeus-parser';
 
 // Componente para subir imágenes a Supabase Storage
 function ImagenUploader({ imagenUrl, onImagenSubida }: { imagenUrl: string; onImagenSubida: (url: string) => void }) {
@@ -197,58 +198,37 @@ const emptyPaquete: Paquete = {
   itinerario: { texto: '', dias: [] }
 };
 
-// Función para parsear PNR de Amadeus y extraer vuelos
+// Función para parsear PNR de Amadeus usando el parser unificado
 function parseAmadeusPNRToVuelos(pnrText: string): Vuelo[] {
   if (!pnrText.trim()) {
     return [];
   }
 
-  const lineas = pnrText.split('\n').filter(l => l.trim());
-  const vuelos: Vuelo[] = [];
+  // Usar el parser unificado de amadeus-parser.ts
+  const result = parseAmadeusPNR(pnrText);
+  
+  if (!result.success || result.flights.length === 0) {
+    console.error('[parseAmadeusPNRToVuelos] Error:', result.errors);
+    return [];
+  }
 
-  // Regex más flexible para detectar líneas de vuelo de Amadeus
-  // Soporta múltiples formatos:
-  // - Formato con punto: 1. AA1234 Y 15JAN 1 BUEEZE HK1  1030 1300
-  // - Formato sin punto: 1  UX 046 Z 17OCT 6 MVDMAD DK1  1220 0510  18OCT
-  // - Formato con espacios variables
-  const vueloRegex = /\s*(\d+)\.?\s+([A-Z]{2})\s+(\d{1,4})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+\d?\s+([A-Z]{3})([A-Z]{3})\s+[A-Z]{2}\d+\s+(\d{4})\s+(\d{4})/i;
-  // Regex alternativo para formatos donde origen/destino están juntos sin espacio (MVDMAD)
-  const vueloRegexCompacto = /\s*(\d+)\.?\s+([A-Z]{2})\s+(\d{1,4})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+\d?\s+([A-Z]{3})([A-Z]{3})\s+\w+\s+(\d{4})\s+(\d{4})/i;
-
-  lineas.forEach((linea, idx) => {
-    // Limpiar la línea
-    const lineaLimpia = linea.trim();
-    
-    // Intentar primero con el regex normal
-    let match = lineaLimpia.match(vueloRegex);
-    
-    // Si no matchea, intentar con el regex compacto
-    if (!match) {
-      match = lineaLimpia.match(vueloRegexCompacto);
-    }
-    
-    if (match) {
-      const [_, num, aerolinea, numeroVuelo, clase, fecha, origen, destino, horaSalida, horaLlegada] = match;
-      
-      vuelos.push({
-        tipo: idx === 0 ? 'ida' : 'vuelta',
-        aerolinea_codigo: aerolinea,
-        aerolinea_nombre: aerolinea,
-        numero_vuelo: `${aerolinea}${numeroVuelo}`,
-        origen_codigo: origen,
-        origen_nombre: origen,
-        destino_codigo: destino,
-        destino_nombre: destino,
-        fecha_salida: fecha,
-        hora_salida: `${horaSalida.slice(0, 2)}:${horaSalida.slice(2)}`,
-        hora_llegada: `${horaLlegada.slice(0, 2)}:${horaLlegada.slice(2)}`,
-        clase,
-        escalas: 0
-      });
-    }
-  });
-
-  return vuelos;
+  // Mapear ParsedFlight[] a Vuelo[]
+  return result.flights.map((flight, idx) => ({
+    tipo: idx === 0 ? 'ida' : 'vuelta',
+    aerolinea_codigo: flight.aerolinea_codigo,
+    aerolinea_nombre: flight.aerolinea_nombre,
+    numero_vuelo: flight.numero_vuelo,
+    origen_codigo: flight.origen_codigo,
+    origen_nombre: flight.origen_nombre,
+    destino_codigo: flight.destino_codigo,
+    destino_nombre: flight.destino_nombre,
+    fecha_salida: flight.fecha_salida, // Ya viene en formato YYYY-MM-DD
+    hora_salida: flight.hora_salida,   // Ya viene en formato HH:MM
+    hora_llegada: flight.hora_llegada, // Ya viene en formato HH:MM
+    clase: flight.clase_codigo,
+    escalas: flight.dias_adicionales || 0,
+    notas: flight.notas
+  }));
 }
 
 export default function PaquetesAdmin() {
