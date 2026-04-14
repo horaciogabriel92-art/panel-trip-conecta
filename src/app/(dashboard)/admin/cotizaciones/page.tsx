@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
+import { useToast } from '@/context/ToastContext';
 import { 
   FileText, 
   Search, 
@@ -28,6 +29,7 @@ interface Cotizacion {
 }
 
 export default function AdminCotizaciones() {
+  const { error: toastError } = useToast();
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState<string>('todos');
@@ -96,7 +98,7 @@ export default function AdminCotizaciones() {
       fetchCotizaciones();
     } catch (err: any) {
       const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Error al eliminar la cotización';
-      alert(errorMsg);
+      toastError(errorMsg, 'Error');
     } finally {
       setIsDeleting(false);
     }

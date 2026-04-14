@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { useToast } from "@/context/ToastContext";
 import {
   ArrowLeft,
   User,
@@ -72,6 +73,8 @@ export default function EditarClientePage() {
     }
   }, [params.id]);
 
+  const { error: toastError } = useToast();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -81,7 +84,7 @@ export default function EditarClientePage() {
       router.push(`/admin/clientes/${params.id}`);
     } catch (error) {
       console.error("Error guardando cliente:", error);
-      alert("Error al guardar los cambios");
+      toastError("Error al guardar los cambios", "Error");
     } finally {
       setIsSaving(false);
     }

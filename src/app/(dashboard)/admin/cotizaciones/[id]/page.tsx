@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import { useToast } from '@/context/ToastContext';
 import { 
   ArrowLeft, 
   FileText, 
@@ -146,6 +147,7 @@ interface Paquete {
 }
 
 export default function AdminCotizacionDetalle() {
+  const { success: toastSuccess, error: toastError } = useToast();
   const params = useParams();
   const router = useRouter();
   const [cotizacion, setCotizacion] = useState<Cotizacion | null>(null);
@@ -187,22 +189,22 @@ export default function AdminCotizacionDetalle() {
   const handleAprobar = async () => {
     try {
       await api.put(`/cotizaciones/${params.id}/aprobar`, { notas_admin: notasAdmin });
-      alert('Cotización aprobada');
+      toastSuccess('Cotización aprobada', 'Aprobada');
       setShowAprobarModal(false);
       router.refresh();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al aprobar');
+      toastError(err.response?.data?.error || 'Error al aprobar', 'Error');
     }
   };
 
   const handleRechazar = async () => {
     try {
       await api.put(`/cotizaciones/${params.id}/rechazar`, { notas_admin: notasAdmin });
-      alert('Cotización rechazada');
+      toastSuccess('Cotización rechazada', 'Rechazada');
       setShowRechazarModal(false);
       router.push('/admin/cotizaciones');
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al rechazar');
+      toastError(err.response?.data?.error || 'Error al rechazar', 'Error');
     }
   };
 
@@ -214,7 +216,7 @@ export default function AdminCotizacionDetalle() {
         referencia_pago: referenciaPagoComision || null,
         notas: notasPagoComision || null
       });
-      alert('Comisión marcada como pagada');
+      toastSuccess('Comisión marcada como pagada', 'Pago registrado');
       setShowPagarComision(false);
       // Limpiar formulario
       setMetodoPagoComision('transferencia');
@@ -224,7 +226,7 @@ export default function AdminCotizacionDetalle() {
       const res = await api.get(`/cotizaciones/${params.id}`);
       setCotizacion(res.data);
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al pagar comisión');
+      toastError(err.response?.data?.error || 'Error al pagar comisión', 'Error');
     }
   };
 
@@ -295,7 +297,7 @@ export default function AdminCotizacionDetalle() {
       
     } catch (err: any) {
       console.error('Error descargando comprobante:', err);
-      alert('Error al descargar el comprobante');
+      toastError('Error al descargar el comprobante', 'Descarga fallida');
     }
   };
 
@@ -341,10 +343,10 @@ export default function AdminCotizacionDetalle() {
       const res = await api.get(`/upload/vouchers/${cotizacion.venta.id}`);
       setVouchers(res.data);
       
-      alert('Voucher subido exitosamente');
+      toastSuccess('Voucher subido exitosamente', 'Subida OK');
     } catch (err: any) {
       console.error('Error subiendo voucher:', err);
-      alert(err.response?.data?.error || 'Error al subir voucher');
+      toastError(err.response?.data?.error || 'Error al subir voucher', 'Error');
     } finally {
       setIsUploadingVoucher(false);
     }
@@ -368,7 +370,7 @@ export default function AdminCotizacionDetalle() {
       window.URL.revokeObjectURL(url);
     } catch (err: any) {
       console.error('Error descargando voucher:', err);
-      alert('Error al descargar voucher');
+      toastError('Error al descargar voucher', 'Descarga fallida');
     }
   };
   
@@ -385,10 +387,10 @@ export default function AdminCotizacionDetalle() {
         setVouchers(res.data);
       }
       
-      alert('Voucher eliminado exitosamente');
+      toastSuccess('Voucher eliminado exitosamente', 'Eliminado');
     } catch (err: any) {
       console.error('Error eliminando voucher:', err);
-      alert(err.response?.data?.error || 'Error al eliminar voucher');
+      toastError(err.response?.data?.error || 'Error al eliminar voucher', 'Error');
     }
   };
 

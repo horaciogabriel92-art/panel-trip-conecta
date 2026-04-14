@@ -18,6 +18,7 @@ import {
 import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 import { NuevaCotizacionModal } from '@/components/cotizaciones/NuevaCotizacionModal';
+import { useToast } from '@/context/ToastContext';
 
 interface Cotizacion {
   id: string;
@@ -69,6 +70,7 @@ const COLUMNAS = [
 ];
 
 export default function CotizacionesCRM() {
+  const { error: toastError } = useToast();
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showPerdidaModal, setShowPerdidaModal] = useState(false);
@@ -104,7 +106,7 @@ export default function CotizacionesCRM() {
       fetchCotizaciones();
     } catch (err: any) {
       console.error('Error al marcar como enviada:', err);
-      alert('Error al marcar como enviada: ' + (err.response?.data?.error || err.message));
+      toastError('Error al marcar como enviada: ' + (err.response?.data?.error || err.message), 'Error');
     }
   };
 
@@ -127,7 +129,7 @@ export default function CotizacionesCRM() {
       setMotivoPerdida('');
       fetchCotizaciones();
     } catch (err) {
-      alert('Error al marcar como perdida');
+      toastError('Error al marcar como perdida', 'Error');
     }
   };
 
@@ -148,7 +150,7 @@ export default function CotizacionesCRM() {
       fetchCotizaciones();
     } catch (err: any) {
       const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Error al eliminar la cotización';
-      alert(errorMsg);
+      toastError(errorMsg, 'Error');
     } finally {
       setIsDeleting(false);
     }

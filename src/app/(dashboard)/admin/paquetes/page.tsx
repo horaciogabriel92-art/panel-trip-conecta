@@ -5,9 +5,11 @@ import api from '@/lib/api';
 import { Package, Search, Filter, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Download, Upload, X, ImageIcon } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { parseAmadeusPNR } from '@/lib/amadeus-parser';
+import { useToast } from '@/context/ToastContext';
 
 // Componente para subir imágenes a Supabase Storage
 function ImagenUploader({ imagenUrl, onImagenSubida }: { imagenUrl: string; onImagenSubida: (url: string) => void }) {
+  const { error: toastError } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState(imagenUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -18,13 +20,13 @@ function ImagenUploader({ imagenUrl, onImagenSubida }: { imagenUrl: string; onIm
 
     // Validar tipo de archivo
     if (!file.type.startsWith('image/')) {
-      alert('Solo se permiten archivos de imagen (JPG, PNG, WebP)');
+      toastError('Solo se permiten archivos de imagen (JPG, PNG, WebP)', 'Archivo inválido');
       return;
     }
 
     // Validar tamaño (5MB máximo)
     if (file.size > 5 * 1024 * 1024) {
-      alert('La imagen no debe superar los 5MB');
+      toastError('La imagen no debe superar los 5MB', 'Archivo muy grande');
       return;
     }
 
@@ -40,7 +42,7 @@ function ImagenUploader({ imagenUrl, onImagenSubida }: { imagenUrl: string; onIm
       setPreview(imageUrl);
       onImagenSubida(imageUrl);
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al subir la imagen');
+      toastError(err.response?.data?.error || 'Error al subir la imagen', 'Error');
     } finally {
       setIsUploading(false);
     }
@@ -232,6 +234,7 @@ function parseAmadeusPNRToVuelos(pnrText: string): Vuelo[] {
 }
 
 export default function PaquetesAdmin() {
+  const { success: toastSuccess, error: toastError } = useToast();
   const [paquetes, setPaquetes] = useState<Paquete[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -298,7 +301,7 @@ export default function PaquetesAdmin() {
       
       const errorMsg = err.response?.data?.error || err.response?.data?.message || err.response?.data?.details || err.message || 'Error desconocido al guardar paquete';
       const errorCode = err.response?.data?.code || '';
-      alert(`Error ${errorCode ? '(' + errorCode + ')' : ''}: ${errorMsg}`);
+      toastError(`Error ${errorCode ? '(' + errorCode + ')' : ''}: ${errorMsg}`, 'Error');
     }
   };
 
@@ -308,7 +311,7 @@ export default function PaquetesAdmin() {
       await api.delete(`/paquetes/${id}`);
       fetchPaquetes();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al eliminar paquete');
+      toastError(err.response?.data?.error || 'Error al eliminar paquete', 'Error');
     }
   };
 
@@ -788,14 +791,14 @@ Ejemplo:
                             onClick={() => {
                               const vuelosParseados = parseAmadeusPNRToVuelos(pnrRaw);
                               if (vuelosParseados.length === 0) {
-                                alert('No se detectaron vuelos en el PNR. Verifica el formato.');
+                                toastError('No se detectaron vuelos en el PNR. Verifica el formato.', 'PNR inválido');
                                 return;
                               }
                               setFormData({
                                 ...formData,
                                 vuelos: vuelosParseados
                               });
-                              alert(`${vuelosParseados.length} vuelo(s) parseado(s) correctamente. Revisa los campos de Vuelo de Ida y Vuelta.`);
+                              toastSuccess(`${vuelosParseados.length} vuelo(s) parseado(s) correctamente. Revisa los campos de Vuelo de Ida y Vuelta.`, '¡Listo!');
                             }}
                             disabled={!pnrRaw.trim()}
                             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 rounded-xl text-[var(--foreground)] font-medium text-sm flex items-center gap-2"

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
+import { useToast } from '@/context/ToastContext';
 import { Files, Upload, Download, Trash2, Search, FileText, Image, File, CheckCircle, XCircle, Eye } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 
@@ -43,6 +44,7 @@ const tipoLabels: Record<string, { label: string; color: string; icon: any }> = 
 };
 
 export default function DocumentosAdmin() {
+  const { success: toastSuccess, error: toastError } = useToast();
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [ventas, setVentas] = useState<Venta[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -98,7 +100,7 @@ export default function DocumentosAdmin() {
       setSelectedVenta('');
       fetchData();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al subir documento');
+      toastError(err.response?.data?.error || 'Error al subir documento', 'Error');
     }
   };
 
@@ -108,7 +110,7 @@ export default function DocumentosAdmin() {
       await api.delete(`/documentos/${id}`);
       fetchData();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al eliminar documento');
+      toastError(err.response?.data?.error || 'Error al eliminar documento', 'Error');
     }
   };
 
@@ -134,7 +136,7 @@ export default function DocumentosAdmin() {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert('Error al descargar documento');
+      toastError('Error al descargar documento', 'Descarga fallida');
     } finally {
       setDownloadingId(null);
     }

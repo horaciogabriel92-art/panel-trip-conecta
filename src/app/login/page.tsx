@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 import dynamic from "next/dynamic";
 import { 
   Eye, 
@@ -27,6 +28,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
+  const { error: toastError } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,11 +48,11 @@ export default function LoginPage() {
       if (response.ok) {
         login(data.token, data.user);
       } else {
-        alert(data.error || "Credenciales inválidas");
+        toastError(data.error || "Credenciales inválidas", "Error de acceso");
       }
     } catch (error) {
       console.error("Error de login:", error);
-      alert("Error al conectar con el servidor");
+      toastError("Error al conectar con el servidor", "Error");
     } finally {
       setIsLoading(false);
     }

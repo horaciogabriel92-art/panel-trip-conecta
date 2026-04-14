@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
+import { useToast } from '@/context/ToastContext';
 import NotasVenta from '@/components/NotasVenta';
 
 interface Venta {
@@ -74,6 +75,7 @@ const tiposDocumentos: Record<string, { icon: any; label: string; color: string 
 };
 
 export default function VentaDetalle() {
+  const { error: toastError } = useToast();
   const params = useParams();
   const router = useRouter();
   const [venta, setVenta] = useState<Venta | null>(null);
@@ -128,7 +130,7 @@ export default function VentaDetalle() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Error descargando:', err);
-      alert('Error al descargar el documento');
+      toastError('Error al descargar el documento', 'Descarga fallida');
     } finally {
       setDownloadingId(null);
     }
@@ -151,7 +153,7 @@ export default function VentaDetalle() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Error descargando comprobante:', err);
-      alert('Error al descargar el comprobante');
+      toastError('Error al descargar el comprobante', 'Descarga fallida');
     } finally {
       setDownloadingId(null);
     }

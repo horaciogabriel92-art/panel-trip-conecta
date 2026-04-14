@@ -5,6 +5,7 @@ import api from '@/lib/api';
 import Link from 'next/link';
 import { Users, Search, Plus, Edit, Mail, Phone, Percent, CheckCircle, XCircle, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/context/ToastContext';
 
 interface Vendedor {
   id: string;
@@ -19,6 +20,7 @@ interface Vendedor {
 }
 
 export default function VendedoresAdmin() {
+  const { error: toastError } = useToast();
   const [vendedores, setVendedores] = useState<Vendedor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -66,7 +68,7 @@ export default function VendedoresAdmin() {
       });
       fetchVendedores();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al crear vendedor');
+      toastError(err.response?.data?.error || 'Error al crear vendedor', 'Error');
     }
   };
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
+import { useToast } from '@/context/ToastContext';
 import { Wallet, CheckCircle, Clock, DollarSign, Users, Calendar, Check } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 
@@ -32,6 +33,7 @@ interface VendedorComision {
 }
 
 export default function ComisionesAdmin() {
+  const { success: toastSuccess, error: toastError } = useToast();
   const [comisiones, setComisiones] = useState<VendedorComision[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedVendedor, setSelectedVendedor] = useState<string | null>(null);
@@ -71,10 +73,10 @@ export default function ComisionesAdmin() {
         notas: `Pago consolidado de ${ventasIds.length} ventas`
       });
       
-      alert(`Comisiones pagadas exitosamente a ${vendedorData.vendedor.nombre}`);
+      toastSuccess(`Comisiones pagadas exitosamente a ${vendedorData.vendedor.nombre}`, 'Pago realizado');
       fetchComisiones();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al pagar comisiones');
+      toastError(err.response?.data?.error || 'Error al pagar comisiones', 'Error');
     } finally {
       setIsPaying(false);
       setSelectedVendedor(null);
