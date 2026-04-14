@@ -423,7 +423,7 @@ export default function AdminCotizacionDetalle() {
   return (
     <div className="space-y-6 animate-in fade-in duration-700 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <Link href="/admin/cotizaciones" className="p-2 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all">
           <ArrowLeft className="w-5 h-5 text-[var(--muted-foreground)]" />
         </Link>
@@ -457,7 +457,7 @@ export default function AdminCotizacionDetalle() {
       {/* BANNER VENTA - Solo si está vendida */}
       {isVendida && venta && (
         <div className="glass-card rounded-2xl p-6 bg-gradient-to-r from-green-500/10 to-purple-500/10 border-green-500/20">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
               <CheckCircle className="w-8 h-8 text-green-400" />
             </div>
@@ -469,7 +469,7 @@ export default function AdminCotizacionDetalle() {
               </p>
             </div>
             <div className="text-right">
-              <p className="text-3xl font-black text-green-400">${formatCurrency(venta.precio_total)}</p>
+              <p className="text-2xl md:text-3xl font-black text-green-400">${formatCurrency(venta.precio_total)}</p>
               <p className="text-sm text-[var(--muted-foreground)]">Monto total</p>
             </div>
           </div>
@@ -527,11 +527,11 @@ export default function AdminCotizacionDetalle() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Nombre completo */}
-              <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
-                <User className="w-5 h-5 text-[var(--muted-foreground)]" />
-                <div>
+              <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl min-w-0">
+                <User className="w-5 h-5 text-[var(--muted-foreground)] shrink-0" />
+                <div className="min-w-0">
                   <p className="text-xs text-[var(--muted-foreground)] uppercase">Nombre Completo</p>
-                  <p className="font-medium text-[var(--foreground)]">
+                  <p className="font-medium text-[var(--foreground)] break-words">
                     {cotizacion.cliente?.apellido 
                       ? `${cotizacion.cliente.nombre} ${cotizacion.cliente.apellido}`
                       : cotizacion.cliente_nombre}
@@ -551,11 +551,11 @@ export default function AdminCotizacionDetalle() {
               )}
               
               {/* Email */}
-              <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
-                <Mail className="w-5 h-5 text-[var(--muted-foreground)]" />
-                <div>
+              <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl min-w-0">
+                <Mail className="w-5 h-5 text-[var(--muted-foreground)] shrink-0" />
+                <div className="min-w-0">
                   <p className="text-xs text-[var(--muted-foreground)] uppercase">Email</p>
-                  <p className="font-medium text-[var(--foreground)]">
+                  <p className="font-medium text-[var(--foreground)] break-all">
                     {cotizacion.cliente?.email || cotizacion.cliente_email || '-'}
                   </p>
                 </div>
@@ -597,13 +597,13 @@ export default function AdminCotizacionDetalle() {
               <div className="space-y-3">
                 {pasajeros.map((p, idx) => (
                   <div key={p.id || idx} className="p-4 bg-[var(--muted)] rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
                           <span className="text-blue-400 font-bold">{idx + 1}</span>
                         </div>
-                        <div>
-                          <p className="font-medium text-[var(--foreground)]">
+                        <div className="min-w-0">
+                          <p className="font-medium text-[var(--foreground)] break-words">
                             {p.nombre_snapshot} {p.apellido_snapshot}
                             {p.es_titular && <span className="ml-2 px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded-full">Titular</span>}
                           </p>
@@ -630,15 +630,15 @@ export default function AdminCotizacionDetalle() {
               <div className="space-y-3">
                 {vuelos.map((v, idx) => (
                   <div key={v.id || idx} className="p-4 bg-[var(--muted)] rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="text-center">
-                          <p className="text-lg font-black text-[var(--foreground)]">{v.origen_ciudad || '?'}</p>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="text-center min-w-0">
+                          <p className="text-lg font-black text-[var(--foreground)] break-words">{v.origen_ciudad || '?'}</p>
                           <p className="text-xs text-[var(--muted-foreground)]">Origen</p>
                         </div>
                         <ArrowRight className="w-5 h-5 text-blue-400" />
-                        <div className="text-center">
-                          <p className="text-lg font-black text-[var(--foreground)]">{v.destino_ciudad || '?'}</p>
+                        <div className="text-center min-w-0">
+                          <p className="text-lg font-black text-[var(--foreground)] break-words">{v.destino_ciudad || '?'}</p>
                           <p className="text-xs text-[var(--muted-foreground)]">Destino</p>
                         </div>
                       </div>
@@ -973,7 +973,7 @@ export default function AdminCotizacionDetalle() {
       {/* Modal Aprobar */}
       {showAprobarModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="glass-card w-full max-w-md rounded-3xl p-8">
+          <div className="glass-card w-full max-w-md rounded-3xl p-6 md:p-8">
             <h3 className="text-2xl font-black text-[var(--foreground)] mb-4">Aprobar Cotización</h3>
             <p className="text-[var(--muted-foreground)] mb-6">
               ¿Estás seguro de aprobar esta cotización? El vendedor podrá enviarla al cliente.
@@ -1009,7 +1009,7 @@ export default function AdminCotizacionDetalle() {
       {/* Modal Rechazar */}
       {showRechazarModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="glass-card w-full max-w-md rounded-3xl p-8">
+          <div className="glass-card w-full max-w-md rounded-3xl p-6 md:p-8">
             <h3 className="text-2xl font-black text-[var(--foreground)] mb-4">Rechazar Cotización</h3>
             <p className="text-[var(--muted-foreground)] mb-6">
               ¿Estás seguro de rechazar esta cotización? Esta acción no se puede deshacer.

@@ -113,7 +113,7 @@ export default function PaqueteDetalle() {
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
       {/* Header con navegación */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <Link 
           href="/paquetes" 
           className="p-2 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all"
@@ -145,7 +145,7 @@ export default function PaqueteDetalle() {
               </span>
             </div>
             <div className="absolute bottom-4 left-6">
-              <div className="flex items-center gap-4 text-[var(--foreground)]">
+              <div className="flex flex-wrap items-center gap-4 text-[var(--foreground)]">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   <span className="text-sm font-medium">{dias} días / {dias - 1} noches</span>
@@ -259,7 +259,7 @@ export default function PaqueteDetalle() {
                                 <span className="text-sm text-[var(--muted-foreground)]">{vuelo.numero_vuelo}</span>
                               )}
                             </div>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                               <div>
                                 <p className="text-[var(--muted-foreground)] text-xs">Origen</p>
                                 <p className="text-[var(--foreground)] font-medium">{vuelo.origen_nombre || vuelo.origen_codigo || '-'}</p>
@@ -325,7 +325,7 @@ export default function PaqueteDetalle() {
                             )}
                             
                             {/* Precios por habitación */}
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                               <div className="text-center p-2 bg-[var(--background)] rounded-lg">
                                 <p className="text-xs text-[var(--muted-foreground)]">Doble</p>
                                 <p className="font-bold text-[var(--foreground)]">${hotel.precios.doble}</p>
@@ -358,15 +358,15 @@ export default function PaqueteDetalle() {
                 <div className="space-y-4">
                   {paquete.recursos_vendedores && paquete.recursos_vendedores.length > 0 ? (
                     paquete.recursos_vendedores.map((recurso: any, i: number) => (
-                      <div key={i} className="flex items-center justify-between p-4 bg-[var(--muted)] rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                      <div key={i} className="flex flex-wrap items-center justify-between p-4 bg-[var(--muted)] rounded-xl gap-2">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center shrink-0">
                             {recurso.tipo === 'imagen' ? <ImageIcon className="w-5 h-5 text-blue-400" /> :
                              recurso.tipo === 'video' ? <FileText className="w-5 h-5 text-purple-400" /> :
                              <FileText className="w-5 h-5 text-green-400" />}
                           </div>
-                          <div>
-                            <p className="font-medium text-[var(--foreground)]">{recurso.nombre}</p>
+                          <div className="min-w-0">
+                            <p className="font-medium text-[var(--foreground)] break-words">{recurso.nombre}</p>
                             <p className="text-xs text-[var(--muted-foreground)] uppercase">{recurso.tipo}</p>
                           </div>
                         </div>
@@ -423,7 +423,7 @@ export default function PaqueteDetalle() {
               <h3 className="text-lg font-bold text-[var(--foreground)]">Cupos Disponibles</h3>
             </div>
             <div className="text-center">
-              <p className="text-4xl font-black text-[var(--foreground)] mb-2">{paquete.cupos_disponibles}</p>
+              <p className="text-3xl md:text-4xl font-black text-[var(--foreground)] mb-2">{paquete.cupos_disponibles}</p>
               <p className="text-[var(--muted-foreground)] text-sm">de {paquete.cupos_totales} totales</p>
             </div>
           </div>

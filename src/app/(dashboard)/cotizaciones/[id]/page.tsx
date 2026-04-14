@@ -495,7 +495,7 @@ export default function CotizacionDetalle() {
   return (
     <div className="space-y-6 animate-in fade-in duration-700 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <Link href="/cotizaciones" className="p-2 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all">
           <ArrowLeft className="w-5 h-5 text-[var(--muted-foreground)]" />
         </Link>
@@ -791,7 +791,7 @@ export default function CotizacionDetalle() {
               <div className="space-y-3">
                 {(paquete?.vuelos || datosPaqueteDesdeNotas?.vuelos || []).map((vuelo: any, idx: number) => (
                   <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border border-[var(--border)]">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
                       <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold uppercase">
                         {vuelo.tipo === 'ida' ? 'Vuelo de Ida' : 'Vuelo de Vuelta'}
                       </span>
@@ -892,7 +892,7 @@ export default function CotizacionDetalle() {
                         {vuelo.aerolinea_codigo || vuelo.aerolinea?.substring(0, 2)?.toUpperCase() || 'AV'} {vuelo.numero_vuelo}
                       </span>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                       <div>
                         <p className="text-[var(--muted-foreground)] text-xs">Salida</p>
                         <p className="text-[var(--foreground)]">{vuelo.hora_salida}</p>
@@ -940,7 +940,7 @@ export default function CotizacionDetalle() {
                         </a>
                       )}
                     </div>
-                    <div className="grid grid-cols-3 gap-4 text-sm mt-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm mt-3">
                       <div>
                         <p className="text-[var(--muted-foreground)] text-xs">Check-in</p>
                         <p className="text-[var(--foreground)]">{hotel.fecha_checkin || 'N/A'}</p>
@@ -1314,7 +1314,7 @@ export default function CotizacionDetalle() {
                   className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Email</label>
                   <input
@@ -1334,7 +1334,7 @@ export default function CotizacionDetalle() {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Pasajeros</label>
                   <input
@@ -1447,7 +1447,7 @@ export default function CotizacionDetalle() {
                     Detalles del Pago Recibido
                   </h4>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Monto Recibido *</label>
                       <input

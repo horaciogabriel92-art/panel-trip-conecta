@@ -363,15 +363,15 @@ export default function AdminNuevaCotizacion() {
               : 'bg-[var(--muted)] border-[var(--border)] hover:border-white/30'
           }`}
         >
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
               !vendedorSeleccionado ? 'bg-blue-500' : 'bg-[var(--muted)]'
             }`}>
               <User className="w-6 h-6" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="font-bold text-[var(--foreground)]">Yo (Administrador)</p>
-              <p className="text-sm text-[var(--muted-foreground)]">{user?.email}</p>
+              <p className="text-sm text-[var(--muted-foreground)] break-all">{user?.email}</p>
             </div>
             {!vendedorSeleccionado && (
               <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
@@ -399,7 +399,7 @@ export default function AdminNuevaCotizacion() {
                     : 'bg-[var(--muted)] border-[var(--border)] hover:border-white/30'
                 }`}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                     vendedorSeleccionado === v.id ? 'bg-blue-500' : 'bg-[var(--muted)]'
                   }`}>
@@ -407,9 +407,9 @@ export default function AdminNuevaCotizacion() {
                       {v.nombre[0]}{v.apellido[0]}
                     </span>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-[var(--foreground)]">{v.nombre} {v.apellido}</p>
-                    <p className="text-sm text-[var(--muted-foreground)]">{v.email}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-[var(--foreground)] break-words">{v.nombre} {v.apellido}</p>
+                    <p className="text-sm text-[var(--muted-foreground)] break-all">{v.email}</p>
                   </div>
                   {vendedorSeleccionado === v.id && (
                     <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
@@ -1006,7 +1006,7 @@ RP/DZOUY2100/
           <h4 className="text-sm font-bold text-[var(--foreground)]">Desglose de Servicios</h4>
           
           {/* Vuelos */}
-          <div className="flex items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
+          <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
             <Plane className="w-5 h-5 text-blue-400" />
             <div className="flex-1">
               <label className="block text-xs text-[var(--muted-foreground)]">Vuelos</label>
@@ -1022,7 +1022,7 @@ RP/DZOUY2100/
           </div>
 
           {/* Hospedajes */}
-          <div className="flex items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
+          <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
             <Hotel className="w-5 h-5 text-purple-400" />
             <div className="flex-1">
               <label className="block text-xs text-[var(--muted-foreground)]">Hospedajes</label>
@@ -1038,7 +1038,7 @@ RP/DZOUY2100/
           </div>
 
           {/* Extras */}
-          <div className="flex items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
+          <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
             <Plus className="w-5 h-5 text-orange-400" />
             <div className="flex-1">
               <label className="block text-xs text-[var(--muted-foreground)]">Traslados, Excursiones, Extras</label>
@@ -1063,7 +1063,7 @@ RP/DZOUY2100/
         </div>
 
         {/* Impuestos */}
-        <div className="flex items-center gap-4 p-3 border-t border-[var(--border)]">
+        <div className="flex flex-wrap items-center gap-4 p-3 border-t border-[var(--border)]">
           <span className="text-[var(--muted-foreground)] flex-1">Impuestos</span>
           <input
             type="number"
@@ -1128,7 +1128,7 @@ RP/DZOUY2100/
     <div className="min-h-screen pb-20">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-[var(--foreground)] mb-2">Nueva Cotización (Admin)</h1>
+        <h1 className="text-2xl md:text-3xl font-black text-[var(--foreground)] mb-2">Nueva Cotización (Admin)</h1>
         <p className="text-[var(--muted-foreground)]">Crea una cotización y asígnala a un vendedor</p>
       </div>
 

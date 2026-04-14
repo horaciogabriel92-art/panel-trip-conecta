@@ -441,9 +441,9 @@ export default function PaquetesAdmin() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-[var(--foreground)]">Gestión de Paquetes</h2>
+          <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">Gestión de Paquetes</h2>
           <p className="text-[var(--muted-foreground)]">Crea y administra los paquetes turísticos</p>
         </div>
         <button 
@@ -537,7 +537,7 @@ export default function PaquetesAdmin() {
       {/* Modal Crear/Editar Paquete */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="glass-card w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl p-8">
+          <div className="glass-card w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 md:p-8">
             <h3 className="text-2xl font-black text-[var(--foreground)] mb-6">
               {editingPaquete ? 'Editar Paquete' : 'Nuevo Paquete'}
             </h3>
@@ -637,7 +637,7 @@ export default function PaquetesAdmin() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 md:col-span-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:col-span-2">
                   <div>
                     <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Cupos Totales</label>
                     <input

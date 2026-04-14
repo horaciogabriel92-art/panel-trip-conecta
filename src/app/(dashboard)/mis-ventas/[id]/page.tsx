@@ -181,7 +181,7 @@ export default function VentaDetalle() {
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <Link href="/mis-ventas" className="p-2 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all">
           <ArrowLeft className="w-5 h-5 text-[var(--muted-foreground)]" />
         </Link>
@@ -236,13 +236,13 @@ export default function VentaDetalle() {
               </h3>
               <div className="space-y-3">
                 {venta.comprobantes_pago.map((comp) => (
-                  <div key={comp.id} className="flex items-center justify-between p-4 bg-[var(--muted)] rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                  <div key={comp.id} className="flex flex-wrap items-center justify-between p-4 bg-[var(--muted)] rounded-xl gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
                         <FileText className="w-5 h-5 text-green-400" />
                       </div>
-                      <div>
-                        <p className="font-medium text-[var(--foreground)]">{comp.nombre_archivo}</p>
+                      <div className="min-w-0">
+                        <p className="font-medium text-[var(--foreground)] break-words">{comp.nombre_archivo}</p>
                         <p className="text-xs text-[var(--muted-foreground)]">
                           {new Date(comp.fecha_subida).toLocaleDateString('es-AR')}
                         </p>
@@ -282,14 +282,14 @@ export default function VentaDetalle() {
                   const Icon = tipo.icon;
                   
                   return (
-                    <div key={doc.id} className="flex items-center justify-between p-4 bg-[var(--muted)] rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg bg-[var(--muted)] flex items-center justify-center`}>
+                    <div key={doc.id} className="flex flex-wrap items-center justify-between p-4 bg-[var(--muted)] rounded-xl gap-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-10 h-10 rounded-lg bg-[var(--muted)] flex items-center justify-center shrink-0`}>
                           <Icon className={`w-5 h-5 ${tipo.color}`} />
                         </div>
-                        <div>
-                          <p className="font-medium text-[var(--foreground)]">{tipo.label}</p>
-                          <p className="text-xs text-[var(--muted-foreground)]">{doc.nombre_archivo}</p>
+                        <div className="min-w-0">
+                          <p className="font-medium text-[var(--foreground)] break-words">{tipo.label}</p>
+                          <p className="text-xs text-[var(--muted-foreground)] break-words">{doc.nombre_archivo}</p>
                           {doc.descripcion && (
                             <p className="text-xs text-[var(--muted-foreground)] mt-1">{doc.descripcion}</p>
                           )}

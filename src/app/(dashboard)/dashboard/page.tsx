@@ -110,7 +110,7 @@ export default function VendedorDashboard() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-[var(--foreground)]">Hola, {nombre} 👋</h2>
+          <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">Hola, {nombre} 👋</h2>
           <p className="text-[var(--muted-foreground)]">
             {cotizacionesCount > 0 
               ? `¡Tienes ${cotizacionesCount} cotizaciones pendientes!` 
@@ -147,7 +147,7 @@ export default function VendedorDashboard() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="glass-card p-8 rounded-3xl">
+        <div className="glass-card p-6 md:p-8 rounded-3xl">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-xl font-bold">Resumen de Comisiones</h3>
             <Link href="/mis-ventas" className="text-blue-400 text-sm font-bold hover:underline flex items-center gap-1">
@@ -163,10 +163,10 @@ export default function VendedorDashboard() {
           ) : (
             <div className="space-y-6">
               {comisionesMensual.map((item, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-[var(--border)] last:border-0">
-                  <div className="flex items-center gap-3">
+                <div key={i} className="flex flex-wrap items-center justify-between py-2 border-b border-[var(--border)] last:border-0 gap-2">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center",
+                      "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
                       item.estado === 'pagado' ? "bg-green-500/10" : "bg-orange-500/10"
                     )}>
                       <Calendar className={cn(
@@ -174,7 +174,7 @@ export default function VendedorDashboard() {
                         item.estado === 'pagado' ? "text-green-400" : "text-orange-400"
                       )} />
                     </div>
-                    <span className="text-[var(--foreground)] font-medium">{item.mes}</span>
+                    <span className="text-[var(--foreground)] font-medium truncate">{item.mes}</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="font-bold">${formatCurrency(item.monto)}</span>
@@ -193,7 +193,7 @@ export default function VendedorDashboard() {
           )}
         </div>
 
-        <div className="glass-card p-8 rounded-3xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border-blue-500/20">
+        <div className="glass-card p-6 md:p-8 rounded-3xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border-blue-500/20">
            <h3 className="text-xl font-bold mb-4">Acceso Rápido</h3>
            <div className="space-y-3">
              <Link 

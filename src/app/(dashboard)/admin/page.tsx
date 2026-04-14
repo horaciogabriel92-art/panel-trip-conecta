@@ -102,7 +102,7 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div>
-        <h2 className="text-3xl font-black text-[var(--foreground)]">Panel de Administración</h2>
+        <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">Panel de Administración</h2>
         <p className="text-[var(--muted-foreground)]">Resumen general del sistema Trip Conecta</p>
       </div>
 
@@ -127,14 +127,14 @@ export default function AdminDashboard() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 glass-card p-8 rounded-3xl">
+        <div className="lg:col-span-2 glass-card p-6 md:p-8 rounded-3xl">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-xl font-bold flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-blue-400" />
               Acciones Rápidas
             </h3>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link href="/admin/vendedores" className="p-4 rounded-xl bg-[var(--muted)] hover:bg-[var(--border)] transition-all text-center">
               <Users className="w-8 h-8 mx-auto mb-2 text-purple-400" />
               <p className="font-bold">Vendedores</p>
@@ -154,7 +154,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="glass-card p-8 rounded-3xl">
+        <div className="glass-card p-6 md:p-8 rounded-3xl">
           <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-purple-400" />
             Ventas Recientes
@@ -168,12 +168,12 @@ export default function AdminDashboard() {
           ) : (
             <div className="space-y-6">
               {ventasRecientes.map((venta: any, i: number) => (
-                <div key={venta.id || i} className="flex items-center gap-4">
+                <div key={venta.id || i} className="flex flex-wrap items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center font-bold text-xs">
                     #{i+1}
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold">{venta.paquete_nombre || 'Paquete'}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{venta.paquete_nombre || 'Paquete'}</p>
                     <p className="text-xs text-[var(--muted-foreground)]">
                       {venta.fecha_creacion ? new Date(venta.fecha_creacion).toLocaleDateString() : 'Fecha no disponible'}
                     </p>

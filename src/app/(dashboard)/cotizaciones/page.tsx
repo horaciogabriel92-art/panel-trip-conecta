@@ -181,9 +181,9 @@ export default function CotizacionesCRM() {
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
         <div>
-          <h2 className="text-3xl font-black text-[var(--foreground)]">Mis Cotizaciones</h2>
+          <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">Mis Cotizaciones</h2>
           <p className="text-[var(--muted-foreground)]">Pipeline de ventas: Nueva → Enviada → Vendida/Perdida</p>
         </div>
         <button
@@ -213,9 +213,9 @@ export default function CotizacionesCRM() {
             >
               {/* Column Header */}
               <div className="p-3 border-b border-[var(--border)]">
-                <div className="flex items-center gap-2 mb-1">
-                  <Icon className="w-4 h-4 text-[var(--foreground)]" />
-                  <h3 className="font-bold text-[var(--foreground)] text-sm">{columna.label}</h3>
+                <div className="flex items-center gap-2 mb-1 min-w-0">
+                  <Icon className="w-4 h-4 text-[var(--foreground)] shrink-0" />
+                  <h3 className="font-bold text-[var(--foreground)] text-sm truncate">{columna.label}</h3>
                   <span className="ml-auto px-2 py-0.5 bg-[var(--muted)] rounded text-xs font-bold text-[var(--foreground)]">
                     {cotizacionesColumna.length}
                   </span>
@@ -245,7 +245,7 @@ export default function CotizacionesCRM() {
 
                       {/* Info del cliente */}
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                           <h4 className="font-bold text-[var(--foreground)] text-sm truncate">{c.cliente_nombre}</h4>
                           {c.tipo_cotizacion === 'manual' && (
                             <span className="px-1.5 py-0.5 bg-teal-500/20 text-teal-400 text-[9px] font-bold rounded">

@@ -28,11 +28,11 @@ export default function PaquetesCatalogo() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-[var(--foreground)]">Catálogo de Destinos</h2>
+          <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">Catálogo de Destinos</h2>
           <p className="text-[var(--muted-foreground)]">Encuentra el viaje perfecto para tus clientes</p>
         </div>
         <div className="flex gap-3">
-           <div className="flex items-center gap-3 bg-[var(--muted)] border border-[var(--border)] rounded-2xl px-4 py-2 w-64">
+           <div className="flex items-center gap-3 bg-[var(--muted)] border border-[var(--border)] rounded-2xl px-4 py-2 w-full md:w-64">
              <Search className="w-4 h-4 text-[var(--muted-foreground)]" />
              <input type="text" placeholder="Buscar destino..." className="bg-transparent border-none outline-none text-sm w-full text-[var(--foreground)]" />
            </div>
@@ -69,7 +69,7 @@ export default function PaquetesCatalogo() {
               </div>
 
               <div className="p-6 flex-1 flex flex-col">
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   <div className="bg-[var(--muted)] p-3 rounded-2xl">
                     <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-black mb-1">Desde</p>
                     <p className="text-xl font-black text-[var(--foreground)]">${p.precio_doble}</p>

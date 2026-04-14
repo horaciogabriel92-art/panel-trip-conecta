@@ -290,7 +290,7 @@ export default function ClienteDetallePage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-700 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <Link
           href="/admin/clientes"
           className="p-2 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)]/80 transition-all"
@@ -327,7 +327,7 @@ export default function ClienteDetallePage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-[var(--border)]">
+      <div className="flex gap-2 border-b border-[var(--border)] overflow-x-auto">
         {[
           { id: "info", label: "Información", icon: User },
           { id: "cotizaciones", label: `Cotizaciones (${cotizaciones.length})`, icon: CreditCard },
@@ -359,21 +359,21 @@ export default function ClienteDetallePage() {
               Información Personal
             </h3>
             <div className="space-y-4">
-              <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl">
-                <User className="w-5 h-5 text-[var(--muted-foreground)]" />
-                <div>
+              <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl min-w-0">
+                <User className="w-5 h-5 text-[var(--muted-foreground)] shrink-0" />
+                <div className="min-w-0">
                   <p className="text-xs text-[var(--muted-foreground)]">Nombre completo</p>
-                  <p className="font-medium text-[var(--foreground)]">
+                  <p className="font-medium text-[var(--foreground)] break-words">
                     {cliente.nombre} {cliente.apellido}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl">
-                <FileText className="w-5 h-5 text-[var(--muted-foreground)]" />
-                <div>
+              <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl min-w-0">
+                <FileText className="w-5 h-5 text-[var(--muted-foreground)] shrink-0" />
+                <div className="min-w-0">
                   <p className="text-xs text-[var(--muted-foreground)]">Documento</p>
-                  <p className="font-medium text-[var(--foreground)]">
+                  <p className="font-medium text-[var(--foreground)] break-words">
                     {cliente.tipo_documento} {cliente.documento}
                   </p>
                 </div>
@@ -411,13 +411,13 @@ export default function ClienteDetallePage() {
             </h3>
             <div className="space-y-4">
               {cliente.email && (
-                <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl">
-                  <Mail className="w-5 h-5 text-[var(--muted-foreground)]" />
-                  <div>
+                <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl min-w-0">
+                  <Mail className="w-5 h-5 text-[var(--muted-foreground)] shrink-0" />
+                  <div className="min-w-0">
                     <p className="text-xs text-[var(--muted-foreground)]">Email</p>
                     <a
                       href={`mailto:${cliente.email}`}
-                      className="font-medium text-[var(--foreground)] hover:text-blue-400"
+                      className="font-medium text-[var(--foreground)] hover:text-blue-400 break-all"
                     >
                       {cliente.email}
                     </a>
@@ -426,13 +426,13 @@ export default function ClienteDetallePage() {
               )}
               
               {cliente.email_alt && (
-                <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl">
-                  <Mail className="w-5 h-5 text-[var(--muted-foreground)]" />
-                  <div>
+                <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl min-w-0">
+                  <Mail className="w-5 h-5 text-[var(--muted-foreground)] shrink-0" />
+                  <div className="min-w-0">
                     <p className="text-xs text-[var(--muted-foreground)]">Email alternativo</p>
                     <a
                       href={`mailto:${cliente.email_alt}`}
-                      className="font-medium text-[var(--foreground)] hover:text-blue-400"
+                      className="font-medium text-[var(--foreground)] hover:text-blue-400 break-all"
                     >
                       {cliente.email_alt}
                     </a>
@@ -441,13 +441,13 @@ export default function ClienteDetallePage() {
               )}
 
               {cliente.telefono && (
-                <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl">
-                  <Phone className="w-5 h-5 text-[var(--muted-foreground)]" />
-                  <div>
+                <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl min-w-0">
+                  <Phone className="w-5 h-5 text-[var(--muted-foreground)] shrink-0" />
+                  <div className="min-w-0">
                     <p className="text-xs text-[var(--muted-foreground)]">Teléfono</p>
                     <a
                       href={`tel:${cliente.telefono}`}
-                      className="font-medium text-[var(--foreground)] hover:text-blue-400"
+                      className="font-medium text-[var(--foreground)] hover:text-blue-400 break-words"
                     >
                       {cliente.telefono}
                     </a>
@@ -488,11 +488,11 @@ export default function ClienteDetallePage() {
               )}
 
               {cliente.direccion && (
-                <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl">
-                  <MapPin className="w-5 h-5 text-[var(--muted-foreground)]" />
-                  <div>
+                <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl min-w-0">
+                  <MapPin className="w-5 h-5 text-[var(--muted-foreground)] shrink-0" />
+                  <div className="min-w-0">
                     <p className="text-xs text-[var(--muted-foreground)]">Dirección</p>
-                    <p className="font-medium text-[var(--foreground)]">{cliente.direccion}</p>
+                    <p className="font-medium text-[var(--foreground)] break-words">{cliente.direccion}</p>
                   </div>
                 </div>
               )}
@@ -592,14 +592,14 @@ export default function ClienteDetallePage() {
                 <Link
                   key={cot.id}
                   href={`/admin/cotizaciones/${cot.id}`}
-                  className="flex items-center justify-between p-4 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)]/80 transition-colors"
+                  className="flex flex-wrap items-center justify-between p-4 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)]/80 transition-colors gap-2"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center shrink-0">
                       <CreditCard className="w-5 h-5 text-blue-400" />
                     </div>
-                    <div>
-                      <p className="font-medium text-[var(--foreground)]">
+                    <div className="min-w-0">
+                      <p className="font-medium text-[var(--foreground)] break-words">
                         {cot.nombre_cotizacion || cot.destino_principal || cot.codigo}
                       </p>
                       <p className="text-sm text-[var(--muted-foreground)]">
@@ -694,7 +694,7 @@ export default function ClienteDetallePage() {
               {notas.map((nota) => (
                 <div key={nota.id} className="p-4 bg-[var(--muted)] rounded-xl">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded-full text-xs uppercase">
                           {nota.tipo}
@@ -713,7 +713,7 @@ export default function ClienteDetallePage() {
                             })()}
                         </span>
                       </div>
-                      <p className="text-[var(--foreground)] whitespace-pre-wrap">{nota.contenido}</p>
+                      <p className="text-[var(--foreground)] whitespace-pre-wrap break-words">{nota.contenido}</p>
                       {nota.vendedor && (
                         <p className="text-xs text-[var(--muted-foreground)] mt-2">
                           Por: {nota.vendedor.nombre} {nota.vendedor.apellido}
@@ -748,11 +748,11 @@ export default function ClienteDetallePage() {
             <div className="space-y-4">
               {historial.map((item) => (
                 <div key={item.id} className="flex items-start gap-4 p-4 bg-[var(--muted)] rounded-xl">
-                  <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center shrink-0">
                     {getTipoIcon(item.tipo)}
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-[var(--foreground)]">{item.descripcion}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-[var(--foreground)] break-words">{item.descripcion}</p>
                     <p className="text-sm text-[var(--muted-foreground)]">
                       {(() => {
                         const d = item.fecha ? new Date(item.fecha) : null;

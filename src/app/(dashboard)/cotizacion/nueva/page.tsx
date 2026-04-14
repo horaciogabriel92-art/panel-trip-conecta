@@ -804,7 +804,7 @@ RP/DZOUY2100/
           <h4 className="text-sm font-bold text-[var(--foreground)]">Desglose de Servicios</h4>
           
           {/* Vuelos */}
-          <div className="flex items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
+          <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
             <Plane className="w-5 h-5 text-blue-400" />
             <div className="flex-1">
               <label className="block text-xs text-[var(--muted-foreground)]">Vuelos</label>
@@ -820,7 +820,7 @@ RP/DZOUY2100/
           </div>
 
           {/* Hospedajes */}
-          <div className="flex items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
+          <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
             <Hotel className="w-5 h-5 text-purple-400" />
             <div className="flex-1">
               <label className="block text-xs text-[var(--muted-foreground)]">Hospedajes</label>
@@ -836,7 +836,7 @@ RP/DZOUY2100/
           </div>
 
           {/* Extras */}
-          <div className="flex items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
+          <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
             <Plus className="w-5 h-5 text-orange-400" />
             <div className="flex-1">
               <label className="block text-xs text-[var(--muted-foreground)]">Traslados, Excursiones, Extras</label>
@@ -861,7 +861,7 @@ RP/DZOUY2100/
         </div>
 
         {/* Impuestos */}
-        <div className="flex items-center gap-4 p-3 border-t border-[var(--border)]">
+        <div className="flex flex-wrap items-center gap-4 p-3 border-t border-[var(--border)]">
           <span className="text-[var(--muted-foreground)] flex-1">Impuestos</span>
           <input
             type="number"
@@ -912,7 +912,7 @@ RP/DZOUY2100/
     <div className="min-h-screen pb-20">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-[var(--foreground)] mb-2">Nueva Cotización Manual</h1>
+        <h1 className="text-2xl md:text-3xl font-black text-[var(--foreground)] mb-2">Nueva Cotización Manual</h1>
         <p className="text-[var(--muted-foreground)]">Crea una cotización personalizada paso a paso</p>
       </div>
 
