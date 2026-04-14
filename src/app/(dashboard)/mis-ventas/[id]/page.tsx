@@ -136,10 +136,20 @@ export default function VentaDetalle() {
     }
   };
 
-  const handleDownloadComprobante = async (comprobanteId: string, fileName: string) => {
+  const handleDownloadComprobante = async (comprobanteId: string, fileName: string, rutaArchivo?: string) => {
     setDownloadingId(`comp-${comprobanteId}`);
     try {
-      const response = await api.get(`/upload/comprobante-pago/${comprobanteId}/download`, {
+      let downloadUrl: string;
+      
+      // Fallback para comprobantes legacy (sin ID real de BD)
+      if (comprobanteId.startsWith('comp_') && rutaArchivo) {
+        const filenameFromPath = rutaArchivo.split('/').pop() || fileName;
+        downloadUrl = `/upload/comprobante-pago/download-by-filename/${filenameFromPath}`;
+      } else {
+        downloadUrl = `/upload/comprobante-pago/${comprobanteId}/download`;
+      }
+      
+      const response = await api.get(downloadUrl, {
         responseType: 'blob',
       });
       
@@ -252,7 +262,7 @@ export default function VentaDetalle() {
                       </div>
                     </div>
                     <button
-                      onClick={() => handleDownloadComprobante(comp.id, comp.nombre_archivo)}
+                      onClick={() => handleDownloadComprobante(comp.id, comp.nombre_archivo, (comp as any).ruta_archivo || comp.url)}
                       disabled={downloadingId === `comp-${comp.id}`}
                       className="p-3 bg-green-600 hover:bg-green-700 disabled:bg-green-600/50 rounded-xl transition-all"
                     >
