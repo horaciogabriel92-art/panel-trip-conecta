@@ -20,6 +20,7 @@ import {
 import { parseAmadeusPNR, isValidAmadeusText, ParsedFlight } from '@/lib/amadeus-parser';
 import { getAirportDisplay, getAirlineDisplay } from '@/lib/airports';
 import api from '@/lib/api';
+import { useToast } from '@/context/ToastContext';
 import BuscarCliente from '@/components/cotizaciones/BuscarCliente';
 import CrearClienteModal from '@/components/cotizaciones/CrearClienteModal';
 import { Cliente } from '@/lib/api-clientes';
@@ -53,6 +54,7 @@ interface Hospedaje {
 // ============================================
 export default function NuevaCotizacionManual() {
   const router = useRouter();
+  const { success: toastSuccess, error: toastError } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -196,7 +198,7 @@ export default function NuevaCotizacionManual() {
 
   const handleSubmit = async () => {
     if (!clienteSeleccionado) {
-      alert('Debes seleccionar un cliente');
+      toastError('Debes seleccionar un cliente', 'Cliente requerido');
       return;
     }
 
@@ -248,13 +250,13 @@ export default function NuevaCotizacionManual() {
       const response = await api.post('/cotizaciones/manual', cotizacionData);
       
       console.log('Respuesta:', response.data);
-      alert('Cotización creada exitosamente');
+      toastSuccess('Cotización creada exitosamente', '¡Listo!');
       router.push('/cotizaciones');
     } catch (error: any) {
       console.error('Error completo:', error);
       console.error('Response:', error.response);
       const errorMsg = error.response?.data?.details || error.response?.data?.error || error.message || 'Error desconocido';
-      alert('Error al crear cotización: ' + errorMsg);
+      toastError(errorMsg, 'Error al crear cotización');
     } finally {
       setIsSubmitting(false);
     }

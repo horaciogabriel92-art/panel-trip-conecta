@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import { useToast } from '@/context/ToastContext';
 import { formatCurrency } from '@/lib/utils';
 import { 
   ArrowLeft, 
@@ -65,6 +66,7 @@ interface Pasajero {
 export default function CotizarPaquete() {
   const params = useParams();
   const router = useRouter();
+  const { success: toastSuccess, error: toastError } = useToast();
   const [paquete, setPaquete] = useState<Paquete | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -158,7 +160,7 @@ export default function CotizarPaquete() {
     e.preventDefault();
     
     if (!clienteSeleccionado) {
-      alert('Debes seleccionar un cliente');
+      toastError('Debes seleccionar un cliente', 'Cliente requerido');
       return;
     }
     
@@ -195,11 +197,11 @@ export default function CotizarPaquete() {
 
       const res = await api.post('/cotizaciones/manual', cotizacionData);
       
-      alert('Cotización creada exitosamente');
+      toastSuccess('Cotización creada exitosamente', '¡Listo!');
       router.push('/cotizaciones');
     } catch (err: any) {
       console.error('Error creando cotización:', err);
-      alert(err.response?.data?.error || 'Error al crear cotización');
+      toastError(err.response?.data?.error || 'Error al crear cotización', 'Error');
     } finally {
       setIsSubmitting(false);
     }

@@ -21,6 +21,7 @@ import {
 import { parseAmadeusPNR } from '@/lib/amadeus-parser';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
 import BuscarCliente from '@/components/cotizaciones/BuscarCliente';
 import CrearClienteModal from '@/components/cotizaciones/CrearClienteModal';
 import { Cliente } from '@/lib/api-clientes';
@@ -62,6 +63,7 @@ interface Hospedaje {
 export default function AdminNuevaCotizacion() {
   const router = useRouter();
   const { user } = useAuth();
+  const { success: toastSuccess, error: toastError } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [vendedores, setVendedores] = useState<Vendedor[]>([]);
@@ -254,14 +256,14 @@ export default function AdminNuevaCotizacion() {
     const vendedorIdFinal = vendedorSeleccionado || user?.id;
     
     if (!vendedorIdFinal) {
-      alert('No se pudo determinar el vendedor');
+      toastError('No se pudo determinar el vendedor', 'Falta información');
       return;
     }
 
     // Validar que haya un cliente seleccionado o datos manuales del titular
     const tieneClienteManual = cliente.nombre.trim() && cliente.apellido.trim();
     if (!clienteSeleccionado && !tieneClienteManual) {
-      alert('Debes seleccionar un cliente existente o completar los datos del titular');
+      toastError('Debes seleccionar un cliente existente o completar los datos del titular', 'Cliente requerido');
       return;
     }
 
@@ -325,13 +327,13 @@ export default function AdminNuevaCotizacion() {
       const response = await api.post('/cotizaciones/manual', cotizacionData);
       
       console.log('Respuesta:', response.data);
-      alert('Cotización creada exitosamente');
+      toastSuccess('Cotización creada exitosamente', '¡Listo!');
       router.push('/admin/cotizaciones');
     } catch (error: any) {
       console.error('Error completo:', error);
       console.error('Response:', error.response);
       const errorMsg = error.response?.data?.details || error.response?.data?.error || error.message || 'Error desconocido';
-      alert('Error al crear cotización: ' + errorMsg);
+      toastError(errorMsg, 'Error al crear cotización');
     } finally {
       setIsSubmitting(false);
     }

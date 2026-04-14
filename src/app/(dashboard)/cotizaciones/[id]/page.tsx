@@ -7,6 +7,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 import api from '@/lib/api';
+import { useToast } from '@/context/ToastContext';
 import { PDFDownloadButton } from '@/components/pdf/PDFDownloadButton';
 import { 
   ArrowLeft, 
@@ -174,6 +175,7 @@ export default function CotizacionDetalle() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const { success: toastSuccess, error: toastError } = useToast();
   
   // Detectar si venimos del kanban con accion=cerrar
   const accion = searchParams.get('accion');
@@ -342,7 +344,7 @@ export default function CotizacionDetalle() {
       
       // 3. Validar fecha_pago_resto si hay restante
       if (montoRestante > 0 && !ventaData.fecha_pago_resto) {
-        alert('Debes indicar la fecha de pago del restante');
+        toastError('Debes indicar la fecha de pago del restante', 'Fecha requerida');
         setIsConverting(false);
         return;
       }
@@ -358,7 +360,7 @@ export default function CotizacionDetalle() {
         datos_pasajeros: ventaData.datos_pasajeros
       });
       
-      alert('✅ Cotización convertida a venta exitosamente');
+      toastSuccess('Cotización convertida a venta exitosamente', '¡Venta confirmada!');
       setShowVentaModal(false);
       router.push('/mis-ventas');
     } catch (err: any) {
@@ -366,7 +368,7 @@ export default function CotizacionDetalle() {
       const errorMsg = err.response?.data?.error || 'Error al convertir cotización';
       const details = err.response?.data?.details || '';
       const code = err.response?.data?.code || '';
-      alert(`${errorMsg}${details ? '\n\nDetalles: ' + details : ''}${code ? '\nCódigo: ' + code : ''}`);
+      toastError(`${errorMsg}${details ? '\n\nDetalles: ' + details : ''}${code ? '\nCódigo: ' + code : ''}`, 'Error al convertir');
     } finally {
       setIsConverting(false);
       setIsUploadingComprobantes(false);
@@ -386,13 +388,13 @@ export default function CotizacionDetalle() {
       
       // Validar tipo
       if (!file.type.match(/image\/(jpeg|png|webp)|application\/pdf/)) {
-        alert(`El archivo ${file.name} no es válido. Solo se permiten imágenes (JPG, PNG, WebP) o PDFs.`);
+        toastError(`El archivo ${file.name} no es válido. Solo se permiten imágenes (JPG, PNG, WebP) o PDFs.`, 'Archivo inválido');
         continue;
       }
       
       // Validar tamaño (10MB)
       if (file.size > 10 * 1024 * 1024) {
-        alert(`El archivo ${file.name} excede el límite de 10MB.`);
+        toastError(`El archivo ${file.name} excede el límite de 10MB.`, 'Archivo muy grande');
         continue;
       }
       
@@ -419,9 +421,9 @@ export default function CotizacionDetalle() {
       await api.put(`/cotizaciones/${params.id}`, editData);
       setCotizacion({ ...cotizacion!, ...editData });
       setShowEditModal(false);
-      alert('Cotización actualizada');
+      toastSuccess('Cotización actualizada', 'Guardado');
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al actualizar');
+      toastError(err.response?.data?.error || 'Error al actualizar', 'Error');
     }
   };
   
@@ -443,7 +445,7 @@ export default function CotizacionDetalle() {
       window.URL.revokeObjectURL(url);
     } catch (err: any) {
       console.error('Error descargando voucher:', err);
-      alert('Error al descargar voucher');
+      toastError('Error al descargar voucher', 'Descarga fallida');
     }
   };
 

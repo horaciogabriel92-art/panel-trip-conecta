@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from '@/context/AuthContext';
+import { ToastProvider } from '@/context/ToastContext';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import { useRouter } from 'next/navigation';
@@ -32,15 +33,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex min-h-screen bg-[var(--background)]">
-      <div className="gradient-bg" />
-      <Sidebar role={user.rol} />
-      <div className="flex-1 flex flex-col">
-        <Header userName={`${user.nombre} ${user.apellido}`} userRole={user.rol} />
-        <main className="flex-1 p-8 overflow-y-auto">
-          {children}
-        </main>
+    <ToastProvider>
+      <div className="flex min-h-screen bg-[var(--background)]">
+        <div className="gradient-bg" />
+        <Sidebar role={user.rol} />
+        <div className="flex-1 flex flex-col">
+          <Header userName={`${user.nombre} ${user.apellido}`} userRole={user.rol} />
+          <main className="flex-1 p-8 overflow-y-auto">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </ToastProvider>
   );
 }
