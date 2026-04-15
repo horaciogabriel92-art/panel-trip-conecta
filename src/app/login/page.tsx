@@ -165,7 +165,7 @@ export default function LoginPage() {
             {/* Recuperar contraseña */}
             <div className="flex justify-end">
               <a 
-                href="#" 
+                href="/login/forgot-password" 
                 className="text-sm text-[var(--primary)] hover:text-[var(--accent)] transition-colors"
               >
                 ¿Olvidaste tu contraseña?
