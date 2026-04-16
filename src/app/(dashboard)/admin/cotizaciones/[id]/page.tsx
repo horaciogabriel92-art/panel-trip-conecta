@@ -19,7 +19,6 @@ import {
   XCircle,
   AlertCircle,
   Edit,
-  Printer,
   ArrowRight,
   UserCircle,
   CreditCard,
@@ -456,14 +455,8 @@ export default function AdminCotizacionDetalle() {
             {cotizacion.fecha_envio && ` • Enviada el ${new Date(cotizacion.fecha_envio).toLocaleDateString('es-AR')}`}
           </p>
         </div>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => window.print()}
-            className="p-3 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all"
-          >
-            <Printer className="w-5 h-5 text-[var(--muted-foreground)]" />
-          </button>
-        </div>
+        <div className="flex gap-2" />
+
       </div>
 
       {/* BANNER VENTA - Solo si está vendida */}

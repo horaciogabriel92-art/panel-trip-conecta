@@ -28,7 +28,6 @@ import {
   ArrowRight,
   Send,
   Edit,
-  Printer,
   CreditCard,
   Plane,
   Download
@@ -637,13 +636,6 @@ export default function CotizacionDetalle() {
               paquete_data: cotizacion.paquete_data
             }}
           />
-          <button 
-            onClick={() => window.print()}
-            className="p-3 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all"
-            title="Imprimir"
-          >
-            <Printer className="w-5 h-5 text-[var(--muted-foreground)]" />
-          </button>
           {puedeEditar && (
             <button 
               onClick={() => setShowEditModal(true)}
