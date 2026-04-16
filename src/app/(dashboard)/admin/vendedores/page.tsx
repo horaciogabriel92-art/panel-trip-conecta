@@ -20,9 +20,11 @@ interface Vendedor {
 }
 
 export default function VendedoresAdmin() {
-  const { error: toastError } = useToast();
+  const { error: toastError, success: toastSuccess } = useToast();
   const [vendedores, setVendedores] = useState<Vendedor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Modal crear
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -33,6 +35,19 @@ export default function VendedoresAdmin() {
     comision_porcentaje: 12
   });
 
+  // Modal editar
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    email: '',
+    password: '',
+    nombre: '',
+    apellido: '',
+    telefono: '',
+    comision_porcentaje: 12,
+    activo: true
+  });
+
   useEffect(() => {
     fetchVendedores();
   }, []);
@@ -40,7 +55,6 @@ export default function VendedoresAdmin() {
   const fetchVendedores = async () => {
     try {
       const res = await api.get('/auth/users');
-      // Filtrar solo vendedores
       const soloVendedores = res.data.filter((u: Vendedor) => u.rol === 'vendedor');
       setVendedores(soloVendedores);
     } catch (err) {
@@ -67,8 +81,57 @@ export default function VendedoresAdmin() {
         comision_porcentaje: 12
       });
       fetchVendedores();
+      toastSuccess('Vendedor creado exitosamente');
     } catch (err: any) {
       toastError(err.response?.data?.error || 'Error al crear vendedor', 'Error');
+    }
+  };
+
+  const openEditModal = (v: Vendedor) => {
+    setEditingId(v.id);
+    setEditFormData({
+      email: v.email,
+      password: '',
+      nombre: v.nombre,
+      apellido: v.apellido,
+      telefono: v.telefono || '',
+      comision_porcentaje: v.comision_porcentaje,
+      activo: v.activo
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingId) return;
+    try {
+      const payload: any = {
+        nombre: editFormData.nombre,
+        apellido: editFormData.apellido,
+        telefono: editFormData.telefono,
+        email: editFormData.email,
+        comision_porcentaje: editFormData.comision_porcentaje,
+        activo: editFormData.activo
+      };
+      if (editFormData.password && editFormData.password.length >= 6) {
+        payload.password = editFormData.password;
+      }
+      await api.put(`/auth/users/${editingId}`, payload);
+      setShowEditModal(false);
+      setEditingId(null);
+      setEditFormData({
+        email: '',
+        password: '',
+        nombre: '',
+        apellido: '',
+        telefono: '',
+        comision_porcentaje: 12,
+        activo: true
+      });
+      fetchVendedores();
+      toastSuccess('Vendedor actualizado exitosamente');
+    } catch (err: any) {
+      toastError(err.response?.data?.error || 'Error al actualizar vendedor', 'Error');
     }
   };
 
@@ -168,7 +231,11 @@ export default function VendedoresAdmin() {
                       >
                         <Eye className="w-4 h-4" />
                       </Link>
-                      <button className="p-2 hover:bg-[var(--muted)] rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all">
+                      <button
+                        onClick={() => openEditModal(v)}
+                        className="p-2 hover:bg-[var(--muted)] rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all"
+                        title="Editar"
+                      >
                         <Edit className="w-4 h-4" />
                       </button>
                     </div>
@@ -269,6 +336,108 @@ export default function VendedoresAdmin() {
                   className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] font-bold transition-all"
                 >
                   Crear Vendedor
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Vendedor */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="glass-card w-full max-w-lg rounded-3xl p-8">
+            <h3 className="text-2xl font-black text-[var(--foreground)] mb-6">Editar Vendedor</h3>
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Nombre</label>
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.nombre}
+                    onChange={(e) => setEditFormData({...editFormData, nombre: e.target.value})}
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Apellido</label>
+                  <input
+                    type="text"
+                    required
+                    value={editFormData.apellido}
+                    onChange={(e) => setEditFormData({...editFormData, apellido: e.target.value})}
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Email</label>
+                <input
+                  type="email"
+                  required
+                  value={editFormData.email}
+                  onChange={(e) => setEditFormData({...editFormData, email: e.target.value})}
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Contraseña (solo si querés cambiarla)</label>
+                <input
+                  type="password"
+                  minLength={6}
+                  value={editFormData.password}
+                  onChange={(e) => setEditFormData({...editFormData, password: e.target.value})}
+                  placeholder="Dejar vacío para mantener la actual"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Teléfono</label>
+                  <input
+                    type="tel"
+                    value={editFormData.telefono}
+                    onChange={(e) => setEditFormData({...editFormData, telefono: e.target.value})}
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Comisión (%)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={50}
+                    value={editFormData.comision_porcentaje}
+                    onChange={(e) => setEditFormData({...editFormData, comision_porcentaje: Number(e.target.value)})}
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl">
+                <label className="flex items-center gap-2 text-sm text-[var(--foreground)] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editFormData.activo}
+                    onChange={(e) => setEditFormData({...editFormData, activo: e.target.checked})}
+                    className="rounded border-[var(--border)] w-4 h-4"
+                  />
+                  Vendedor activo
+                </label>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] font-bold transition-all"
+                >
+                  Guardar Cambios
                 </button>
               </div>
             </form>
