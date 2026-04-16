@@ -9,6 +9,8 @@ export const runtime = 'nodejs';
 import api from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
 import { PDFDownloadButton } from '@/components/pdf/PDFDownloadButton';
+import HistorialPagos from '@/components/ventas/HistorialPagos';
+import AgregarPagoModal from '@/components/ventas/AgregarPagoModal';
 import { 
   ArrowLeft, 
   FileText, 
@@ -147,6 +149,15 @@ interface Cotizacion {
   monto_restante?: number;
   fecha_pago_resto?: string;
   tipo_pago?: string;
+  pagos?: Array<{
+    id: string;
+    monto: number;
+    medio_pago?: string;
+    fecha_pago: string;
+    observaciones?: string;
+    tipo: 'inicial' | 'adicional';
+    comprobante_url?: string;
+  }>;
   venta?: {
     id: string;
     codigo: string;
@@ -188,6 +199,7 @@ export default function CotizacionDetalle() {
   const [isConverting, setIsConverting] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showVentaModal, setShowVentaModal] = useState(false);
+  const [showPagoModal, setShowPagoModal] = useState(false);
   const [editData, setEditData] = useState<Partial<Cotizacion>>({});
   
   // Datos de conversión a venta
@@ -1234,32 +1246,24 @@ export default function CotizacionDetalle() {
                   </Link>
                 </div>
                 
-                {/* Información de Pago Restante */}
-                {(() => {
-                  const montoRestante = Math.max(0, (cotizacion?.precio_total || 0) - (cotizacion?.monto_pagado || 0));
-                  return montoRestante > 0 ? (
-                    <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
-                      <h4 className="text-sm font-medium text-orange-400 mb-2">💰 Pago Pendiente</h4>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-[var(--foreground)]">Monto restante:</span>
-                        <span className="text-xl font-black text-orange-400">${formatCurrency(montoRestante)}</span>
-                      </div>
-                      {cotizacion?.fecha_pago_resto && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-[var(--foreground)]">Fecha de pago:</span>
-                          <span className="text-lg font-bold text-orange-400">
-                            {new Date(cotizacion.fecha_pago_resto).toLocaleDateString('es-AR')}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-                      <h4 className="text-sm font-medium text-green-400 mb-2">✅ Pago Completo</h4>
-                      <p className="text-[var(--foreground)]">El cliente ha pagado el total del viaje.</p>
-                    </div>
-                  );
-                })()}
+                {/* Historial de pagos */}
+                <HistorialPagos
+                  precioTotal={cotizacion.precio_total}
+                  montoPagado={cotizacion.monto_pagado || 0}
+                  montoRestante={Math.max(0, cotizacion.precio_total - (cotizacion.monto_pagado || 0))}
+                  tipoPago={cotizacion.tipo_pago}
+                  pagos={cotizacion.pagos || []}
+                />
+
+                {/* Botón registrar pago adicional */}
+                {cotizacion.venta?.id && user?.userId === cotizacion.vendedor_id && cotizacion.tipo_pago !== 'total' && (cotizacion.monto_restante || 0) > 0 && (
+                  <button
+                    onClick={() => setShowPagoModal(true)}
+                    className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition-colors"
+                  >
+                    Registrar pago
+                  </button>
+                )}
                 
                 {/* VOUCHERS - Solo lectura para vendedor */}
                 {vouchers.length > 0 && (
@@ -1721,6 +1725,19 @@ export default function CotizacionDetalle() {
             </form>
           </div>
         </div>
+      )}
+
+      {showPagoModal && cotizacion.venta?.id && (
+        <AgregarPagoModal
+          ventaId={cotizacion.venta.id}
+          cotizacionId={cotizacion.id}
+          montoRestante={Math.max(0, cotizacion.precio_total - (cotizacion.monto_pagado || 0))}
+          onClose={() => setShowPagoModal(false)}
+          onSuccess={() => {
+            setShowPagoModal(false);
+            window.location.reload();
+          }}
+        />
       )}
     </div>
   );

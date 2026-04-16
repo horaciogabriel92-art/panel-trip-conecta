@@ -26,6 +26,8 @@ import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/context/ToastContext';
 import NotasVenta from '@/components/NotasVenta';
+import HistorialPagos from '@/components/ventas/HistorialPagos';
+import AgregarPagoModal from '@/components/ventas/AgregarPagoModal';
 
 interface Venta {
   id: string;
@@ -45,6 +47,16 @@ interface Venta {
   pago_heredado?: boolean;
   monto_pagado_heredado?: number;
   tipo_pago_heredado?: string;
+  cotizacion_id?: string;
+  pagos?: Array<{
+    id: string;
+    monto: number;
+    medio_pago?: string;
+    fecha_pago: string;
+    observaciones?: string;
+    tipo: 'inicial' | 'adicional';
+    comprobante_url?: string;
+  }>;
   comprobantes_pago?: Array<{
     id: string;
     nombre_archivo: string;
@@ -82,6 +94,7 @@ export default function VentaDetalle() {
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [showPagoModal, setShowPagoModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -278,6 +291,17 @@ export default function VentaDetalle() {
             </div>
           )}
 
+          {/* Historial de Pagos */}
+          {(venta.pagos && venta.pagos.length > 0) || (venta.tipo_pago_heredado && venta.tipo_pago_heredado !== 'pendiente') ? (
+            <HistorialPagos
+              precioTotal={venta.precio_total}
+              montoPagado={venta.monto_pagado_heredado || 0}
+              montoRestante={Math.max(0, venta.precio_total - (venta.monto_pagado_heredado || 0))}
+              tipoPago={venta.tipo_pago_heredado}
+              pagos={venta.pagos || []}
+            />
+          ) : null}
+
           {/* Documentos de viaje */}
           <div className="glass-card rounded-2xl p-6">
             <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
@@ -395,6 +419,16 @@ export default function VentaDetalle() {
               )}
             </div>
 
+            {/* Botón registrar pago si hay restante */}
+            {venta.cotizacion_id && venta.tipo_pago_heredado !== 'total' && (venta.precio_total - (venta.monto_pagado_heredado || 0)) > 0 && (
+              <button
+                onClick={() => setShowPagoModal(true)}
+                className="w-full mb-4 px-4 py-3 rounded-xl font-medium text-white bg-orange-600 hover:bg-orange-700 transition-colors"
+              >
+                Registrar pago
+              </button>
+            )}
+
             {documentos.length > 0 && (
               <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
@@ -409,6 +443,19 @@ export default function VentaDetalle() {
           </div>
         </div>
       </div>
+
+      {showPagoModal && venta.cotizacion_id && (
+        <AgregarPagoModal
+          ventaId={venta.id}
+          cotizacionId={venta.cotizacion_id}
+          montoRestante={Math.max(0, venta.precio_total - (venta.monto_pagado_heredado || 0))}
+          onClose={() => setShowPagoModal(false)}
+          onSuccess={() => {
+            setShowPagoModal(false);
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 }

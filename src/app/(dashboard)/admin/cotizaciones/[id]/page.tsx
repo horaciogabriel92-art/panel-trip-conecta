@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
+import HistorialPagos from '@/components/ventas/HistorialPagos';
+import AgregarPagoModal from '@/components/ventas/AgregarPagoModal';
 import { 
   ArrowLeft, 
   FileText, 
@@ -108,6 +110,15 @@ interface Cotizacion {
   monto_restante?: number;
   fecha_pago_resto?: string;
   tipo_pago?: string;
+  pagos?: Array<{
+    id: string;
+    monto: number;
+    medio_pago?: string;
+    fecha_pago: string;
+    observaciones?: string;
+    tipo: 'inicial' | 'adicional';
+    comprobante_url?: string;
+  }>;
   // Relaciones enriquecidas
   pasajeros?: Pasajero[];
   vuelos?: Vuelo[];
@@ -167,6 +178,7 @@ export default function AdminCotizacionDetalle() {
   const [isLoadingVouchers, setIsLoadingVouchers] = useState(false);
   const [tipoVoucher, setTipoVoucher] = useState<'boleto_aereo' | 'voucher_hotel' | 'voucher_actividad' | 'seguro' | 'itinerario_final' | 'e_ticket' | 'boarding_pass' | 'otro'>('boleto_aereo');
   const [isUploadingVoucher, setIsUploadingVoucher] = useState(false);
+  const [showPagoModal, setShowPagoModal] = useState(false);
 
   useEffect(() => {
     const fetchCotizacion = async () => {
@@ -659,62 +671,27 @@ export default function AdminCotizacionDetalle() {
 
           {/* DATOS DE PAGO (solo si está vendida) */}
           {isVendida && venta && (
-            <div className="glass-card rounded-2xl p-6 border-green-500/20">
-              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-green-400" />
-                Información de Pago
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="p-4 bg-[var(--muted)] rounded-xl">
-                  <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Estado del Pago</p>
-                  <div className="flex items-center gap-2">
-                    {getPagoBadge(venta.tipo_pago_heredado)}
-                  </div>
-                </div>
-                {venta.monto_pagado_heredado && (
-                  <div className="p-4 bg-[var(--muted)] rounded-xl">
-                    <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Monto Pagado</p>
-                    <p className="text-xl font-black text-green-400">${formatCurrency(venta.monto_pagado_heredado)}</p>
-                  </div>
-                )}
-                {/* NUEVO: Monto Restante */}
-                {(() => {
-                  const montoRestante = Math.max(0, (cotizacion?.precio_total || 0) - (venta?.monto_pagado_heredado || 0));
-                  return montoRestante > 0 ? (
-                    <div className="p-4 bg-[var(--muted)] rounded-xl border border-orange-500/20">
-                      <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Monto Restante</p>
-                      <p className="text-xl font-black text-orange-400">${formatCurrency(montoRestante)}</p>
-                    </div>
-                  ) : (
-                    <div className="p-4 bg-[var(--muted)] rounded-xl border border-green-500/20">
-                      <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Monto Restante</p>
-                      <p className="text-xl font-black text-green-400">$0</p>
-                      <p className="text-xs text-green-400 mt-1">Pago completo</p>
-                    </div>
-                  );
-                })()}
-                {venta.medio_pago_heredado && (
-                  <div className="p-4 bg-[var(--muted)] rounded-xl">
-                    <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Medio de Pago</p>
-                    <p className="font-medium text-[var(--foreground)] capitalize">{venta.medio_pago_heredado}</p>
-                  </div>
-                )}
-                {/* NUEVO: Fecha pago resto */}
-                {(() => {
-                  const montoRestante = Math.max(0, (cotizacion?.precio_total || 0) - (venta?.monto_pagado_heredado || 0));
-                  return montoRestante > 0 && cotizacion?.fecha_pago_resto ? (
-                    <div className="p-4 bg-[var(--muted)] rounded-xl border border-orange-500/20">
-                      <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Fecha Pago Resto</p>
-                      <p className="text-lg font-bold text-orange-400">
-                        {new Date(cotizacion.fecha_pago_resto).toLocaleDateString('es-AR')}
-                      </p>
-                    </div>
-                  ) : null;
-                })()}
-              </div>
+            <div className="space-y-4">
+              <HistorialPagos
+                precioTotal={cotizacion.precio_total}
+                montoPagado={venta.monto_pagado_heredado || 0}
+                montoRestante={Math.max(0, cotizacion.precio_total - (venta.monto_pagado_heredado || 0))}
+                tipoPago={venta.tipo_pago_heredado}
+                pagos={cotizacion.pagos || []}
+              />
+
+              {venta.tipo_pago_heredado !== 'total' && (cotizacion.precio_total - (venta.monto_pagado_heredado || 0)) > 0 && (
+                <button
+                  onClick={() => setShowPagoModal(true)}
+                  className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition-colors"
+                >
+                  Registrar pago adicional
+                </button>
+              )}
+
               {venta.observaciones_pago_heredado && (
-                <div className="p-4 bg-[var(--muted)] rounded-xl">
-                  <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Observaciones de Pago</p>
+                <div className="glass-card rounded-2xl p-6 border-green-500/20">
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase mb-1">Observaciones originales de Pago</p>
                   <p className="text-[var(--foreground)]">{venta.observaciones_pago_heredado}</p>
                 </div>
               )}
@@ -1126,6 +1103,19 @@ export default function AdminCotizacionDetalle() {
             </div>
           </div>
         </div>
+      )}
+
+      {showPagoModal && venta && (
+        <AgregarPagoModal
+          ventaId={venta.id}
+          cotizacionId={cotizacion?.id || ''}
+          montoRestante={Math.max(0, (cotizacion?.precio_total || 0) - (venta?.monto_pagado_heredado || 0))}
+          onClose={() => setShowPagoModal(false)}
+          onSuccess={() => {
+            setShowPagoModal(false);
+            window.location.reload();
+          }}
+        />
       )}
     </div>
   );
