@@ -1256,7 +1256,7 @@ export default function CotizacionDetalle() {
                 />
 
                 {/* Botón registrar pago adicional */}
-                {cotizacion.venta?.id && user?.userId === cotizacion.vendedor_id && cotizacion.tipo_pago !== 'total' && (cotizacion.monto_restante || 0) > 0 && (
+                {cotizacion.venta?.id && user?.id === cotizacion.vendedor_id && cotizacion.tipo_pago !== 'total' && (cotizacion.monto_restante || 0) > 0 && (
                   <button
                     onClick={() => setShowPagoModal(true)}
                     className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition-colors"
