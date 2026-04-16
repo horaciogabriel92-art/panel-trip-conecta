@@ -45,8 +45,9 @@ interface Venta {
   fecha_creacion: string;
   notas?: string;
   pago_heredado?: boolean;
-  monto_pagado_heredado?: number;
-  tipo_pago_heredado?: string;
+  monto_pagado?: number;
+  monto_restante?: number;
+  tipo_pago?: string;
   cotizacion_id?: string;
   pagos?: Array<{
     id: string;
@@ -292,12 +293,12 @@ export default function VentaDetalle() {
           )}
 
           {/* Historial de Pagos */}
-          {(venta.pagos && venta.pagos.length > 0) || (venta.tipo_pago_heredado && venta.tipo_pago_heredado !== 'pendiente') ? (
+          {(venta.pagos && venta.pagos.length > 0) || (venta.tipo_pago && venta.tipo_pago !== 'pendiente') ? (
             <HistorialPagos
               precioTotal={venta.precio_total}
-              montoPagado={venta.monto_pagado_heredado || 0}
-              montoRestante={Math.max(0, venta.precio_total - (venta.monto_pagado_heredado || 0))}
-              tipoPago={venta.tipo_pago_heredado}
+              montoPagado={venta.monto_pagado || 0}
+              montoRestante={venta.monto_restante || Math.max(0, venta.precio_total - (venta.monto_pagado || 0))}
+              tipoPago={venta.tipo_pago}
               pagos={venta.pagos || []}
             />
           ) : null}
@@ -401,17 +402,17 @@ export default function VentaDetalle() {
                 <div className="mt-3 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-green-400 font-medium">
-                      {venta.tipo_pago_heredado === 'total' ? 'Pago Total' : 'Pago Parcial'}
+                      {venta.tipo_pago === 'total' ? 'Pago Total' : 'Pago Parcial'}
                     </span>
                     <span className="text-sm text-[var(--foreground)] font-bold">
-                      ${formatCurrency(venta.monto_pagado_heredado || 0)} de ${formatCurrency(venta.precio_total)}
+                      ${formatCurrency(venta.monto_pagado || 0)} de ${formatCurrency(venta.precio_total)}
                     </span>
                   </div>
-                  {venta.tipo_pago_heredado !== 'total' && venta.monto_pagado_heredado && (
+                  {venta.tipo_pago !== 'total' && venta.monto_pagado && (
                     <div className="mt-2 w-full bg-[var(--muted)] rounded-full h-2">
                       <div 
                         className="bg-green-500 h-2 rounded-full transition-all"
-                        style={{ width: `${Math.min((venta.monto_pagado_heredado / venta.precio_total) * 100, 100)}%` }}
+                        style={{ width: `${Math.min((venta.monto_pagado / venta.precio_total) * 100, 100)}%` }}
                       />
                     </div>
                   )}
@@ -420,7 +421,7 @@ export default function VentaDetalle() {
             </div>
 
             {/* Botón registrar pago si hay restante */}
-            {venta.cotizacion_id && venta.tipo_pago_heredado !== 'total' && (venta.precio_total - (venta.monto_pagado_heredado || 0)) > 0 && (
+            {venta.cotizacion_id && venta.tipo_pago !== 'total' && (venta.monto_restante || Math.max(0, venta.precio_total - (venta.monto_pagado || 0))) > 0 && (
               <button
                 onClick={() => setShowPagoModal(true)}
                 className="w-full mb-4 px-4 py-3 rounded-xl font-medium text-white bg-orange-600 hover:bg-orange-700 transition-colors"
@@ -448,7 +449,7 @@ export default function VentaDetalle() {
         <AgregarPagoModal
           ventaId={venta.id}
           cotizacionId={venta.cotizacion_id}
-          montoRestante={Math.max(0, venta.precio_total - (venta.monto_pagado_heredado || 0))}
+          montoRestante={venta.monto_restante || Math.max(0, venta.precio_total - (venta.monto_pagado || 0))}
           onClose={() => setShowPagoModal(false)}
           onSuccess={() => {
             setShowPagoModal(false);

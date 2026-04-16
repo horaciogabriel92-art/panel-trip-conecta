@@ -674,13 +674,13 @@ export default function AdminCotizacionDetalle() {
             <div className="space-y-4">
               <HistorialPagos
                 precioTotal={cotizacion.precio_total}
-                montoPagado={venta.monto_pagado_heredado || 0}
-                montoRestante={Math.max(0, cotizacion.precio_total - (venta.monto_pagado_heredado || 0))}
-                tipoPago={venta.tipo_pago_heredado}
+                montoPagado={cotizacion.monto_pagado || 0}
+                montoRestante={cotizacion.monto_restante || Math.max(0, cotizacion.precio_total - (cotizacion.monto_pagado || 0))}
+                tipoPago={cotizacion.tipo_pago}
                 pagos={cotizacion.pagos || []}
               />
 
-              {venta.tipo_pago_heredado !== 'total' && (cotizacion.precio_total - (venta.monto_pagado_heredado || 0)) > 0 && (
+              {cotizacion.tipo_pago !== 'total' && (cotizacion.monto_restante || Math.max(0, cotizacion.precio_total - (cotizacion.monto_pagado || 0))) > 0 && (
                 <button
                   onClick={() => setShowPagoModal(true)}
                   className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition-colors"
@@ -1109,7 +1109,7 @@ export default function AdminCotizacionDetalle() {
         <AgregarPagoModal
           ventaId={venta.id}
           cotizacionId={cotizacion?.id || ''}
-          montoRestante={Math.max(0, (cotizacion?.precio_total || 0) - (venta?.monto_pagado_heredado || 0))}
+          montoRestante={Math.max(0, (cotizacion?.precio_total || 0) - (cotizacion?.monto_pagado || 0))}
           onClose={() => setShowPagoModal(false)}
           onSuccess={() => {
             setShowPagoModal(false);
