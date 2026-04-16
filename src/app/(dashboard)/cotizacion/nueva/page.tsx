@@ -23,7 +23,7 @@ import api from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
 import BuscarCliente from '@/components/cotizaciones/BuscarCliente';
 import CrearClienteModal from '@/components/cotizaciones/CrearClienteModal';
-import { Cliente } from '@/lib/api-clientes';
+import { Cliente, clientesAPI } from '@/lib/api-clientes';
 
 // ============================================
 // TIPOS
@@ -63,6 +63,8 @@ export default function NuevaCotizacionManual() {
   const [showCrearCliente, setShowCrearCliente] = useState(false);
 
   const [pasajeros, setPasajeros] = useState<Pasajero[]>([]);
+  const [pasajerosFrecuentes, setPasajerosFrecuentes] = useState<any[]>([]);
+  const [pasajerosSeleccionadosIds, setPasajerosSeleccionadosIds] = useState<string[]>([]);
   
   // Vuelos
   const [amadeusText, setAmadeusText] = useState('');
@@ -196,6 +198,26 @@ export default function NuevaCotizacionManual() {
     }));
   }, [precios.vuelos, precios.hospedajes, precios.extras, precios.impuestos]);
 
+  // Cargar pasajeros frecuentes del cliente seleccionado
+  useEffect(() => {
+    const fetchPasajeros = async () => {
+      if (clienteSeleccionado?.id) {
+        try {
+          const res = await clientesAPI.getPasajeros(clienteSeleccionado.id);
+          setPasajerosFrecuentes(res.data || []);
+          setPasajerosSeleccionadosIds([]);
+        } catch (err) {
+          console.error('Error cargando pasajeros frecuentes:', err);
+          setPasajerosFrecuentes([]);
+        }
+      } else {
+        setPasajerosFrecuentes([]);
+        setPasajerosSeleccionadosIds([]);
+      }
+    };
+    fetchPasajeros();
+  }, [clienteSeleccionado?.id]);
+
   const handleSubmit = async () => {
     if (!clienteSeleccionado) {
       toastError('Debes seleccionar un cliente', 'Cliente requerido');
@@ -208,7 +230,7 @@ export default function NuevaCotizacionManual() {
       // Formato CRM nuevo
       const cotizacionData = {
         cliente_id: clienteSeleccionado.id,
-        pasajeros_ids: [], // Por ahora vacío, se implementará selección de pasajeros
+        pasajeros_ids: pasajerosSeleccionadosIds,
         pasajeros_nuevos: pasajeros.map(p => ({
           nombre: p.nombre,
           apellido: p.apellido,
@@ -302,6 +324,38 @@ export default function NuevaCotizacionManual() {
           selectedClienteId={clienteSeleccionado?.id}
         />
       </div>
+
+      {/* Pasajeros Frecuentes */}
+      {pasajerosFrecuentes.length > 0 && (
+        <div className="glass-card rounded-2xl p-6">
+          <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+            <User className="w-5 h-5 text-blue-400" />
+            Pasajeros frecuentes
+          </h3>
+          <div className="space-y-2">
+            {pasajerosFrecuentes.map((p: any) => (
+              <label key={p.id} className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={pasajerosSeleccionadosIds.includes(p.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setPasajerosSeleccionadosIds((prev) => [...prev, p.id]);
+                    } else {
+                      setPasajerosSeleccionadosIds((prev) => prev.filter((id) => id !== p.id));
+                    }
+                  }}
+                  className="w-4 h-4 rounded border-[var(--border)]"
+                />
+                <div>
+                  <p className="font-medium text-[var(--foreground)]">{p.nombre} {p.apellido}</p>
+                  <p className="text-xs text-[var(--muted-foreground)]">Doc: {p.documento}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Pasajeros Adicionales */}
       <div className="glass-card rounded-2xl p-6">
