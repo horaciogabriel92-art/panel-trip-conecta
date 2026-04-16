@@ -123,7 +123,7 @@ export default function BuscarCliente({ onSelect, onNuevoCliente, selectedClient
 
       {/* Resultados */}
       {showResults && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--popover)] border border-[var(--border)] rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto">
           {resultados.length === 0 ? (
             <div className="p-4 text-center text-[var(--muted-foreground)]">
               <p>No se encontraron clientes</p>
@@ -158,7 +158,7 @@ export default function BuscarCliente({ onSelect, onNuevoCliente, selectedClient
               ))}
               <button
                 onClick={onNuevoCliente}
-                className="w-full flex items-center gap-4 p-4 hover:bg-[var(--muted)] transition-colors text-left text-blue-400 font-medium sticky bottom-0 bg-[var(--card)] border-t border-[var(--border)]"
+                className="w-full flex items-center gap-4 p-4 hover:bg-[var(--muted)] transition-colors text-left text-blue-400 font-medium sticky bottom-0 bg-[var(--popover)] border-t border-[var(--border)]"
               >
                 <Plus className="w-5 h-5" />
                 Crear nuevo cliente
