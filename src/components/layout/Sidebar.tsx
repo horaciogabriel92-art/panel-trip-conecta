@@ -11,7 +11,6 @@ import {
   ShoppingCart, 
   Users, 
   Wallet, 
-  Files,
   Settings,
   LogOut,
   Plane,
@@ -26,7 +25,6 @@ const adminLinks = [
   { href: '/admin/ventas', label: 'Ventas', icon: ShoppingCart },
   { href: '/admin/vendedores', label: 'Vendedores', icon: Users },
   { href: '/admin/comisiones', label: 'Comisiones', icon: Wallet },
-  { href: '/admin/documentos', label: 'Documentos', icon: Files },
 ];
 
 const vendedorLinks = [
@@ -35,7 +33,6 @@ const vendedorLinks = [
   { href: '/cotizaciones', label: 'Cotizaciones', icon: FileText },
   { href: '/admin/clientes', label: 'Clientes', icon: Users },
   { href: '/mis-ventas', label: 'Mis Ventas', icon: ShoppingCart },
-  { href: '/documentos', label: 'Mis Documentos', icon: Files },
 ];
 
 interface SidebarProps {
