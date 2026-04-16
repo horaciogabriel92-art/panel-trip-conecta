@@ -11,6 +11,7 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle,
+  Lock,
 } from "lucide-react";
 
 export default function ConfiguracionPage() {
@@ -25,6 +26,14 @@ export default function ConfiguracionPage() {
     email: "",
     telefono: "",
   });
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Cargar datos del usuario
   useEffect(() => {
@@ -53,6 +62,38 @@ export default function ConfiguracionPage() {
   const handleChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setMessage(null);
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordMessage(null);
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordMessage({ type: "error", text: "Las nuevas contraseñas no coinciden" });
+      return;
+    }
+    if (passwordData.newPassword.length < 6) {
+      setPasswordMessage({ type: "error", text: "La nueva contraseña debe tener al menos 6 caracteres" });
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      await api.post("/auth/change-password", {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+      setPasswordMessage({ type: "success", text: "Contraseña actualizada correctamente" });
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error: any) {
+      console.error("Error cambiando contraseña:", error);
+      setPasswordMessage({
+        type: "error",
+        text: error.response?.data?.error || "Error al cambiar la contraseña",
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -220,6 +261,84 @@ export default function ConfiguracionPage() {
             </div>
           </div>
         </div>
+
+        {/* Seguridad */}
+        <form onSubmit={handleChangePassword} className="glass-card rounded-2xl p-6 space-y-4">
+          <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+            <Lock className="w-5 h-5 text-blue-400" />
+            Seguridad
+          </h3>
+
+          {passwordMessage && (
+            <div
+              className={`flex items-center gap-2 p-3 rounded-xl ${
+                passwordMessage.type === "success"
+                  ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                  : "bg-red-500/10 text-red-400 border border-red-500/20"
+              }`}
+            >
+              {passwordMessage.type === "success" ? (
+                <CheckCircle className="w-4 h-4" />
+              ) : (
+                <AlertCircle className="w-4 h-4" />
+              )}
+              {passwordMessage.text}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm text-[var(--muted-foreground)] mb-1">
+              Contraseña actual
+            </label>
+            <input
+              type="password"
+              value={passwordData.currentPassword}
+              onChange={(e) => setPasswordData((prev) => ({ ...prev, currentPassword: e.target.value }))}
+              className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-[var(--muted-foreground)] mb-1">
+              Nueva contraseña
+            </label>
+            <input
+              type="password"
+              value={passwordData.newPassword}
+              onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
+              className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+              required
+              minLength={6}
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-[var(--muted-foreground)] mb-1">
+              Confirmar nueva contraseña
+            </label>
+            <input
+              type="password"
+              value={passwordData.confirmPassword}
+              onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+              className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+              required
+              minLength={6}
+            />
+          </div>
+          <div className="flex justify-end pt-2">
+            <button
+              type="submit"
+              disabled={isChangingPassword}
+              className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white rounded-xl font-medium transition-colors"
+            >
+              {isChangingPassword ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Lock className="w-4 h-4" />
+              )}
+              Cambiar contraseña
+            </button>
+          </div>
+        </form>
 
         {/* Botón Guardar */}
         <div className="flex justify-end">
