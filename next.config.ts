@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
   // Reducir uso de memoria durante el build
   staticPageGenerationTimeout: 120,
   // Limitar workers para reducir uso de memoria

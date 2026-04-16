@@ -132,6 +132,7 @@ interface Cotizacion {
     };
   };
   itinerario?: { texto?: string; dias?: any[] };
+  vendedor_id?: string;
   // Legacy fields (para cotizaciones viejas)
   cliente_nombre?: string;
   cliente_email?: string;
