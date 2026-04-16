@@ -117,6 +117,18 @@ export default function ClienteDetallePage() {
   const [esPrivada, setEsPrivada] = useState(false);
   const [enviandoNota, setEnviandoNota] = useState(false);
 
+  // Estados para agregar pasajero
+  const [showPasajeroModal, setShowPasajeroModal] = useState(false);
+  const [nuevoPasajero, setNuevoPasajero] = useState({
+    tipo_documento: "CI",
+    documento: "",
+    nombre: "",
+    apellido: "",
+    fecha_nacimiento: "",
+    nacionalidad: "Uruguay",
+  });
+  const [guardandoPasajero, setGuardandoPasajero] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -127,6 +139,7 @@ export default function ClienteDetallePage() {
         const data = clienteRes.data;
         
         setCliente(data.cliente || data);
+        setPasajeros(data.pasajeros || []);
         setCotizaciones(data.cotizaciones || []);
         setHistorial(data.historial || []);
         
@@ -262,6 +275,30 @@ export default function ClienteDetallePage() {
         return <Phone className="w-4 h-4" />;
       default:
         return <History className="w-4 h-4" />;
+    }
+  };
+
+  const handleAgregarPasajero = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cliente) return;
+    setGuardandoPasajero(true);
+    try {
+      const res = await api.post(`/clientes/${cliente.id}/pasajeros`, nuevoPasajero);
+      setPasajeros((prev) => [...prev, res.data.pasajero]);
+      setNuevoPasajero({
+        tipo_documento: "CI",
+        documento: "",
+        nombre: "",
+        apellido: "",
+        fecha_nacimiento: "",
+        nacionalidad: "Uruguay",
+      });
+      setShowPasajeroModal(false);
+    } catch (error: any) {
+      console.error("Error agregando pasajero:", error);
+      alert(error.response?.data?.error || "Error al agregar pasajero");
+    } finally {
+      setGuardandoPasajero(false);
     }
   };
 
@@ -565,6 +602,44 @@ export default function ClienteDetallePage() {
             </div>
           )}
 
+          {/* Pasajeros frecuentes */}
+          <div className="lg:col-span-2 glass-card rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-[var(--foreground)]">Pasajeros frecuentes</h3>
+              <button
+                onClick={() => setShowPasajeroModal(true)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Agregar
+              </button>
+            </div>
+            {pasajeros.length === 0 ? (
+              <p className="text-[var(--muted-foreground)]">No hay pasajeros registrados</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {pasajeros.map((p) => (
+                  <div key={p.id} className="p-3 bg-[var(--muted)] rounded-xl">
+                    <p className="font-medium text-[var(--foreground)]">
+                      {p.nombre} {p.apellido}
+                    </p>
+                    <p className="text-xs text-[var(--muted-foreground)]">
+                      Doc: {p.documento}
+                    </p>
+                    {p.nacionalidad && (
+                      <p className="text-xs text-[var(--muted-foreground)]">{p.nacionalidad}</p>
+                    )}
+                    {p.fecha_nacimiento && (
+                      <p className="text-xs text-[var(--muted-foreground)]">
+                        Nac: {new Date(p.fecha_nacimiento).toLocaleDateString("es-AR")}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Notas */}
           {cliente.notas && (
             <div className="lg:col-span-2 glass-card rounded-2xl p-6">
@@ -572,6 +647,107 @@ export default function ClienteDetallePage() {
               <p className="text-[var(--foreground)] whitespace-pre-wrap">{cliente.notas}</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Modal Agregar Pasajero */}
+      {showPasajeroModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="glass-card w-full max-w-lg rounded-3xl p-8">
+            <h3 className="text-2xl font-black text-[var(--foreground)] mb-6">Agregar Pasajero</h3>
+            <form onSubmit={handleAgregarPasajero} className="space-y-4">
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Tipo</label>
+                  <select
+                    value={nuevoPasajero.tipo_documento}
+                    onChange={(e) => setNuevoPasajero({ ...nuevoPasajero, tipo_documento: e.target.value })}
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2.5 text-[var(--foreground)] text-sm"
+                  >
+                    <option value="CI">CI</option>
+                    <option value="Pasaporte">Pasaporte</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Documento</label>
+                  <input
+                    type="text"
+                    value={nuevoPasajero.documento}
+                    onChange={(e) => setNuevoPasajero({ ...nuevoPasajero, documento: e.target.value })}
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2.5 text-[var(--foreground)] text-sm"
+                    placeholder="Número de documento"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Nombre *</label>
+                  <input
+                    type="text"
+                    value={nuevoPasajero.nombre}
+                    onChange={(e) => setNuevoPasajero({ ...nuevoPasajero, nombre: e.target.value })}
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2.5 text-[var(--foreground)] text-sm"
+                    placeholder="Nombre"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Apellido *</label>
+                  <input
+                    type="text"
+                    value={nuevoPasajero.apellido}
+                    onChange={(e) => setNuevoPasajero({ ...nuevoPasajero, apellido: e.target.value })}
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2.5 text-[var(--foreground)] text-sm"
+                    placeholder="Apellido"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Fecha de Nacimiento</label>
+                <input
+                  type="date"
+                  value={nuevoPasajero.fecha_nacimiento}
+                  onChange={(e) => setNuevoPasajero({ ...nuevoPasajero, fecha_nacimiento: e.target.value })}
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2.5 text-[var(--foreground)] text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Nacionalidad</label>
+                <input
+                  type="text"
+                  value={nuevoPasajero.nacionalidad}
+                  onChange={(e) => setNuevoPasajero({ ...nuevoPasajero, nacionalidad: e.target.value })}
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2.5 text-[var(--foreground)] text-sm"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowPasajeroModal(false)}
+                  className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={guardandoPasajero}
+                  className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium transition-all flex items-center justify-center gap-2"
+                >
+                  {guardandoPasajero ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    "Guardar"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
