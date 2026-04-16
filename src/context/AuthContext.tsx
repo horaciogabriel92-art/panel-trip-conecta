@@ -12,6 +12,9 @@ interface User {
   rol: 'admin' | 'vendedor';
   comision_porcentaje?: number;
   telefono?: string;
+  preferencias?: {
+    pdf_colors?: Record<string, string>;
+  };
 }
 
 interface AuthContextType {

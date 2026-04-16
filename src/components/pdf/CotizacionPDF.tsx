@@ -5,7 +5,7 @@ import { Document, Page, Text, View, StyleSheet, Image, Font, Link } from '@reac
 // ============================================
 // COLORES DE MARCA TRIP CONECTA
 // ============================================
-const COLORS = {
+const DEFAULT_COLORS = {
   primary: '#0d9488',      // Teal-600 (color principal)
   primaryDark: '#0f766e',  // Teal-700
   primaryLight: '#14b8a6', // Teal-500
@@ -20,7 +20,8 @@ const COLORS = {
 // ============================================
 // ESTILOS
 // ============================================
-const styles = StyleSheet.create({
+function createStyles(COLORS: typeof DEFAULT_COLORS) {
+  return StyleSheet.create({
   page: {
     padding: 25,
     fontFamily: 'Helvetica',
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
   infoLabel: {
     width: 80,
     fontSize: 9,
-    color: '#666',
+    color: COLORS.textLight,
   },
   infoValue: {
     flex: 1,
@@ -145,15 +146,15 @@ const styles = StyleSheet.create({
   },
   metaItem: {
     fontSize: 9,
-    color: '#666',
+    color: COLORS.textLight,
   },
   metaBold: {
     fontWeight: 'bold',
-    color: '#1a1a2e',
+    color: COLORS.dark,
   },
   packageDescription: {
     fontSize: 9,
-    color: '#555',
+    color: COLORS.textLight,
     lineHeight: 1.4,
   },
 
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#1a1a2e',
+    backgroundColor: COLORS.dark,
     color: 'white',
     padding: 8,
     fontWeight: 'bold',
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
   tableRow: {
     flexDirection: 'row',
     padding: 8,
-    borderBottom: '1px solid #ddd',
+    borderBottom: `1px solid ${COLORS.textLight}`,
     fontSize: 9,
   },
   tableCell: {
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
 
   // Info de pago
   paymentSection: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: COLORS.background,
     padding: 12,
     borderRadius: 6,
     marginTop: 15,
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
   },
   paymentLabel: {
     fontSize: 8,
-    color: '#666',
+    color: COLORS.textLight,
   },
   paymentValue: {
     fontSize: 10,
@@ -224,7 +225,7 @@ const styles = StyleSheet.create({
 
   // Banner de validez
   validityBanner: {
-    backgroundColor: '#ccfbf1',
+    backgroundColor: COLORS.background,
     border: `1px solid ${COLORS.primaryLight}`,
     padding: 10,
     borderRadius: 6,
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
   },
   sellerContact: {
     fontSize: 8,
-    color: '#666',
+    color: COLORS.textLight,
   },
 
   // Footer
@@ -341,7 +342,7 @@ const styles = StyleSheet.create({
   },
   dayContent: {
     fontSize: 9,
-    color: '#555',
+    color: COLORS.textLight,
     lineHeight: 1.5,
   },
 
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
   policiesSection: {
     marginTop: 15,
     padding: 12,
-    backgroundColor: '#ccfbf1',
+    backgroundColor: COLORS.background,
     borderRadius: 6,
     border: `1px solid ${COLORS.primaryLight}`,
   },
@@ -526,7 +527,7 @@ const styles = StyleSheet.create({
   },
   flightDuration: {
     fontSize: 8,
-    color: '#666',
+    color: COLORS.textLight,
     marginTop: 2,
   },
   flightMeta: {
@@ -549,7 +550,7 @@ const styles = StyleSheet.create({
   priceBreakdownSection: {
     marginTop: 10,
     padding: 10,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: COLORS.background,
     borderRadius: 6,
     borderLeft: `3px solid ${COLORS.primary}`,
   },
@@ -566,7 +567,7 @@ const styles = StyleSheet.create({
   },
   priceBreakdownLabel: {
     fontSize: 9,
-    color: '#666',
+    color: COLORS.textLight,
   },
   priceBreakdownValue: {
     fontSize: 9,
@@ -575,7 +576,7 @@ const styles = StyleSheet.create({
   },
   priceBreakdownDivider: {
     height: 1,
-    backgroundColor: '#ddd',
+    backgroundColor: COLORS.textLight,
     marginVertical: 6,
   },
   priceBreakdownTotal: {
@@ -593,7 +594,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.primary,
   },
-});
+  });
+}
 
 // ============================================
 // INTERFACES
@@ -604,42 +606,42 @@ interface CotizacionPDFProps {
       id: string;
       codigo: string;
       fecha_creacion: string;
-      fecha_expiracion: string;
+      fecha_expiracion?: string;
       num_pasajeros: number;
       tipo_habitacion?: string;
       fecha_salida?: string;
-      dias_validez: number;
+      cliente_nombre?: string;
+      cliente_apellido?: string;
+      cliente_documento?: string;
+      cliente_email?: string;
+      cliente_telefono?: string;
+      precio_total: number;
       tipo_cotizacion?: 'paquete' | 'manual';
       nombre_cotizacion?: string;
       itinerario_manual?: string;
-      incluye?: string[];
-      no_incluye?: string[];
       paquete_data?: {
         itinerario?: any;
         incluye?: string[];
         no_incluye?: string[];
       };
+      incluye?: string[];
+      no_incluye?: string[];
     };
     cliente: {
-      nombre: string;
+      nombre?: string;
       apellido?: string;
       documento?: string;
       email?: string;
       telefono?: string;
     };
     paquete: {
-      titulo: string;
-      destino: string;
+      titulo?: string;
+      destino?: string;
       descripcion?: string;
-      duracion_dias: number;
+      duracion_dias?: number;
       imagen_principal?: string;
       politicas_cancelacion?: string;
-      itinerario?: Array<{
-        dia: number;
-        titulo: string;
-        descripcion: string;
-        actividades?: string[];
-      }> | string;
+      itinerario?: any;
       incluye?: string[];
       no_incluye?: string[];
     };
@@ -650,55 +652,32 @@ interface CotizacionPDFProps {
       fecha_nacimiento?: string;
       nacionalidad?: string;
     }>;
-    hospedaje?: Array<{
-      nombre_hotel: string;
-      link_hotel?: string;
-      ciudad: string;
-      fecha_checkin?: string;
-      fecha_checkout?: string;
-      tipo_habitacion?: string;
-      regimen?: string;
-    }>;
-    vuelos?: Array<{
-      linea: number;
-      aerolinea_codigo: string;
-      aerolinea_nombre: string;
-      numero_vuelo: string;
-      clase_codigo: string;
-      fecha_salida: string;
-      fecha_llegada: string;
-      hora_salida: string;
-      hora_llegada: string;
-      origen_codigo: string;
-      origen_ciudad: string;
-      destino_codigo: string;
-      destino_ciudad: string;
-      duracion?: string;
-    }>;
+    hospedaje?: Array<any>;
+    vuelos?: Array<any>;
     precios: {
-      moneda: string;
-      precio_unitario: string;
-      subtotal: string;
-      impuestos: string;
-      extras: string;
-      total: string;
-      anticipo: string;
-      saldo: string;
-      vuelos?: string;
-      hospedajes?: string;
-      servicios?: string;
-      traslados?: string;
+      vuelos?: string | number;
+      hospedajes?: string | number;
+      extras?: string | number;
+      servicios?: string | number;
+      traslados?: string | number;
+      subtotal?: string | number;
+      impuestos?: string | number;
+      total?: string | number;
+      moneda?: string;
+      precio_unitario?: string | number;
+      anticipo?: string | number;
+      saldo?: string | number;
     };
     vendedor: {
-      nombre: string;
-      apellido: string;
-      email: string;
+      nombre?: string;
+      apellido?: string;
+      email?: string;
       telefono?: string;
-      iniciales: string;
+      iniciales?: string;
     };
   };
+  colors?: Partial<typeof DEFAULT_COLORS>;
 }
-
 // ============================================
 // HELPERS DE PRECIO (manejan strings formateados y números)
 // ============================================
@@ -719,7 +698,9 @@ function formatPrice(value: string | number): string {
 // ============================================
 // COMPONENTE PDF
 // ============================================
-export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
+export function CotizacionPDFDocument({ data, colors }: CotizacionPDFProps) {
+  const COLORS = { ...DEFAULT_COLORS, ...colors };
+  const styles = createStyles(COLORS);
   const { cotizacion, cliente, paquete, pasajeros, hospedaje, vuelos, precios, vendedor } = data;
   
   // Calcular duración del viaje
@@ -1002,7 +983,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
             <View style={styles.priceBreakdownRow}>
               <Text style={styles.priceBreakdownLabel}>Precio por persona</Text>
               <Text style={styles.priceBreakdownValue}>
-                ${precios.precio_unitario ? formatPrice(precios.precio_unitario) : formatPrice(parsePrice(precios.total) / (cotizacion.num_pasajeros || 1))} {precios.moneda}
+                ${precios.precio_unitario ? formatPrice(precios.precio_unitario) : formatPrice(parsePrice(precios.total || 0) / (cotizacion.num_pasajeros || 1))} {precios.moneda}
               </Text>
             </View>
             
@@ -1011,7 +992,7 @@ export function CotizacionPDFDocument({ data }: CotizacionPDFProps) {
             {/* Total */}
             <View style={styles.priceBreakdownTotal}>
               <Text style={styles.priceBreakdownTotalLabel}>TOTAL ({cotizacion.num_pasajeros} pasajeros)</Text>
-              <Text style={styles.priceBreakdownTotalValue}>${formatPrice(precios.total)} {precios.moneda}</Text>
+              <Text style={styles.priceBreakdownTotalValue}>${formatPrice(precios.total || 0)} {precios.moneda}</Text>
             </View>
           </View>
         </View>

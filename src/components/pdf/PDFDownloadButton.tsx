@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
 import { CotizacionPDFDocument } from './CotizacionPDF';
 import { FileText, Download, Eye, X } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 interface CotizacionData {
   id: string;
@@ -76,7 +77,9 @@ interface PDFDownloadButtonProps {
 }
 
 export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonProps) {
+  const { user } = useAuth();
   const [showPreview, setShowPreview] = useState(false);
+  const pdfColors = user?.preferencias?.pdf_colors;
 
   // Preparar datos para el PDF - SIN parsing de notas
   // El componente padre debe proporcionar todos los datos estructurados
@@ -97,6 +100,7 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
       itinerario_manual: data.itinerario_manual,
       tipo_cotizacion: data.tipo_cotizacion,
       nombre_cotizacion: data.nombre_cotizacion,
+      precio_total: data.precio_total,
       paquete_data: data.paquete_data
     },
     cliente: {
@@ -156,7 +160,7 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
       <div className="flex gap-2">
         {/* Botón Descargar PDF */}
         <PDFDownloadLink
-          document={<CotizacionPDFDocument data={pdfData} />}
+          document={<CotizacionPDFDocument data={pdfData} colors={pdfColors} />}
           fileName={filename}
         >
           {({ loading }) => (
@@ -198,7 +202,7 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
               <h3 className="font-bold">Vista Previa: {filename}</h3>
               <div className="flex items-center gap-2">
                 <PDFDownloadLink
-                  document={<CotizacionPDFDocument data={pdfData} />}
+                  document={<CotizacionPDFDocument data={pdfData} colors={pdfColors} />}
                   fileName={filename}
                 >
                   {({ loading }) => (
@@ -223,7 +227,7 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
             {/* PDF Viewer */}
             <div className="flex-1 bg-slate-100">
               <PDFViewer width="100%" height="100%" className="border-0">
-                <CotizacionPDFDocument data={pdfData} />
+                <CotizacionPDFDocument data={pdfData} colors={pdfColors} />
               </PDFViewer>
             </div>
           </div>
