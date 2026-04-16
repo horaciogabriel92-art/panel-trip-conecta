@@ -15,7 +15,6 @@ interface Vendedor {
   telefono?: string;
   rol: string;
   activo: boolean;
-  comision_porcentaje: number;
   fecha_registro: string;
 }
 
@@ -31,8 +30,7 @@ export default function VendedoresAdmin() {
     password: '',
     nombre: '',
     apellido: '',
-    telefono: '',
-    comision_porcentaje: 12
+    telefono: ''
   });
 
   // Modal editar
@@ -44,7 +42,6 @@ export default function VendedoresAdmin() {
     nombre: '',
     apellido: '',
     telefono: '',
-    comision_porcentaje: 12,
     activo: true
   });
 
@@ -69,7 +66,8 @@ export default function VendedoresAdmin() {
     try {
       await api.post('/auth/users', {
         ...formData,
-        rol: 'vendedor'
+        rol: 'vendedor',
+        comision_porcentaje: null
       });
       setShowModal(false);
       setFormData({
@@ -77,8 +75,7 @@ export default function VendedoresAdmin() {
         password: '',
         nombre: '',
         apellido: '',
-        telefono: '',
-        comision_porcentaje: 12
+        telefono: ''
       });
       fetchVendedores();
       toastSuccess('Vendedor creado exitosamente');
@@ -95,7 +92,6 @@ export default function VendedoresAdmin() {
       nombre: v.nombre,
       apellido: v.apellido,
       telefono: v.telefono || '',
-      comision_porcentaje: v.comision_porcentaje,
       activo: v.activo
     });
     setShowEditModal(true);
@@ -110,7 +106,6 @@ export default function VendedoresAdmin() {
         apellido: editFormData.apellido,
         telefono: editFormData.telefono,
         email: editFormData.email,
-        comision_porcentaje: editFormData.comision_porcentaje,
         activo: editFormData.activo
       };
       if (editFormData.password && editFormData.password.length >= 6) {
@@ -125,7 +120,6 @@ export default function VendedoresAdmin() {
         nombre: '',
         apellido: '',
         telefono: '',
-        comision_porcentaje: 12,
         activo: true
       });
       fetchVendedores();
@@ -169,7 +163,6 @@ export default function VendedoresAdmin() {
               <tr className="bg-[var(--muted)] text-[var(--muted-foreground)] text-xs uppercase tracking-wider">
                 <th className="px-6 py-4 font-black">Vendedor</th>
                 <th className="px-6 py-4 font-black">Contacto</th>
-                <th className="px-6 py-4 font-black">Comisión</th>
                 <th className="px-6 py-4 font-black">Estado</th>
                 <th className="px-6 py-4 font-black">Registro</th>
                 <th className="px-6 py-4 font-black text-right">Acciones</th>
@@ -202,11 +195,6 @@ export default function VendedoresAdmin() {
                         </p>
                       )}
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                      <Percent className="w-3 h-3" /> {v.comision_porcentaje}%
-                    </span>
                   </td>
                   <td className="px-6 py-4">
                     {v.activo ? (
@@ -301,27 +289,14 @@ export default function VendedoresAdmin() {
                   className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Teléfono</label>
-                  <input
-                    type="tel"
-                    value={formData.telefono}
-                    onChange={(e) => setFormData({...formData, telefono: e.target.value})}
-                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Comisión (%)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={50}
-                    value={formData.comision_porcentaje}
-                    onChange={(e) => setFormData({...formData, comision_porcentaje: Number(e.target.value)})}
-                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                  />
-                </div>
+              <div>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Teléfono</label>
+                <input
+                  type="tel"
+                  value={formData.telefono}
+                  onChange={(e) => setFormData({...formData, telefono: e.target.value})}
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+                />
               </div>
               <div className="flex gap-3 pt-4">
                 <button
@@ -392,27 +367,14 @@ export default function VendedoresAdmin() {
                   className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Teléfono</label>
-                  <input
-                    type="tel"
-                    value={editFormData.telefono}
-                    onChange={(e) => setEditFormData({...editFormData, telefono: e.target.value})}
-                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Comisión (%)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={50}
-                    value={editFormData.comision_porcentaje}
-                    onChange={(e) => setEditFormData({...editFormData, comision_porcentaje: Number(e.target.value)})}
-                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                  />
-                </div>
+              <div>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Teléfono</label>
+                <input
+                  type="tel"
+                  value={editFormData.telefono}
+                  onChange={(e) => setEditFormData({...editFormData, telefono: e.target.value})}
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+                />
               </div>
               <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl">
                 <label className="flex items-center gap-2 text-sm text-[var(--foreground)] cursor-pointer">

@@ -178,6 +178,7 @@ interface Paquete {
   vuelos: Vuelo[];
   hoteles: Hotel[];
   itinerario?: { texto?: string; dias?: any[] } | string;
+  comision_monto_usd?: number;
 }
 
 const emptyPaquete: Paquete = {
@@ -197,7 +198,8 @@ const emptyPaquete: Paquete = {
   recursos_vendedores: [],
   vuelos: [],
   hoteles: [],
-  itinerario: { texto: '', dias: [] }
+  itinerario: { texto: '', dias: [] },
+  comision_monto_usd: 0
 };
 
 // Función para parsear PNR de Amadeus usando el parser unificado
@@ -473,6 +475,7 @@ export default function PaquetesAdmin() {
                 <th className="px-6 py-4 font-black">Paquete</th>
                 <th className="px-6 py-4 font-black">Destino</th>
                 <th className="px-6 py-4 font-black">Precio Doble</th>
+                <th className="px-6 py-4 font-black">Comisión</th>
                 <th className="px-6 py-4 font-black">Cupos</th>
                 <th className="px-6 py-4 font-black">Status</th>
                 <th className="px-6 py-4 font-black text-right">Acciones</th>
@@ -494,6 +497,7 @@ export default function PaquetesAdmin() {
                   </td>
                   <td className="px-6 py-4 text-sm text-[var(--foreground)]">{p.destino}</td>
                   <td className="px-6 py-4 text-sm font-bold text-blue-400">${formatCurrency(p.precio_doble)}</td>
+                  <td className="px-6 py-4 text-sm font-bold text-green-400">${formatCurrency(p.comision_monto_usd || 0)}</td>
                   <td className="px-6 py-4 text-sm text-[var(--foreground)]">{p.cupos_disponibles} / {p.cupos_totales}</td>
                   <td className="px-6 py-4">
                     {p.status === 'activo' ? (
@@ -603,7 +607,7 @@ export default function PaquetesAdmin() {
                   />
                 </div>
 
-                <div className="md:col-span-3 grid grid-cols-3 gap-4">
+                <div className="md:col-span-3 grid grid-cols-4 gap-4">
                   <div>
                     <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Precio Doble</label>
                     <input
@@ -632,6 +636,17 @@ export default function PaquetesAdmin() {
                       min={0}
                       value={formData.precio_cuadruple}
                       onChange={(e) => setFormData({...formData, precio_cuadruple: Number(e.target.value)})}
+                      className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Comisión (USD)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={formData.comision_monto_usd}
+                      onChange={(e) => setFormData({...formData, comision_monto_usd: Number(e.target.value)})}
                       className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                     />
                   </div>

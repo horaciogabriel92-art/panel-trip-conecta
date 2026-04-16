@@ -254,9 +254,9 @@ export default function ConfiguracionPage() {
               </span>
             </div>
             <div className="flex justify-between py-2 border-b border-[var(--border)]">
-              <span className="text-[var(--muted-foreground)]">Comisión</span>
-              <span className="font-medium text-[var(--foreground)]">
-                {user?.comision_porcentaje || 12}%
+              <span className="text-[var(--muted-foreground)]">Rol</span>
+              <span className="font-medium text-[var(--foreground)] capitalize">
+                {user?.rol || "Vendedor"}
               </span>
             </div>
           </div>

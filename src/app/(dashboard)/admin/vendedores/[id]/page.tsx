@@ -192,11 +192,11 @@ export default function VendedorDetalle() {
               </div>
             )}
             <div className="flex items-center gap-3 p-3 bg-[var(--muted)] rounded-xl">
-              <Percent className="w-5 h-5 text-[var(--muted-foreground)]" />
+              <User className="w-5 h-5 text-[var(--muted-foreground)]" />
               <div>
-                <p className="text-xs text-[var(--muted-foreground)]">Comisión</p>
-                <p className="text-sm text-[var(--foreground)] font-medium text-purple-400">
-                  {vendedor.comision_porcentaje}%
+                <p className="text-xs text-[var(--muted-foreground)]">Rol</p>
+                <p className="text-sm text-[var(--foreground)] font-medium text-purple-400 capitalize">
+                  {vendedor.rol}
                 </p>
               </div>
             </div>

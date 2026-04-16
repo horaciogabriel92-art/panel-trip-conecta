@@ -178,6 +178,9 @@ export default function AdminCotizacionDetalle() {
   const [tipoVoucher, setTipoVoucher] = useState<'boleto_aereo' | 'voucher_hotel' | 'voucher_actividad' | 'seguro' | 'itinerario_final' | 'e_ticket' | 'boarding_pass' | 'otro'>('boleto_aereo');
   const [isUploadingVoucher, setIsUploadingVoucher] = useState(false);
   const [showPagoModal, setShowPagoModal] = useState(false);
+  const [showComisionModal, setShowComisionModal] = useState(false);
+  const [comisionMontoInput, setComisionMontoInput] = useState('');
+  const [pendingVoucherFile, setPendingVoucherFile] = useState<File | null>(null);
 
   useEffect(() => {
     const fetchCotizacion = async () => {
@@ -340,11 +343,23 @@ export default function AdminCotizacionDetalle() {
     const file = e.target.files?.[0];
     if (!file || !cotizacion?.venta?.id) return;
     
+    // Precargar comisión actual de la venta
+    const comisionActual = cotizacion.venta?.comision_monto ?? cotizacion.comision_vendedor ?? 0;
+    setComisionMontoInput(String(comisionActual));
+    setPendingVoucherFile(file);
+    setShowComisionModal(true);
+  };
+  
+  const confirmVoucherUpload = async () => {
+    if (!pendingVoucherFile || !cotizacion?.venta?.id) return;
+    
     setIsUploadingVoucher(true);
+    setShowComisionModal(false);
     try {
       const formData = new FormData();
-      formData.append('voucher', file);
+      formData.append('voucher', pendingVoucherFile);
       formData.append('tipo_documento', tipoVoucher);
+      formData.append('comision_monto', comisionMontoInput);
       
       await api.post(`/upload/voucher/${cotizacion.venta.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -354,12 +369,17 @@ export default function AdminCotizacionDetalle() {
       const res = await api.get(`/upload/vouchers/${cotizacion.venta.id}`);
       setVouchers(res.data);
       
+      // Refrescar cotización para ver comisión actualizada
+      const cotRes = await api.get(`/cotizaciones/${params.id}`);
+      setCotizacion(cotRes.data);
+      
       toastSuccess('Voucher subido exitosamente', 'Subida OK');
     } catch (err: any) {
       console.error('Error subiendo voucher:', err);
       toastError(err.response?.data?.error || 'Error al subir voucher', 'Error');
     } finally {
       setIsUploadingVoucher(false);
+      setPendingVoucherFile(null);
     }
   };
   
@@ -862,7 +882,7 @@ export default function AdminCotizacionDetalle() {
               </div>
               {cotizacion.comision_vendedor && (
                 <div className="flex justify-between text-sm pt-2">
-                  <span className="text-[var(--muted-foreground)]">Comisión vendedor (12%)</span>
+                  <span className="text-[var(--muted-foreground)]">Comisión vendedor</span>
                   <span className="text-green-400 font-medium">${formatCurrency(cotizacion.comision_vendedor)}</span>
                 </div>
               )}
@@ -1109,6 +1129,54 @@ export default function AdminCotizacionDetalle() {
             window.location.reload();
           }}
         />
+      )}
+
+      {/* Modal Comisión al subir voucher */}
+      {showComisionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="glass-card w-full max-w-md rounded-3xl p-6 md:p-8">
+            <h3 className="text-xl font-black text-[var(--foreground)] mb-4">
+              Asignar comisión del vendedor
+            </h3>
+            <p className="text-sm text-[var(--muted-foreground)] mb-4">
+              Define el monto fijo en USD que recibirá el vendedor por esta venta.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">
+                  Comisión (USD)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={comisionMontoInput}
+                  onChange={(e) => setComisionMontoInput(e.target.value)}
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-purple-500"
+                  placeholder="Ej: 50"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setShowComisionModal(false);
+                    setPendingVoucherFile(null);
+                  }}
+                  className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmVoucherUpload}
+                  disabled={isUploadingVoucher}
+                  className="flex-1 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold transition-all disabled:opacity-50"
+                >
+                  {isUploadingVoucher ? 'Subiendo...' : 'Confirmar y subir'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
