@@ -19,6 +19,7 @@ import {
   X
 } from 'lucide-react';
 import { parseAmadeusPNR } from '@/lib/amadeus-parser';
+import { AirlineLogo } from '@/components/flights/AirlineLogo';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -758,9 +759,12 @@ RP/DZOUY2100/
               {parsedFlights.map((flight, idx) => (
                 <div key={idx} className="bg-teal-500/10 border border-teal-500/30 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-teal-400 font-bold">
-                      {flight.aerolinea_codigo} {flight.numero_vuelo}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <AirlineLogo iataCode={flight.aerolinea_codigo} size={20} />
+                      <span className="text-teal-400 font-bold">
+                        {flight.aerolinea_codigo} {flight.numero_vuelo}
+                      </span>
+                    </div>
                     <span className="text-xs text-[var(--muted-foreground)]">Clase {flight.clase_codigo}</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">

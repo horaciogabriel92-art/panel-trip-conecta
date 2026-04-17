@@ -545,6 +545,16 @@ function createStyles(COLORS: typeof DEFAULT_COLORS) {
     fontWeight: 'bold',
     color: COLORS.dark,
   },
+  flightAirlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  airlineLogo: {
+    width: 14,
+    height: 14,
+    objectFit: 'contain',
+  },
   
   // Price breakdown
   priceBreakdownSection: {
@@ -865,9 +875,14 @@ export function CotizacionPDFDocument({ data, colors }: CotizacionPDFProps) {
                 </View>
                 
                 <View style={styles.flightMeta}>
-                  <Text style={styles.flightMetaItem}>
-                    <Text style={styles.flightMetaLabel}>Aerolínea:</Text> {vuelo.aerolinea_nombre}
-                  </Text>
+                  <View style={styles.flightAirlineRow}>
+                    {vuelo.aerolinea_logo_base64 && (
+                      <Image src={vuelo.aerolinea_logo_base64} style={styles.airlineLogo} />
+                    )}
+                    <Text style={styles.flightMetaItem}>
+                      <Text style={styles.flightMetaLabel}>Aerolínea:</Text> {vuelo.aerolinea_nombre}
+                    </Text>
+                  </View>
                   <Text style={styles.flightMetaItem}>
                     <Text style={styles.flightMetaLabel}>Clase:</Text> {vuelo.clase_codigo}
                   </Text>

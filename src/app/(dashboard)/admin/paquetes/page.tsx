@@ -5,6 +5,7 @@ import api from '@/lib/api';
 import { Package, Search, Filter, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Download, Upload, X, ImageIcon } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { parseAmadeusPNR } from '@/lib/amadeus-parser';
+import { AirlineLogo } from '@/components/flights/AirlineLogo';
 import { useToast } from '@/context/ToastContext';
 
 // Componente para subir imágenes a Supabase Storage
@@ -887,13 +888,19 @@ Ejemplo:
                       </div>
                       <div>
                         <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Aerolínea</label>
-                        <input
-                          type="text"
-                          value={formData.vuelos?.find(v => v.tipo === 'ida')?.aerolinea_nombre || ''}
-                          onChange={(e) => updateVueloIda('aerolinea_nombre', e.target.value)}
-                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
-                          placeholder="Ej: Air Europa"
-                        />
+                        <div className="flex items-center gap-2">
+                          <AirlineLogo
+                            iataCode={formData.vuelos?.find(v => v.tipo === 'ida')?.aerolinea_codigo || ''}
+                            size={28}
+                          />
+                          <input
+                            type="text"
+                            value={formData.vuelos?.find(v => v.tipo === 'ida')?.aerolinea_nombre || ''}
+                            onChange={(e) => updateVueloIda('aerolinea_nombre', e.target.value)}
+                            className="flex-1 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-blue-500"
+                            placeholder="Ej: Air Europa"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Hora Salida</label>
@@ -994,13 +1001,19 @@ Ejemplo:
                       </div>
                       <div>
                         <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Aerolínea</label>
-                        <input
-                          type="text"
-                          value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.aerolinea_nombre || ''}
-                          onChange={(e) => updateVueloVuelta('aerolinea_nombre', e.target.value)}
-                          className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-purple-500"
-                          placeholder="Ej: Air Europa"
-                        />
+                        <div className="flex items-center gap-2">
+                          <AirlineLogo
+                            iataCode={formData.vuelos?.find(v => v.tipo === 'vuelta')?.aerolinea_codigo || ''}
+                            size={28}
+                          />
+                          <input
+                            type="text"
+                            value={formData.vuelos?.find(v => v.tipo === 'vuelta')?.aerolinea_nombre || ''}
+                            onChange={(e) => updateVueloVuelta('aerolinea_nombre', e.target.value)}
+                            className="flex-1 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground)] outline-none focus:border-purple-500"
+                            placeholder="Ej: Air Europa"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="text-xs text-[var(--muted-foreground)] mb-1 block">Hora Salida</label>

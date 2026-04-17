@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
 import { CotizacionPDFDocument } from './CotizacionPDF';
 import { FileText, Download, Eye, X } from 'lucide-react';
@@ -76,10 +76,53 @@ interface PDFDownloadButtonProps {
   className?: string;
 }
 
+async function fetchLogoAsBase64(iataCode: string): Promise<string | null> {
+  try {
+    const res = await fetch(`https://images.kiwi.com/airlines/64/${iataCode}.png`);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
 export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonProps) {
   const { user } = useAuth();
   const [showPreview, setShowPreview] = useState(false);
+  const [vuelosWithLogos, setVuelosWithLogos] = useState<any[]>(data.vuelos || []);
+  const [loadingLogos, setLoadingLogos] = useState(false);
   const pdfColors = user?.preferencias?.pdf_colors;
+
+  useEffect(() => {
+    async function loadLogos() {
+      const vuelos = data.vuelos || [];
+      if (vuelos.length === 0) {
+        setVuelosWithLogos([]);
+        return;
+      }
+      setLoadingLogos(true);
+      const codes = [...new Set(vuelos.map((v: any) => v.aerolinea_codigo).filter(Boolean))];
+      const map: Record<string, string | null> = {};
+      await Promise.all(
+        codes.map(async (code: string) => {
+          map[code] = await fetchLogoAsBase64(code);
+        })
+      );
+      setVuelosWithLogos(
+        vuelos.map((v: any) => ({
+          ...v,
+          aerolinea_logo_base64: map[v.aerolinea_codigo] || undefined,
+        }))
+      );
+      setLoadingLogos(false);
+    }
+    loadLogos();
+  }, [data.vuelos]);
 
   // Preparar datos para el PDF - SIN parsing de notas
   // El componente padre debe proporcionar todos los datos estructurados
@@ -129,7 +172,7 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
       nacionalidad: p.nacionalidad || ''
     })),
     hospedaje: data.hospedaje || [],
-    vuelos: data.vuelos || [],
+    vuelos: vuelosWithLogos || [],
     precios: {
       moneda: data.precios?.moneda || 'USD',
       precio_unitario: ((data.precios?.total || data.precio_total || 0) / (data.num_pasajeros || 1)).toLocaleString('es-UY', { minimumFractionDigits: 2 }),
@@ -165,7 +208,7 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
         >
           {({ loading }) => (
             <button
-              disabled={loading}
+              disabled={loading || loadingLogos}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors"
             >
               {loading ? (
@@ -207,7 +250,7 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
                 >
                   {({ loading }) => (
                     <button
-                      disabled={loading}
+                      disabled={loading || loadingLogos}
                       className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-sm rounded-lg transition-colors"
                     >
                       <Download className="w-4 h-4" />
