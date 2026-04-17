@@ -62,7 +62,7 @@ export default function AgregarPagoModal({
         uploadForm.append("comprobante", comprobante);
         uploadForm.append("descripcion", `Comprobante pago adicional - ${formData.medio_pago}`);
         const uploadRes = await api.post(`/upload/comprobante-pago/${cotizacionId}`, uploadForm);
-        comprobanteUrl = `/uploads/comprobantes/${uploadRes.data?.ruta_archivo || uploadRes.data?.filename}`;
+        comprobanteUrl = uploadRes.data?.comprobante?.url || `/uploads/comprobantes/${uploadRes.data?.comprobante?.nombre_archivo}`;
       }
 
       // 2. Registrar pago
