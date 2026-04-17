@@ -313,7 +313,7 @@ export default function NuevaCotizacionManual() {
       </div>
 
       {/* Cliente CRM - Buscar o Crear */}
-      <div className="glass-card rounded-2xl p-6">
+      <div className="glass-card rounded-2xl p-6 relative z-20">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
           <User className="w-5 h-5 text-blue-400" />
           Cliente (Titular)
