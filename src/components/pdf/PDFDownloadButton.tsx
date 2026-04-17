@@ -78,7 +78,7 @@ interface PDFDownloadButtonProps {
 
 async function fetchLogoAsBase64(iataCode: string): Promise<string | null> {
   try {
-    const res = await fetch(`https://images.kiwi.com/airlines/64/${iataCode}.png`);
+    const res = await fetch(`/airlines/${iataCode}.png`);
     if (!res.ok) return null;
     const blob = await res.blob();
     return new Promise((resolve) => {

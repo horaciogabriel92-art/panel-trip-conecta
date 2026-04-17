@@ -13,7 +13,7 @@ export function AirlineLogo({ iataCode, size = 24, className = '' }: AirlineLogo
   const [error, setError] = useState(false);
 
   const code = (iataCode || '').trim().toUpperCase();
-  const src = code ? `https://images.kiwi.com/airlines/64/${code}.png` : '';
+  const src = code ? `/airlines/${code}.png` : '';
 
   if (!code || error) {
     return (
