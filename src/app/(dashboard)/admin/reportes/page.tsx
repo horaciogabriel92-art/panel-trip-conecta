@@ -21,9 +21,13 @@ const tabs = [
 
 export default function ReportesPage() {
   const [activeTab, setActiveTab] = useState('pipeline');
+  const hoy = new Date().toISOString().split('T')[0];
+  const inicioMes = new Date();
+  inicioMes.setDate(1);
+  const inicioMesStr = inicioMes.toISOString().split('T')[0];
   const [filtros, setFiltros] = useState<FiltrosReporte>({
-    fechaDesde: '',
-    fechaHasta: '',
+    fechaDesde: inicioMesStr,
+    fechaHasta: hoy,
     vendedorId: '',
   });
 

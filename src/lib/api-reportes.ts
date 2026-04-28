@@ -177,25 +177,33 @@ export interface CRMReport {
   };
 }
 
+function mapFiltros(filtros: FiltrosReporte) {
+  return {
+    fecha_desde: filtros.fechaDesde,
+    fecha_hasta: filtros.fechaHasta,
+    vendedor_id: filtros.vendedorId || undefined,
+  };
+}
+
 export const reportesAPI = {
   getPipeline: async (filtros: FiltrosReporte): Promise<PipelineReport> => {
-    const response = await api.get('/reportes/pipeline', { params: filtros });
+    const response = await api.get('/reportes/pipeline', { params: mapFiltros(filtros) });
     return response.data;
   },
   getCobranza: async (filtros: FiltrosReporte): Promise<CobranzaReport> => {
-    const response = await api.get('/reportes/cobranza', { params: filtros });
+    const response = await api.get('/reportes/cobranza', { params: mapFiltros(filtros) });
     return response.data;
   },
   getVendedores: async (filtros: FiltrosReporte): Promise<VendedoresReport> => {
-    const response = await api.get('/reportes/vendedores', { params: filtros });
+    const response = await api.get('/reportes/vendedores', { params: mapFiltros(filtros) });
     return response.data;
   },
   getProductos: async (filtros: FiltrosReporte): Promise<ProductosReport> => {
-    const response = await api.get('/reportes/productos', { params: filtros });
+    const response = await api.get('/reportes/productos', { params: mapFiltros(filtros) });
     return response.data;
   },
   getCRM: async (filtros: FiltrosReporte): Promise<CRMReport> => {
-    const response = await api.get('/reportes/crm', { params: filtros });
+    const response = await api.get('/reportes/crm', { params: mapFiltros(filtros) });
     return response.data;
   },
 };
