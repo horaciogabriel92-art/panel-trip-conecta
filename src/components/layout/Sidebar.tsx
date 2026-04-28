@@ -14,7 +14,8 @@ import {
   Settings,
   LogOut,
   Plane,
-  X
+  X,
+  BarChart3
 } from 'lucide-react';
 
 const adminLinks = [
@@ -25,6 +26,7 @@ const adminLinks = [
   { href: '/admin/ventas', label: 'Ventas', icon: ShoppingCart },
   { href: '/admin/vendedores', label: 'Vendedores', icon: Users },
   { href: '/admin/comisiones', label: 'Comisiones', icon: Wallet },
+  { href: '/admin/reportes', label: 'Reportes', icon: BarChart3 },
 ];
 
 const vendedorLinks = [
