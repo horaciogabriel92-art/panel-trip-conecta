@@ -445,6 +445,7 @@ export default function AdminCotizacionDetalle() {
   }
 
   const isVendida = cotizacion.estado === 'vendida';
+  const puedeEditar = cotizacion.estado === 'nueva' || cotizacion.estado === 'enviada';
   const venta = cotizacion.venta;
   const comprobantes = cotizacion.comprobantes_pago || [];
   const pasajeros = cotizacion.pasajeros || [];
@@ -475,7 +476,17 @@ export default function AdminCotizacionDetalle() {
             {cotizacion.fecha_envio && ` • Enviada el ${new Date(cotizacion.fecha_envio).toLocaleDateString('es-AR')}`}
           </p>
         </div>
-        <div className="flex gap-2" />
+        <div className="flex gap-2">
+          {puedeEditar && (
+            <Link 
+              href={`/admin/cotizaciones/${cotizacion.id}/editar`}
+              className="p-3 bg-[var(--muted)] rounded-xl hover:bg-[var(--border)] transition-all"
+              title="Editar"
+            >
+              <Edit className="w-5 h-5 text-[var(--muted-foreground)]" />
+            </Link>
+          )}
+        </div>
 
       </div>
 

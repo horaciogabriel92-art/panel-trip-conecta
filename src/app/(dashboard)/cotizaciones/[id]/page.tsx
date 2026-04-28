@@ -637,13 +637,13 @@ export default function CotizacionDetalle() {
             }}
           />
           {puedeEditar && (
-            <button 
-              onClick={() => setShowEditModal(true)}
-              className="p-3 bg-[var(--muted)] rounded-xl hover:bg-[var(--muted)] transition-all"
+            <Link 
+              href={`/cotizaciones/${cotizacion.id}/editar`}
+              className="p-3 bg-[var(--muted)] rounded-xl hover:bg-[var(--border)] transition-all"
               title="Editar"
             >
               <Edit className="w-5 h-5 text-[var(--muted-foreground)]" />
-            </button>
+            </Link>
           )}
         </div>
       </div>
