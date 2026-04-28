@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
-import { ShoppingCart, FileText, Package, Wallet, Star, ArrowUpRight, TrendingUp, Calendar } from 'lucide-react';
+import { ShoppingCart, FileText, Package, Wallet, ArrowUpRight, TrendingUp, Calendar, Target } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -13,6 +13,10 @@ interface DashboardStats {
   total_comisiones: number;
   comisiones_pendientes: number;
   comisiones_pagadas: number;
+  ticket_promedio: number;
+  cotizaciones_mes: number;
+  cotizaciones_enviadas: number;
+  tasa_conversion: number;
 }
 
 interface ComisionMensual {
@@ -24,7 +28,6 @@ interface ComisionMensual {
 export default function VendedorDashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [cotizacionesCount, setCotizacionesCount] = useState(0);
   const [comisionesMensual, setComisionesMensual] = useState<ComisionMensual[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -34,14 +37,9 @@ export default function VendedorDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch stats de ventas
+      // Fetch stats de ventas + cotizaciones (un solo endpoint)
       const statsRes = await api.get('/ventas/stats');
       setStats(statsRes.data);
-
-      // Fetch cotizaciones pendientes
-      const cotizacionesRes = await api.get('/cotizaciones');
-      const pendientes = cotizacionesRes.data.filter((c: any) => c.estado === 'pendiente');
-      setCotizacionesCount(pendientes.length);
 
       // Fetch comisiones para el historial mensual
       try {
@@ -69,21 +67,20 @@ export default function VendedorDashboard() {
   };
 
   const nombre = user?.nombre || 'Vendedor';
-  const metaProgreso = stats ? Math.min((stats.total_ventas / 10000) * 100, 100) : 0;
 
   const cards = [
     { 
       title: 'Mis Ventas', 
       value: stats?.cantidad_ventas || 0, 
-      subtext: stats ? `$${formatCurrency(stats.total_ventas)}` : '$0',
+      subtext: stats ? `$${formatCurrency(stats.total_ventas)} total · $${formatCurrency(stats.ticket_promedio || 0)} promedio` : '$0',
       icon: ShoppingCart, 
       color: 'text-blue-400', 
       bg: 'bg-blue-500/10' 
     },
     { 
       title: 'Cotizaciones', 
-      value: cotizacionesCount, 
-      subtext: 'Pendientes',
+      value: stats?.cotizaciones_mes || 0, 
+      subtext: `${stats?.cotizaciones_enviadas || 0} seguimientos pendientes`,
       icon: FileText, 
       color: 'text-purple-400', 
       bg: 'bg-purple-500/10' 
@@ -97,10 +94,10 @@ export default function VendedorDashboard() {
       bg: 'bg-green-500/10' 
     },
     { 
-      title: 'Meta Anual', 
-      value: `${Math.round(metaProgreso)}%`, 
-      subtext: 'del objetivo',
-      icon: TrendingUp, 
+      title: 'Tasa de Conversión', 
+      value: `${stats?.tasa_conversion || 0}%`, 
+      subtext: 'de cotizaciones a ventas',
+      icon: Target, 
       color: 'text-yellow-400', 
       bg: 'bg-yellow-500/10' 
     },
@@ -112,9 +109,9 @@ export default function VendedorDashboard() {
         <div>
           <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">Hola, {nombre} 👋</h2>
           <p className="text-[var(--muted-foreground)]">
-            {cotizacionesCount > 0 
-              ? `¡Tienes ${cotizacionesCount} cotizaciones pendientes!` 
-              : 'No tienes cotizaciones pendientes'}
+            {stats && stats.cotizaciones_enviadas > 0 
+              ? `¡Tienes ${stats.cotizaciones_enviadas} cotización${stats.cotizaciones_enviadas === 1 ? '' : 'es'} esperando seguimiento!` 
+              : 'No tienes cotizaciones pendientes de seguimiento'}
           </p>
         </div>
         <Link href="/paquetes" className="bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 w-fit">
@@ -189,6 +186,11 @@ export default function VendedorDashboard() {
                   </div>
                 </div>
               ))}
+              {comisionesMensual.length === 0 && (
+                <p className="text-sm text-[var(--muted-foreground)] text-center py-4">
+                  No hay pagos de comisiones registrados aún.
+                </p>
+              )}
             </div>
           )}
         </div>
