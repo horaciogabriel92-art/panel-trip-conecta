@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import api from '@/lib/api';
+import api, { recordatoriosAPI, Recordatorio } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
-import { ShoppingCart, FileText, Package, Wallet, ArrowUpRight, TrendingUp, Calendar, Target } from 'lucide-react';
+import { ShoppingCart, FileText, Package, Wallet, ArrowUpRight, TrendingUp, Calendar, Target, Bell, CheckCircle2, Clock, Trash2 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -29,6 +29,7 @@ export default function VendedorDashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [comisionesMensual, setComisionesMensual] = useState<ComisionMensual[]>([]);
+  const [recordatorios, setRecordatorios] = useState<Recordatorio[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -57,6 +58,14 @@ export default function VendedorDashboard() {
       } catch (err) {
         // Si falla, mostrar array vacío
         setComisionesMensual([]);
+      }
+
+      // Fetch recordatorios pendientes
+      try {
+        const recs = await recordatoriosAPI.listar({ estado: 'pendiente' });
+        setRecordatorios(recs.slice(0, 5));
+      } catch (err) {
+        setRecordatorios([]);
       }
 
     } catch (err) {
@@ -196,27 +205,66 @@ export default function VendedorDashboard() {
         </div>
 
         <div className="glass-card p-6 md:p-8 rounded-3xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border-blue-500/20">
-           <h3 className="text-xl font-bold mb-4">Acceso Rápido</h3>
-           <div className="space-y-3">
-             <Link 
-               href="/paquetes"
-               className="w-full block text-center bg-white text-black font-black py-3 rounded-xl hover:bg-slate-100 transition-all"
-             >
-               Ver Catálogo
-             </Link>
-             <Link 
-               href="/cotizaciones"
-               className="w-full block text-center bg-[var(--muted)] text-[var(--foreground)] font-bold py-3 rounded-xl hover:bg-[var(--border)] transition-all"
-             >
-               Mis Cotizaciones
-             </Link>
-             <Link 
-               href="/cotizacion/nueva"
-               className="w-full block text-center bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all"
-             >
-               Nueva Cotización
-             </Link>
+           <div className="flex items-center justify-between mb-4">
+             <h3 className="text-xl font-bold flex items-center gap-2">
+               <Bell className="w-5 h-5 text-blue-400" />
+               Mis Recordatorios
+             </h3>
+             {recordatorios.length > 0 && (
+               <span className="px-2 py-0.5 bg-orange-500/10 text-orange-400 rounded-full text-xs font-bold">
+                 {recordatorios.length} pendiente{recordatorios.length === 1 ? '' : 's'}
+               </span>
+             )}
            </div>
+           {isLoading ? (
+             <div className="space-y-3">
+               {[1, 2].map((i) => (
+                 <div key={i} className="h-12 bg-[var(--muted)] rounded-xl animate-pulse" />
+               ))}
+             </div>
+           ) : recordatorios.length === 0 ? (
+             <div className="text-center py-6">
+               <Bell className="w-10 h-10 mx-auto mb-2 opacity-30" />
+               <p className="text-sm text-[var(--muted-foreground)]">No tienes recordatorios pendientes</p>
+             </div>
+           ) : (
+             <div className="space-y-3">
+               {recordatorios.map((rec) => (
+                 <div key={rec.id} className={`p-3 rounded-xl ${new Date(rec.fecha_recordatorio) < new Date() ? 'bg-red-500/5 border border-red-500/20' : 'bg-[var(--muted)]'}`}>
+                   <div className="flex items-start justify-between gap-2">
+                     <div className="flex-1 min-w-0">
+                       <p className="text-sm font-medium text-[var(--foreground)] truncate">{rec.titulo}</p>
+                       <p className="text-xs text-[var(--muted-foreground)] flex items-center gap-1 mt-0.5">
+                         <Clock className="w-3 h-3" />
+                         {new Date(rec.fecha_recordatorio).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                       </p>
+                       {rec.cliente && (
+                         <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+                           {rec.cliente.nombre} {rec.cliente.apellido}
+                         </p>
+                       )}
+                     </div>
+                     <div className="flex items-center gap-1">
+                       <button
+                         onClick={async () => {
+                           try {
+                             await recordatoriosAPI.completar(rec.id);
+                             setRecordatorios((prev) => prev.filter((r) => r.id !== rec.id));
+                           } catch (e) {
+                             console.error(e);
+                           }
+                         }}
+                         className="p-1.5 text-green-400 hover:bg-green-500/10 rounded-lg transition-colors"
+                         title="Completar"
+                       >
+                         <CheckCircle2 className="w-4 h-4" />
+                       </button>
+                     </div>
+                   </div>
+                 </div>
+               ))}
+             </div>
+           )}
         </div>
       </div>
     </div>

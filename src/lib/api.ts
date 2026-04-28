@@ -73,4 +73,78 @@ export const pdfAPI = {
   },
 };
 
+// ============================================
+// RECORDATORIOS API
+// ============================================
+
+export interface Recordatorio {
+  id: string;
+  titulo: string;
+  descripcion: string | null;
+  fecha_recordatorio: string;
+  estado: 'pendiente' | 'completado' | 'cancelado';
+  fecha_completado: string | null;
+  notificacion_enviada: boolean;
+  fecha_creacion: string;
+  cliente?: {
+    id: string;
+    nombre: string;
+    apellido: string;
+    email: string;
+  };
+  cotizacion?: {
+    id: string;
+    codigo: string;
+    destino_principal: string;
+  };
+  vendedor?: {
+    id: string;
+    nombre: string;
+    email: string;
+  };
+  asignado?: {
+    id: string;
+    nombre: string;
+    email: string;
+  };
+}
+
+export const recordatoriosAPI = {
+  listar: async (params?: { cliente_id?: string; estado?: string; vencidos?: boolean }): Promise<Recordatorio[]> => {
+    const response = await api.get('/recordatorios', { params });
+    return response.data.recordatorios || [];
+  },
+
+  crear: async (data: {
+    titulo: string;
+    descripcion?: string;
+    cliente_id?: string;
+    cotizacion_id?: string;
+    asignado_a?: string;
+    fecha_recordatorio: string;
+  }): Promise<Recordatorio> => {
+    const response = await api.post('/recordatorios', data);
+    return response.data.recordatorio;
+  },
+
+  actualizar: async (id: string, data: Partial<{
+    titulo: string;
+    descripcion: string;
+    fecha_recordatorio: string;
+    estado: string;
+    asignado_a: string;
+  }>): Promise<Recordatorio> => {
+    const response = await api.put(`/recordatorios/${id}`, data);
+    return response.data.recordatorio;
+  },
+
+  completar: async (id: string): Promise<Recordatorio> => {
+    return recordatoriosAPI.actualizar(id, { estado: 'completado' });
+  },
+
+  eliminar: async (id: string): Promise<void> => {
+    await api.delete(`/recordatorios/${id}`);
+  },
+};
+
 export default api;

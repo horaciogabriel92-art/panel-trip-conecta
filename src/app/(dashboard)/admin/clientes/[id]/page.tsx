@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import api from "@/lib/api";
+import api, { recordatoriosAPI, Recordatorio } from "@/lib/api";
 import {
   ArrowLeft,
   User,
@@ -23,6 +23,9 @@ import {
   Flag,
   Send,
   Trash2,
+  Bell,
+  CheckCircle2,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -109,13 +112,23 @@ export default function ClienteDetallePage() {
   const [historial, setHistorial] = useState<HistorialItem[]>([]);
   const [notas, setNotas] = useState<Nota[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"info" | "cotizaciones" | "historial" | "notas">("info");
+  const [activeTab, setActiveTab] = useState<"info" | "cotizaciones" | "historial" | "notas" | "recordatorios">("info");
   
   // Estados para notas
   const [nuevaNota, setNuevaNota] = useState("");
   const [tipoNota, setTipoNota] = useState("general");
   const [esPrivada, setEsPrivada] = useState(false);
   const [enviandoNota, setEnviandoNota] = useState(false);
+
+  // Estados para recordatorios
+  const [recordatorios, setRecordatorios] = useState<Recordatorio[]>([]);
+  const [nuevoRecordatorio, setNuevoRecordatorio] = useState({
+    titulo: "",
+    descripcion: "",
+    fecha_recordatorio: "",
+  });
+  const [enviandoRecordatorio, setEnviandoRecordatorio] = useState(false);
+  const [showRecordatorioModal, setShowRecordatorioModal] = useState(false);
 
   // Estados para agregar pasajero
   const [showPasajeroModal, setShowPasajeroModal] = useState(false);
@@ -146,6 +159,14 @@ export default function ClienteDetallePage() {
         // Cargar notas (usando el mismo endpoint con :id/notas)
         const notasRes = await api.get(`/clientes/${clienteId}/notas`);
         setNotas(notasRes.data?.notas || []);
+
+        // Cargar recordatorios
+        try {
+          const recs = await recordatoriosAPI.listar({ cliente_id: clienteId });
+          setRecordatorios(recs);
+        } catch (e) {
+          console.error("Error cargando recordatorios:", e);
+        }
       } catch (error) {
         console.error("Error cargando datos del cliente:", error);
       } finally {
@@ -302,6 +323,66 @@ export default function ClienteDetallePage() {
     }
   };
 
+  // Handlers para recordatorios
+  const handleCrearRecordatorio = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cliente || !nuevoRecordatorio.titulo.trim() || !nuevoRecordatorio.fecha_recordatorio) return;
+
+    setEnviandoRecordatorio(true);
+    try {
+      const rec = await recordatoriosAPI.crear({
+        titulo: nuevoRecordatorio.titulo,
+        descripcion: nuevoRecordatorio.descripcion,
+        cliente_id: cliente.id,
+        fecha_recordatorio: new Date(nuevoRecordatorio.fecha_recordatorio).toISOString(),
+      });
+      setRecordatorios((prev) => [...prev, rec]);
+      setNuevoRecordatorio({ titulo: "", descripcion: "", fecha_recordatorio: "" });
+      setShowRecordatorioModal(false);
+    } catch (error: any) {
+      console.error("Error creando recordatorio:", error);
+      alert(error.response?.data?.error || "Error al crear recordatorio");
+    } finally {
+      setEnviandoRecordatorio(false);
+    }
+  };
+
+  const handleCompletarRecordatorio = async (id: string) => {
+    try {
+      await recordatoriosAPI.completar(id);
+      setRecordatorios((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, estado: "completado" as const, fecha_completado: new Date().toISOString() } : r))
+      );
+    } catch (error) {
+      console.error("Error completando recordatorio:", error);
+    }
+  };
+
+  const handleEliminarRecordatorio = async (id: string) => {
+    if (!confirm("¿Eliminar este recordatorio?")) return;
+    try {
+      await recordatoriosAPI.eliminar(id);
+      setRecordatorios((prev) => prev.filter((r) => r.id !== id));
+    } catch (error) {
+      console.error("Error eliminando recordatorio:", error);
+    }
+  };
+
+  const getEstadoRecordatorioColor = (estado: string) => {
+    switch (estado) {
+      case "completado":
+        return "bg-green-500/10 text-green-400 border-green-500/20";
+      case "cancelado":
+        return "bg-gray-500/10 text-gray-400 border-gray-500/20";
+      default:
+        return "bg-orange-500/10 text-orange-400 border-orange-500/20";
+    }
+  };
+
+  const isVencido = (fecha: string) => {
+    return new Date(fecha) < new Date();
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -366,9 +447,10 @@ export default function ClienteDetallePage() {
       {/* Tabs */}
       <div className="flex gap-2 border-b border-[var(--border)] overflow-x-auto">
         {[
-          { id: "info", label: "Información", icon: User },
+  { id: "info", label: "Información", icon: User },
           { id: "cotizaciones", label: `Cotizaciones (${cotizaciones.length})`, icon: CreditCard },
           { id: "notas", label: `Notas (${notas.length})`, icon: MessageSquare },
+          { id: "recordatorios", label: `Recordatorios (${recordatorios.length})`, icon: Bell },
           { id: "historial", label: "Historial", icon: History },
         ].map((tab) => (
           <button
@@ -908,6 +990,151 @@ export default function ClienteDetallePage() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === "recordatorios" && (
+        <div className="glass-card rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-[var(--foreground)] flex items-center gap-2">
+              <Bell className="w-5 h-5 text-blue-400" />
+              Recordatorios de seguimiento
+            </h3>
+            <button
+              onClick={() => setShowRecordatorioModal(true)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Nuevo recordatorio
+            </button>
+          </div>
+
+          {recordatorios.length === 0 ? (
+            <div className="text-center py-8 text-[var(--muted-foreground)]">
+              <Bell className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>No hay recordatorios para este cliente</p>
+              <p className="text-sm">Agrega el primer recordatorio de seguimiento</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recordatorios.map((rec) => (
+                <div key={rec.id} className={`p-4 rounded-xl border ${rec.estado === 'pendiente' && isVencido(rec.fecha_recordatorio) ? 'bg-red-500/5 border-red-500/20' : 'bg-[var(--muted)] border-transparent'}`}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase border ${getEstadoRecordatorioColor(rec.estado)}`}>
+                          {rec.estado}
+                        </span>
+                        {rec.estado === 'pendiente' && isVencido(rec.fecha_recordatorio) && (
+                          <span className="px-2 py-0.5 bg-red-500/10 text-red-400 rounded-full text-xs font-bold">
+                            Vencido
+                          </span>
+                        )}
+                        <span className="text-xs text-[var(--muted-foreground)] flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {new Date(rec.fecha_recordatorio).toLocaleDateString("es-AR", {
+                            day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
+                          })}
+                        </span>
+                      </div>
+                      <p className="font-medium text-[var(--foreground)]">{rec.titulo}</p>
+                      {rec.descripcion && (
+                        <p className="text-sm text-[var(--muted-foreground)] mt-1">{rec.descripcion}</p>
+                      )}
+                      {rec.asignado && (
+                        <p className="text-xs text-[var(--muted-foreground)] mt-1">
+                          Asignado a: {rec.asignado.nombre}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {rec.estado === 'pendiente' && (
+                        <button
+                          onClick={() => handleCompletarRecordatorio(rec.id)}
+                          className="p-2 text-green-400 hover:bg-green-500/10 rounded-lg transition-colors"
+                          title="Marcar como completado"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleEliminarRecordatorio(rec.id)}
+                        className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                        title="Eliminar"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Modal Nuevo Recordatorio */}
+      {showRecordatorioModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="glass-card w-full max-w-lg rounded-3xl p-8">
+            <h3 className="text-2xl font-black text-[var(--foreground)] mb-6">Nuevo Recordatorio</h3>
+            <form onSubmit={handleCrearRecordatorio} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Título *</label>
+                <input
+                  type="text"
+                  value={nuevoRecordatorio.titulo}
+                  onChange={(e) => setNuevoRecordatorio({ ...nuevoRecordatorio, titulo: e.target.value })}
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2.5 text-[var(--foreground)] text-sm"
+                  placeholder="Ej: Llamar para confirmar itinerario"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Descripción</label>
+                <textarea
+                  value={nuevoRecordatorio.descripcion}
+                  onChange={(e) => setNuevoRecordatorio({ ...nuevoRecordatorio, descripcion: e.target.value })}
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2.5 text-[var(--foreground)] text-sm resize-none"
+                  placeholder="Detalles adicionales..."
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--muted-foreground)] mb-1">Fecha y hora *</label>
+                <input
+                  type="datetime-local"
+                  value={nuevoRecordatorio.fecha_recordatorio}
+                  onChange={(e) => setNuevoRecordatorio({ ...nuevoRecordatorio, fecha_recordatorio: e.target.value })}
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-3 py-2.5 text-[var(--foreground)] text-sm"
+                  required
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowRecordatorioModal(false)}
+                  className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={enviandoRecordatorio}
+                  className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium transition-all flex items-center justify-center gap-2"
+                >
+                  {enviandoRecordatorio ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    "Guardar"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
