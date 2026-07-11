@@ -15,10 +15,11 @@ const geistMono = Geist_Mono({
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ToastProvider } from '@/context/ToastContext';
+import { TenantProvider } from '@/context/TenantContext';
 
 export const metadata: Metadata = {
-  title: "Trip Conecta B2B - Panel de Agentes",
-  description: "Plataforma de gestión de cotizaciones y ventas para agentes de viajes",
+  title: "Quotix Travel - Panel de Agentes",
+  description: "Plataforma de gestión de cotizaciones y ventas para agencias de viajes",
 };
 
 export default function RootLayout({
@@ -32,11 +33,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <AuthProvider>
-            <ToastProvider>
-              {children}
-            </ToastProvider>
-          </AuthProvider>
+          <TenantProvider>
+            <AuthProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </AuthProvider>
+          </TenantProvider>
         </ThemeProvider>
       </body>
     </html>

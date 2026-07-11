@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+import { useTenant } from "@/context/TenantContext";
 import dynamic from "next/dynamic";
 import { 
   Eye, 
@@ -29,6 +30,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
   const { error: toastError } = useToast();
+  const { tenant } = useTenant();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,11 +83,22 @@ export default function LoginPage() {
           className="text-center mb-6"
         >
           <div className="inline-flex items-center justify-center mb-4">
-            <img 
-              src="/logo-trip-conecta-v2.png" 
-              alt="Trip Conecta" 
-              className="h-32 w-auto object-contain drop-shadow-lg"
-            />
+            {tenant?.logo_url ? (
+              <img 
+                src={tenant.logo_url} 
+                alt={tenant.nombre}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+                className="h-32 w-auto object-contain drop-shadow-lg"
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center shadow-lg mb-2">
+                  <Plane className="w-10 h-10 text-white" />
+                </div>
+              </div>
+            )}
           </div>
         </motion.div>
 
@@ -212,7 +225,7 @@ export default function LoginPage() {
           transition={{ delay: 0.8 }}
           className="text-center text-xs text-[var(--muted-foreground)] mt-8"
         >
-          Trip Conecta SAS • Montevideo, Uruguay
+          {tenant?.nombre || 'Quotix Travel'} • Plataforma para agencias de viajes
         </motion.p>
       </div>
     </div>

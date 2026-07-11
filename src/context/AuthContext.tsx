@@ -10,6 +10,7 @@ interface User {
   nombre: string;
   apellido: string;
   rol: 'admin' | 'vendedor';
+  tenant_id?: string;
   comision_porcentaje?: number;
   telefono?: string;
   preferencias?: {

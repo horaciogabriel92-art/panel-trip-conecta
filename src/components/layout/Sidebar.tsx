@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useTenant } from '@/context/TenantContext';
 import { cn } from '@/lib/utils';
 import { 
   LayoutDashboard, 
@@ -46,6 +47,7 @@ interface SidebarProps {
 export default function Sidebar({ role = 'vendedor', mobileOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { logout } = useAuth();
+  const { tenant } = useTenant();
   const links = role === 'admin' ? adminLinks : vendedorLinks;
 
   const handleLinkClick = () => {
@@ -71,11 +73,22 @@ export default function Sidebar({ role = 'vendedor', mobileOpen = false, onClose
         )}
       >
         <div className="px-6 mb-10 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Plane className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            {tenant?.logo_url ? (
+              <img 
+                src={tenant.logo_url}
+                alt={tenant.nombre}
+                className="w-6 h-6 object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            ) : (
+              <Plane className="w-5 h-5 text-white" />
+            )}
           </div>
           <div className="min-w-0">
-            <h1 className="font-bold text-lg leading-none text-[var(--foreground)] truncate">Trip Conecta</h1>
+            <h1 className="font-bold text-lg leading-none text-[var(--foreground)] truncate">{tenant?.nombre || 'Quotix Travel'}</h1>
             <span className="text-xs text-[var(--muted-foreground)]">B2B System</span>
           </div>
           <button
