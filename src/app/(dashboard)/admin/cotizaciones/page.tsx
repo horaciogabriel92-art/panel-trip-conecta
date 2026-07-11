@@ -8,7 +8,12 @@ import {
   Search, 
   Eye, 
   Trash2,
-  Plus
+  Plus,
+  LayoutGrid,
+  List,
+  Calendar,
+  Users,
+  DollarSign
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
@@ -28,12 +33,118 @@ interface Cotizacion {
   num_pasajeros: number;
 }
 
+const estadosKanban: { key: Cotizacion['estado']; label: string; color: string }[] = [
+  { key: 'pendiente', label: 'Pendientes', color: 'border-orange-500/30 bg-orange-500/5' },
+  { key: 'convertida', label: 'Convertidas', color: 'border-green-500/30 bg-green-500/5' },
+  { key: 'vencida', label: 'Vencidas', color: 'border-red-500/30 bg-red-500/5' },
+  { key: 'cancelada', label: 'Canceladas', color: 'border-slate-500/30 bg-slate-500/5' }
+];
+
+function KanbanView({ 
+  cotizaciones, 
+  onDelete,
+  isLoading 
+}: { 
+  cotizaciones: Cotizacion[]; 
+  onDelete: (c: Cotizacion) => void;
+  isLoading: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (cotizaciones.length === 0) {
+    return (
+      <div className="glass-card rounded-2xl py-20 text-center text-[var(--muted-foreground)]">
+        <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
+        <p>No se encontraron cotizaciones</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      {estadosKanban.map((estado) => {
+        const items = cotizaciones.filter(c => c.estado === estado.key);
+        return (
+          <div key={estado.key} className="flex flex-col">
+            <div className={cn(
+              "flex items-center justify-between p-3 rounded-t-2xl border-t border-x",
+              estado.color
+            )}>
+              <span className="font-bold text-[var(--foreground)] text-sm">{estado.label}</span>
+              <span className="px-2 py-0.5 rounded-full bg-[var(--card)] text-xs font-bold text-[var(--foreground)]">
+                {items.length}
+              </span>
+            </div>
+            <div className={cn(
+              "flex-1 p-3 rounded-b-2xl border-b border-x min-h-[200px] space-y-3",
+              estado.color
+            )}>
+              {items.map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/admin/cotizaciones/${c.id}`}
+                  className="block bg-[var(--card)] rounded-xl p-4 border border-[var(--border)] hover:border-[var(--primary)] hover:shadow-lg transition-all group"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <span className="text-blue-500 font-mono text-xs font-bold">{c.codigo}</span>
+                    <span className="text-xs text-[var(--muted-foreground)]">
+                      {new Date(c.fecha_creacion).toLocaleDateString('es-AR')}
+                    </span>
+                  </div>
+                  <p className="font-semibold text-[var(--foreground)] text-sm mb-1">{c.cliente_nombre}</p>
+                  {c.paquete_nombre && (
+                    <p className="text-xs text-[var(--muted-foreground)] mb-2">{c.paquete_nombre}</p>
+                  )}
+                  <div className="flex items-center gap-3 text-xs text-[var(--muted-foreground)] mb-3">
+                    {c.vendedor_nombre && (
+                      <span className="flex items-center gap-1">
+                        <Users className="w-3 h-3" />
+                        {c.vendedor_nombre}
+                      </span>
+                    )}
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {c.num_pasajeros} pasajeros
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-500 font-bold text-sm">${formatCurrency(c.precio_total)}</span>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          onDelete(c);
+                        }}
+                        className="p-1.5 bg-red-500/10 rounded-lg hover:bg-red-500 hover:text-white text-red-500 transition-all"
+                        title="Eliminar"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AdminCotizaciones() {
   const { error: toastError } = useToast();
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState<string>('todos');
   const [searchTerm, setSearchTerm] = useState('');
+  const [vista, setVista] = useState<'lista' | 'kanban'>('kanban');
   
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [cotizacionToDelete, setCotizacionToDelete] = useState<Cotizacion | null>(null);
@@ -154,7 +265,7 @@ export default function AdminCotizaciones() {
           />
         </div>
         <div className="flex gap-2">
-          {['todos', 'pendiente', 'convertida', 'vencida', 'cancelada'].map((estado) => (
+          {vista === 'lista' && ['todos', 'pendiente', 'convertida', 'vencida', 'cancelada'].map((estado) => (
             <button
               key={estado}
               onClick={() => setFiltroEstado(estado)}
@@ -169,9 +280,44 @@ export default function AdminCotizaciones() {
             </button>
           ))}
         </div>
+
+        {/* Vista toggle */}
+        <div className="flex items-center bg-[var(--card)] border border-[var(--border)] rounded-2xl p-1">
+          <button
+            onClick={() => setVista('kanban')}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all",
+              vista === 'kanban'
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
+                : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+            )}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            Kanban
+          </button>
+          <button
+            onClick={() => setVista('lista')}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all",
+              vista === 'lista'
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
+                : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+            )}
+          >
+            <List className="w-4 h-4" />
+            Lista
+          </button>
+        </div>
       </div>
 
-      {/* Tabla */}
+      {vista === 'kanban' ? (
+        <KanbanView 
+          cotizaciones={filteredCotizaciones.filter(c => filtroEstado === 'todos' || c.estado === filtroEstado)}
+          onDelete={abrirModalEliminar}
+          isLoading={isLoading}
+        />
+      ) : (
+      /* Tabla */
       <div className="glass-card rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -253,6 +399,7 @@ export default function AdminCotizaciones() {
           </div>
         )}
       </div>
+      )}
 
       {/* Modal Eliminar Cotización */}
       {showDeleteModal && cotizacionToDelete && (
