@@ -16,7 +16,8 @@ import {
   LogOut,
   Plane,
   X,
-  BarChart3
+  BarChart3,
+  CreditCard
 } from 'lucide-react';
 
 const adminLinks = [
@@ -28,6 +29,7 @@ const adminLinks = [
   { href: '/admin/vendedores', label: 'Vendedores', icon: Users },
   { href: '/admin/comisiones', label: 'Comisiones', icon: Wallet },
   { href: '/admin/reportes', label: 'Reportes', icon: BarChart3 },
+  { href: '/configuracion/plan', label: 'Mi Plan', icon: CreditCard },
 ];
 
 const vendedorLinks = [
@@ -36,6 +38,7 @@ const vendedorLinks = [
   { href: '/cotizaciones', label: 'Cotizaciones', icon: FileText },
   { href: '/admin/clientes', label: 'Clientes', icon: Users },
   { href: '/mis-ventas', label: 'Mis Ventas', icon: ShoppingCart },
+  { href: '/configuracion/plan', label: 'Mi Plan', icon: CreditCard },
 ];
 
 interface SidebarProps {
