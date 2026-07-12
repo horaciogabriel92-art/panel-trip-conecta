@@ -5,6 +5,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -36,8 +37,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen bg-[var(--background)] overflow-x-hidden">
       <div className="gradient-bg" />
-      <Sidebar role={user.rol} mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
-      <div className="flex-1 flex flex-col min-w-0">
+      <Sidebar
+        role={user.rol}
+        mobileOpen={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+      />
+      <div
+        className={cn(
+          "flex-1 flex flex-col min-w-0 transition-[margin] duration-300 ease-in-out",
+          sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
+        )}
+      >
         <Header userName={`${user.nombre} ${user.apellido}`} userRole={user.rol} onMenuClick={() => setMobileOpen(true)} />
         <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden">
           {children}
