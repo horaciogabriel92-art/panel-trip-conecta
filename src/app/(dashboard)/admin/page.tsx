@@ -143,10 +143,6 @@ export default function AdminDashboard() {
               <Package className="w-8 h-8 mx-auto mb-2 text-green-400" />
               <p className="font-bold">Paquetes</p>
             </Link>
-            <Link href="/admin/ventas" className="p-4 rounded-xl bg-[var(--muted)] hover:bg-[var(--border)] transition-all text-center">
-              <ShoppingCart className="w-8 h-8 mx-auto mb-2 text-blue-400" />
-              <p className="font-bold">Ventas</p>
-            </Link>
             <Link href="/admin/comisiones" className="p-4 rounded-xl bg-[var(--muted)] hover:bg-[var(--border)] transition-all text-center">
               <Wallet className="w-8 h-8 mx-auto mb-2 text-orange-400" />
               <p className="font-bold">Comisiones</p>

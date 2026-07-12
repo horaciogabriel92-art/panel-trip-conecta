@@ -31,6 +31,7 @@ interface Cotizacion {
   estado: 'pendiente' | 'convertida' | 'vencida' | 'cancelada';
   fecha_creacion: string;
   num_pasajeros: number;
+  venta_id?: string | null;
 }
 
 const estadosKanban: { key: Cotizacion['estado']; label: string; color: string }[] = [
@@ -116,6 +117,19 @@ function KanbanView({
                   <div className="flex items-center justify-between">
                     <span className="text-blue-500 font-bold text-sm">${formatCurrency(c.precio_total)}</span>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {c.estado === 'convertida' && c.venta_id && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.location.href = `/admin/ventas/${c.venta_id}`;
+                          }}
+                          className="p-1.5 bg-green-500/10 rounded-lg hover:bg-green-500 hover:text-white text-green-500 transition-all"
+                          title="Ver venta"
+                        >
+                          <DollarSign className="w-3 h-3" />
+                        </button>
+                      )}
                       <button
                         onClick={(e) => {
                           e.preventDefault();
