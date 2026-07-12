@@ -17,16 +17,26 @@ import {
   Plane,
   X,
   BarChart3,
-  CreditCard
+  CreditCard,
+  PanelLeftClose,
+  PanelRightOpen
 } from 'lucide-react';
 
 interface SidebarProps {
   role?: 'admin' | 'vendedor';
   mobileOpen?: boolean;
   onClose?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export default function Sidebar({ role = 'vendedor', mobileOpen = false, onClose }: SidebarProps) {
+export default function Sidebar({ 
+  role = 'vendedor', 
+  mobileOpen = false, 
+  onClose,
+  collapsed = false,
+  onToggleCollapse
+}: SidebarProps) {
   const pathname = usePathname();
   const { logout, hasPermission } = useAuth();
   const { tenant } = useTenant();
@@ -67,14 +77,19 @@ export default function Sidebar({ role = 'vendedor', mobileOpen = false, onClose
       )}
       <aside
         className={cn(
-          "w-64 glass border-r border-[var(--border)] h-screen flex flex-col pt-6",
-          "fixed top-0 left-0 z-50 transition-transform duration-300 ease-in-out",
-          "-translate-x-full lg:translate-x-0 lg:static lg:top-0",
-          mobileOpen && "translate-x-0"
+          "glass border-r border-[var(--border)] h-screen flex flex-col pt-6",
+          "fixed top-0 left-0 z-50 transition-all duration-300 ease-in-out",
+          collapsed ? "w-20" : "w-64",
+          "-translate-x-full lg:translate-x-0",
+          mobileOpen && "translate-x-0 w-64"
         )}
       >
-        <div className="px-6 mb-10 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center shadow-lg shadow-emerald-500/20">
+        {/* Header */}
+        <div className={cn(
+          "mb-10 flex items-center",
+          collapsed ? "px-3 flex-col gap-3" : "px-6 gap-3"
+        )}>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
             {tenant?.logo_url ? (
               <img 
                 src={tenant.logo_url}
@@ -88,20 +103,39 @@ export default function Sidebar({ role = 'vendedor', mobileOpen = false, onClose
               <Plane className="w-5 h-5 text-white" />
             )}
           </div>
-          <div className="min-w-0">
-            <h1 className="font-bold text-lg leading-none text-[var(--foreground)] truncate">{tenant?.nombre || 'Quotix Travel'}</h1>
-            <span className="text-xs text-[var(--muted-foreground)]">B2B System</span>
-          </div>
+          {!collapsed && (
+            <div className="min-w-0 flex-1">
+              <h1 className="font-bold text-lg leading-none text-[var(--foreground)] truncate">
+                {tenant?.nombre || 'Quotix Travel'}
+              </h1>
+            </div>
+          )}
+          <button
+            onClick={onToggleCollapse}
+            className="hidden lg:flex p-1.5 rounded-lg hover:bg-[var(--muted)] text-[var(--muted-foreground)] transition-colors"
+            aria-label={collapsed ? "Expandir menú" : "Colapsar menú"}
+            title={collapsed ? "Expandir" : "Colapsar"}
+          >
+            {collapsed ? (
+              <PanelRightOpen className="w-4 h-4" />
+            ) : (
+              <PanelLeftClose className="w-4 h-4" />
+            )}
+          </button>
           <button
             onClick={onClose}
-            className="ml-auto lg:hidden p-2 rounded-lg hover:bg-[var(--muted)] text-[var(--muted-foreground)]"
+            className="lg:hidden p-2 rounded-lg hover:bg-[var(--muted)] text-[var(--muted-foreground)]"
             aria-label="Cerrar menú"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
+        {/* Navigation */}
+        <nav className={cn(
+          "flex-1 space-y-2 overflow-y-auto",
+          collapsed ? "px-2" : "px-4"
+        )}>
           {links.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;
@@ -111,55 +145,69 @@ export default function Sidebar({ role = 'vendedor', mobileOpen = false, onClose
                 key={link.href}
                 href={link.href}
                 onClick={handleLinkClick}
+                title={collapsed ? link.label : undefined}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-all group",
+                  "flex items-center rounded-xl transition-all group",
+                  collapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3",
                   isActive 
                     ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/20" 
                     : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
                 )}
               >
                 <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-white" : "text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]")} />
-                <span className="font-medium truncate">{link.label}</span>
+                {!collapsed && <span className="font-medium truncate">{link.label}</span>}
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-[var(--border)] space-y-2">
+        {/* Footer */}
+        <div className={cn(
+          "border-t border-[var(--border)] space-y-2",
+          collapsed ? "p-2" : "p-4"
+        )}>
           <Link 
             href="/configuracion"
             onClick={handleLinkClick}
+            title={collapsed ? "Configuración" : undefined}
             className={cn(
-              "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
+              "flex items-center rounded-xl transition-all",
+              collapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3",
               pathname === '/configuracion' || pathname?.startsWith('/configuracion/')
                 ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/20"
                 : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
             )}
           >
             <Settings className={cn("w-5 h-5 shrink-0", pathname === '/configuracion' || pathname?.startsWith('/configuracion/') ? "text-white" : "")} />
-            <span className="font-medium truncate">Configuración</span>
+            {!collapsed && <span className="font-medium truncate">Configuración</span>}
           </Link>
           {isAdmin && (
             <Link 
               href="/configuracion/plan"
               onClick={handleLinkClick}
+              title={collapsed ? "Mi Plan" : undefined}
               className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
+                "flex items-center rounded-xl transition-all",
+                collapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3",
                 pathname === '/configuracion/plan'
                   ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/20"
                   : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
               )}
             >
               <CreditCard className={cn("w-5 h-5 shrink-0", pathname === '/configuracion/plan' ? "text-white" : "")} />
-              <span className="font-medium truncate">Mi Plan</span>
+              {!collapsed && <span className="font-medium truncate">Mi Plan</span>}
             </Link>
           )}
           <button 
             onClick={logout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all"
+            title={collapsed ? "Cerrar Sesión" : undefined}
+            className={cn(
+              "flex items-center rounded-xl text-red-500 hover:bg-red-500/10 transition-all",
+              collapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"
+            )}
           >
             <LogOut className="w-5 h-5 shrink-0" />
-            <span className="font-medium truncate">Cerrar Sesión</span>
+            {!collapsed && <span className="font-medium truncate">Cerrar Sesión</span>}
           </button>
         </div>
       </aside>
