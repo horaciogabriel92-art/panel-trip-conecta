@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useTenant } from '@/context/TenantContext';
+import { useFeature } from '@/hooks/useFeature';
 import { cn } from '@/lib/utils';
 import SidebarPlanUpsell from '@/components/billing/SidebarPlanUpsell';
 import { 
@@ -41,6 +42,7 @@ export default function Sidebar({
   const pathname = usePathname();
   const { logout, hasPermission } = useAuth();
   const { tenant } = useTenant();
+  const { enabled: comisionesEnabled } = useFeature('comisiones');
 
   const isAdmin = role === 'admin';
 
@@ -49,9 +51,9 @@ export default function Sidebar({
     { href: '/admin/clientes', label: 'Clientes', icon: Users },
     { href: '/admin/cotizaciones', label: 'Cotizaciones', icon: FileText },
     { href: '/admin/paquetes', label: 'Paquetes', icon: Package },
-    { href: '/admin/comisiones', label: 'Comisiones', icon: Wallet, permission: 'ver_comisiones_otros' as const },
+    { href: '/admin/comisiones', label: 'Comisiones', icon: Wallet, permission: 'ver_comisiones_otros' as const, hidden: !comisionesEnabled },
     { href: '/admin/reportes', label: 'Reportes', icon: BarChart3, permission: 'ver_reportes' as const },
-  ].filter(link => !link.permission || hasPermission(link.permission));
+  ].filter(link => (!link.permission || hasPermission(link.permission)) && !link.hidden);
 
   const vendedorLinks = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },

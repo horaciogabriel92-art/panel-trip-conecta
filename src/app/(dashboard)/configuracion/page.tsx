@@ -16,8 +16,10 @@ import {
   Palette,
   RotateCcw,
   Users,
+  Puzzle,
 } from "lucide-react";
 import UsersTab from "./_components/UsersTab";
+import FeaturesTab from "./_components/FeaturesTab";
 
 const DEFAULT_PDF_COLORS = {
   primary: "#0d9488",
@@ -43,7 +45,7 @@ const COLOR_LABELS: Record<string, string> = {
 
 export default function ConfiguracionPage() {
   const { user, login } = useAuth();
-  const [activeTab, setActiveTab] = useState<"perfil" | "seguridad" | "pdf" | "usuarios">("perfil");
+  const [activeTab, setActiveTab] = useState<"perfil" | "seguridad" | "pdf" | "usuarios" | "modulos">("perfil");
   const [isLoading, setIsLoading] = useState(false);
 
   // Perfil
@@ -253,6 +255,20 @@ export default function ConfiguracionPage() {
             </span>
           </button>
         )}
+        {user?.rol === 'admin' && (
+          <button
+            onClick={() => setActiveTab("modulos")}
+            className={`px-4 py-2 rounded-t-xl text-sm font-medium transition-colors ${
+              activeTab === "modulos"
+                ? "bg-[var(--muted)] text-[var(--foreground)] border-t border-x border-[var(--border)]"
+                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <Puzzle className="w-4 h-4" /> Módulos
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Tab Perfil */}
@@ -430,6 +446,10 @@ export default function ConfiguracionPage() {
       {/* Tab Usuarios */}
       {activeTab === "usuarios" && (
         <UsersTab />
+      )}
+
+      {activeTab === "modulos" && (
+        <FeaturesTab />
       )}
 
       {activeTab === "pdf" && (

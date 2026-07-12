@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { ShoppingCart, Users, Package, Wallet, TrendingUp, Calendar, Loader2 } from 'lucide-react';
+import { useFeature } from '@/hooks/useFeature';
 import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
 export default function AdminDashboard() {
+  const { enabled: comisionesEnabled } = useFeature('comisiones');
+
   const [stats, setStats] = useState({
     ventasTotales: 0,
     vendedoresActivos: 0,
@@ -44,37 +47,40 @@ export default function AdminDashboard() {
       console.log('[Admin Dashboard] Paquetes response:', paquetesRes.data);
       const paquetes = paquetesRes.data || [];
       
-      // Fetch comisiones pendientes
-      console.log('[Admin Dashboard] Fetching /comisiones/pendientes...');
-      const comisionesRes = await api.get('/comisiones/pendientes');
-      console.log('[Admin Dashboard] Comisiones response:', comisionesRes.data);
-      
-      // Para admin: { ventas: [...], agrupadas_por_vendedor: {...} }
-      // Para vendedor: [...]
-      const comisionesData = comisionesRes.data || {};
       let comisionesPendientes = 0;
-      
-      if (Array.isArray(comisionesData)) {
-        // Si es array (vendedor), sumar directamente
-        comisionesPendientes = comisionesData.reduce((sum: number, c: any) => sum + (c.comision_monto || 0), 0);
-      } else if (comisionesData.agrupadas_por_vendedor) {
-        // Si es objeto con agrupadas_por_vendedor (admin), sumar los totales
-        Object.values(comisionesData.agrupadas_por_vendedor).forEach((grupo: any) => {
-          comisionesPendientes += grupo.total_comision || 0;
-        });
-      } else {
-        // Fallback: usar ventas directamente
-        const ventas = comisionesData.ventas || [];
-        comisionesPendientes = ventas.reduce((sum: number, v: any) => sum + (v.comision_monto || 0), 0);
+
+      // Fetch comisiones pendientes solo si la feature está habilitada
+      if (comisionesEnabled) {
+        console.log('[Admin Dashboard] Fetching /comisiones/pendientes...');
+        const comisionesRes = await api.get('/comisiones/pendientes');
+        console.log('[Admin Dashboard] Comisiones response:', comisionesRes.data);
+
+        // Para admin: { ventas: [...], agrupadas_por_vendedor: {...} }
+        // Para vendedor: [...]
+        const comisionesData = comisionesRes.data || {};
+
+        if (Array.isArray(comisionesData)) {
+          // Si es array (vendedor), sumar directamente
+          comisionesPendientes = comisionesData.reduce((sum: number, c: any) => sum + (c.comision_monto || 0), 0);
+        } else if (comisionesData.agrupadas_por_vendedor) {
+          // Si es objeto con agrupadas_por_vendedor (admin), sumar los totales
+          Object.values(comisionesData.agrupadas_por_vendedor).forEach((grupo: any) => {
+            comisionesPendientes += grupo.total_comision || 0;
+          });
+        } else {
+          // Fallback: usar ventas directamente
+          const comisionesVentas = comisionesData.ventas || [];
+          comisionesPendientes = comisionesVentas.reduce((sum: number, v: any) => sum + (v.comision_monto || 0), 0);
+        }
       }
-      
+
       console.log('[Admin Dashboard] Setting stats:', {
         ventasTotales: ventas.length,
         vendedoresActivos: vendedores.length,
         paquetesActivos: paquetes.length,
         comisionesPendientes
       });
-      
+
       setStats({
         ventasTotales: ventas.length,
         vendedoresActivos: vendedores.length,
@@ -96,7 +102,7 @@ export default function AdminDashboard() {
     { title: 'Ventas Totales', value: stats.ventasTotales, icon: ShoppingCart, color: 'text-blue-400', bg: 'bg-blue-500/10' },
     { title: 'Vendedores', value: stats.vendedoresActivos, icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10' },
     { title: 'Paquetes', value: stats.paquetesActivos, icon: Package, color: 'text-green-400', bg: 'bg-green-500/10' },
-    { title: 'Comisiones Pend.', value: `$${formatCurrency(stats.comisionesPendientes)}`, icon: Wallet, color: 'text-orange-400', bg: 'bg-orange-500/10' },
+    ...(comisionesEnabled ? [{ title: 'Comisiones Pend.', value: `$${formatCurrency(stats.comisionesPendientes)}`, icon: Wallet, color: 'text-orange-400', bg: 'bg-orange-500/10' }] : []),
   ];
 
   return (
@@ -143,10 +149,12 @@ export default function AdminDashboard() {
               <Package className="w-8 h-8 mx-auto mb-2 text-green-400" />
               <p className="font-bold">Paquetes</p>
             </Link>
-            <Link href="/admin/comisiones" className="p-4 rounded-xl bg-[var(--muted)] hover:bg-[var(--border)] transition-all text-center">
-              <Wallet className="w-8 h-8 mx-auto mb-2 text-orange-400" />
-              <p className="font-bold">Comisiones</p>
-            </Link>
+            {comisionesEnabled && (
+              <Link href="/admin/comisiones" className="p-4 rounded-xl bg-[var(--muted)] hover:bg-[var(--border)] transition-all text-center">
+                <Wallet className="w-8 h-8 mx-auto mb-2 text-orange-400" />
+                <p className="font-bold">Comisiones</p>
+              </Link>
+            )}
           </div>
         </div>
 

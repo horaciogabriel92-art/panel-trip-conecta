@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import api, { recordatoriosAPI, Recordatorio } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { useFeature } from '@/hooks/useFeature';
 import { ShoppingCart, FileText, Package, Wallet, ArrowUpRight, TrendingUp, Calendar, Target, Bell, CheckCircle2, Clock, Trash2 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
@@ -27,6 +28,7 @@ interface ComisionMensual {
 
 export default function VendedorDashboard() {
   const { user } = useAuth();
+  const { enabled: comisionesEnabled } = useFeature('comisiones');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [comisionesMensual, setComisionesMensual] = useState<ComisionMensual[]>([]);
   const [recordatorios, setRecordatorios] = useState<Recordatorio[]>([]);
@@ -42,22 +44,24 @@ export default function VendedorDashboard() {
       const statsRes = await api.get('/ventas/stats');
       setStats(statsRes.data);
 
-      // Fetch comisiones para el historial mensual
-      try {
-        const comisionesRes = await api.get('/comisiones/pagadas');
-        const pagos = comisionesRes.data || [];
-        
-        // Transformar pagos reales al formato necesario
-        const mensual: ComisionMensual[] = pagos.slice(0, 5).map((pago: any) => ({
-          mes: new Date(pago.fecha_pago).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
-          monto: pago.monto,
-          estado: pago.estado || 'pagado'
-        }));
-        
-        setComisionesMensual(mensual);
-      } catch (err) {
-        // Si falla, mostrar array vacío
-        setComisionesMensual([]);
+      // Fetch comisiones para el historial mensual solo si la feature está habilitada
+      if (comisionesEnabled) {
+        try {
+          const comisionesRes = await api.get('/comisiones/pagadas');
+          const pagos = comisionesRes.data || [];
+
+          // Transformar pagos reales al formato necesario
+          const mensual: ComisionMensual[] = pagos.slice(0, 5).map((pago: any) => ({
+            mes: new Date(pago.fecha_pago).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
+            monto: pago.monto,
+            estado: pago.estado || 'pagado'
+          }));
+
+          setComisionesMensual(mensual);
+        } catch (err) {
+          // Si falla, mostrar array vacío
+          setComisionesMensual([]);
+        }
       }
 
       // Fetch recordatorios pendientes
@@ -94,15 +98,15 @@ export default function VendedorDashboard() {
       color: 'text-purple-400', 
       bg: 'bg-purple-500/10' 
     },
-    { 
-      title: 'Comisiones', 
-      value: stats ? `$${formatCurrency(stats.total_comisiones)}` : '$0', 
+    ...(comisionesEnabled ? [{
+      title: 'Comisiones' as const,
+      value: stats ? `$${formatCurrency(stats.total_comisiones)}` : '$0',
       subtext: `${stats?.comisiones_pendientes ? '$' + formatCurrency(stats.comisiones_pendientes) : '$0'} pendientes`,
-      icon: Wallet, 
-      color: 'text-green-400', 
-      bg: 'bg-green-500/10' 
-    },
-    { 
+      icon: Wallet,
+      color: 'text-green-400',
+      bg: 'bg-green-500/10'
+    }] : []),
+    {
       title: 'Tasa de Conversión', 
       value: `${stats?.tasa_conversion || 0}%`, 
       subtext: 'de cotizaciones a ventas',
@@ -153,58 +157,60 @@ export default function VendedorDashboard() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="glass-card p-6 md:p-8 rounded-3xl">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-xl font-bold">Resumen de Comisiones</h3>
-            <Link href="/mis-ventas" className="text-blue-400 text-sm font-bold hover:underline flex items-center gap-1">
-              Ver detalle <ArrowUpRight className="w-4 h-4" />
-            </Link>
-          </div>
-          {isLoading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-12 bg-[var(--muted)] rounded-xl animate-pulse" />
-              ))}
+        {comisionesEnabled && (
+          <div className="glass-card p-6 md:p-8 rounded-3xl">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-bold">Resumen de Comisiones</h3>
+              <Link href="/mis-ventas" className="text-blue-400 text-sm font-bold hover:underline flex items-center gap-1">
+                Ver detalle <ArrowUpRight className="w-4 h-4" />
+              </Link>
             </div>
-          ) : (
-            <div className="space-y-6">
-              {comisionesMensual.map((item, i) => (
-                <div key={i} className="flex flex-wrap items-center justify-between py-2 border-b border-[var(--border)] last:border-0 gap-2">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                      item.estado === 'pagado' ? "bg-green-500/10" : "bg-orange-500/10"
-                    )}>
-                      <Calendar className={cn(
-                        "w-5 h-5",
-                        item.estado === 'pagado' ? "text-green-400" : "text-orange-400"
-                      )} />
+            {isLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-12 bg-[var(--muted)] rounded-xl animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {comisionesMensual.map((item, i) => (
+                  <div key={i} className="flex flex-wrap items-center justify-between py-2 border-b border-[var(--border)] last:border-0 gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                        item.estado === 'pagado' ? "bg-green-500/10" : "bg-orange-500/10"
+                      )}>
+                        <Calendar className={cn(
+                          "w-5 h-5",
+                          item.estado === 'pagado' ? "text-green-400" : "text-orange-400"
+                        )} />
+                      </div>
+                      <span className="text-[var(--foreground)] font-medium truncate">{item.mes}</span>
                     </div>
-                    <span className="text-[var(--foreground)] font-medium truncate">{item.mes}</span>
+                    <div className="flex items-center gap-4">
+                      <span className="font-bold">${formatCurrency(item.monto)}</span>
+                      <span className={cn(
+                        "text-xs font-black uppercase tracking-tighter px-2 py-1 rounded-full",
+                        item.estado === 'pagado'
+                          ? "bg-green-500/10 text-green-400"
+                          : "bg-orange-500/10 text-orange-400"
+                      )}>
+                        {item.estado}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="font-bold">${formatCurrency(item.monto)}</span>
-                    <span className={cn(
-                      "text-xs font-black uppercase tracking-tighter px-2 py-1 rounded-full",
-                      item.estado === 'pagado' 
-                        ? "bg-green-500/10 text-green-400" 
-                        : "bg-orange-500/10 text-orange-400"
-                    )}>
-                      {item.estado}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              {comisionesMensual.length === 0 && (
-                <p className="text-sm text-[var(--muted-foreground)] text-center py-4">
-                  No hay pagos de comisiones registrados aún.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+                ))}
+                {comisionesMensual.length === 0 && (
+                  <p className="text-sm text-[var(--muted-foreground)] text-center py-4">
+                    No hay pagos de comisiones registrados aún.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
-        <div className="glass-card p-6 md:p-8 rounded-3xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border-blue-500/20">
+        <div className={cn("glass-card p-6 md:p-8 rounded-3xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border-blue-500/20", !comisionesEnabled && "lg:col-span-2")}>
            <div className="flex items-center justify-between mb-4">
              <h3 className="text-xl font-bold flex items-center gap-2">
                <Bell className="w-5 h-5 text-blue-400" />
