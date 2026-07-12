@@ -2,6 +2,13 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+export interface PlanFeatures {
+  comisiones?: boolean;
+  vendedor_autoconfirma?: boolean;
+  dominio_propio?: boolean;
+  [key: string]: boolean | undefined;
+}
+
 export interface PlanConfig {
   slug: string;
   nombre: string;
@@ -11,6 +18,7 @@ export interface PlanConfig {
   permite_dominio_propio: boolean;
   precio_mensual_usd: number;
   precio_usuario_extra_usd: number;
+  features: PlanFeatures;
 }
 
 export interface TenantConfig {
@@ -24,6 +32,7 @@ export interface TenantConfig {
   trial_ends_at: string | null;
   estado_suscripcion: string | null;
   plan_started_at: string | null;
+  configuracion: Record<string, any>;
   plan: PlanConfig | null;
 }
 
@@ -41,7 +50,12 @@ const DEFAULT_PLAN: PlanConfig = {
   max_paquetes: 1,
   permite_dominio_propio: false,
   precio_mensual_usd: 0,
-  precio_usuario_extra_usd: 0
+  precio_usuario_extra_usd: 0,
+  features: {
+    comisiones: false,
+    vendedor_autoconfirma: false,
+    dominio_propio: false
+  }
 };
 
 const DEFAULT_TENANT: TenantConfig = {
@@ -55,6 +69,10 @@ const DEFAULT_TENANT: TenantConfig = {
   trial_ends_at: null,
   estado_suscripcion: null,
   plan_started_at: null,
+  configuracion: {
+    features: { comisiones: { enabled: false } },
+    workflow: { mode: 'admin_confirma' }
+  },
   plan: DEFAULT_PLAN
 };
 
@@ -76,7 +94,8 @@ function normalizePlan(plan: any): PlanConfig {
     max_paquetes: plan.max_paquetes ?? DEFAULT_PLAN.max_paquetes,
     permite_dominio_propio: plan.permite_dominio_propio ?? DEFAULT_PLAN.permite_dominio_propio,
     precio_mensual_usd: Number(plan.precio_mensual_usd) || DEFAULT_PLAN.precio_mensual_usd,
-    precio_usuario_extra_usd: Number(plan.precio_usuario_extra_usd) || DEFAULT_PLAN.precio_usuario_extra_usd
+    precio_usuario_extra_usd: Number(plan.precio_usuario_extra_usd) || DEFAULT_PLAN.precio_usuario_extra_usd,
+    features: plan.features || DEFAULT_PLAN.features
   };
 }
 
@@ -98,6 +117,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
         const data = await response.json();
         setTenant({
           ...data,
+          configuracion: data.configuracion || DEFAULT_TENANT.configuracion,
           plan: normalizePlan(data.plan)
         });
       } catch (err) {
