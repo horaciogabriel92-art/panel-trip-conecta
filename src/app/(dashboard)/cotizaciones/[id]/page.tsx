@@ -470,20 +470,20 @@ export default function CotizacionDetalle() {
   const getStatusColor = (estado: string) => {
     switch (estado) {
       case 'vendida': return 'bg-green-500/10 text-green-400 border-green-500/20';
+      case 'enviada': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      case 'perdida': return 'bg-red-500/10 text-red-400 border-red-500/20';
       case 'nueva': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
-      case 'vencida': return 'bg-red-500/10 text-red-400 border-red-500/20';
-      case 'cancelada': return 'bg-slate-500/10 text-[var(--muted-foreground)] border-slate-500/20';
-      default: return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      default: return 'bg-slate-500/10 text-[var(--muted-foreground)] border-slate-500/20';
     }
   };
 
   const getStatusIcon = (estado: string) => {
     switch (estado) {
       case 'vendida': return <CheckCircle className="w-5 h-5 text-green-400" />;
+      case 'enviada': return <FileText className="w-5 h-5 text-blue-400" />;
+      case 'perdida': return <AlertCircle className="w-5 h-5 text-red-400" />;
       case 'nueva': return <Clock className="w-5 h-5 text-orange-400" />;
-      case 'vencida': return <AlertCircle className="w-5 h-5 text-red-400" />;
-      case 'cancelada': return <XCircle className="w-5 h-5 text-[var(--muted-foreground)]" />;
-      default: return <FileText className="w-5 h-5 text-blue-400" />;
+      default: return <FileText className="w-5 h-5 text-[var(--muted-foreground)]" />;
     }
   };
 

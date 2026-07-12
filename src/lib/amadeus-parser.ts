@@ -218,7 +218,6 @@ function parseFlightLineWithPatterns(line: string, year?: number): ParsedFlight 
   for (const { name, regex, hasDow } of patterns) {
     const match = line.match(regex);
     if (match) {
-      console.log(`✅ Patrón ${name} matched:`, match.slice(0, 10));
       const result = hasDow
         ? buildFlightFromMatch(match, line, year)
         : buildFlightFromMatchNoDow(match, line, year);
@@ -405,8 +404,6 @@ export function parseAmadeusPNR(text: string): ParseResult {
   const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   result.rawLines = lines;
   
-  console.log('🛫 Parseando PNR con', lines.length, 'líneas');
-  
   let i = 0;
   while (i < lines.length) {
     const line = lines[i];
@@ -486,7 +483,6 @@ export function parseAmadeusPNR(text: string): ParseResult {
     result.errors.push('No se encontraron segmentos de vuelo válidos. Asegúrate de pegar el texto completo del PNR.');
   }
   
-  console.log('✅ Parseo completado:', result.flights.length, 'vuelos encontrados');
   return result;
 }
 

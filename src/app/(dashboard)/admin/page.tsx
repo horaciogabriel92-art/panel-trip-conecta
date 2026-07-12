@@ -27,33 +27,23 @@ export default function AdminDashboard() {
     try {
       setIsLoading(true);
       
-      console.log('[Admin Dashboard] Fetching stats...');
-      
       // Fetch ventas
-      console.log('[Admin Dashboard] Fetching /ventas...');
       const ventasRes = await api.get('/ventas');
-      console.log('[Admin Dashboard] Ventas response:', ventasRes.data);
       const ventas = ventasRes.data || [];
-      
+
       // Fetch vendedores (desde auth/users)
-      console.log('[Admin Dashboard] Fetching /auth/users...');
       const vendedoresRes = await api.get('/auth/users');
-      console.log('[Admin Dashboard] Vendedores response:', vendedoresRes.data);
       const vendedores = vendedoresRes.data || [];
-      
+
       // Fetch paquetes
-      console.log('[Admin Dashboard] Fetching /paquetes...');
       const paquetesRes = await api.get('/paquetes');
-      console.log('[Admin Dashboard] Paquetes response:', paquetesRes.data);
       const paquetes = paquetesRes.data || [];
       
       let comisionesPendientes = 0;
 
       // Fetch comisiones pendientes solo si la feature está habilitada
       if (comisionesEnabled) {
-        console.log('[Admin Dashboard] Fetching /comisiones/pendientes...');
         const comisionesRes = await api.get('/comisiones/pendientes');
-        console.log('[Admin Dashboard] Comisiones response:', comisionesRes.data);
 
         // Para admin: { ventas: [...], agrupadas_por_vendedor: {...} }
         // Para vendedor: [...]
@@ -73,13 +63,6 @@ export default function AdminDashboard() {
           comisionesPendientes = comisionesVentas.reduce((sum: number, v: any) => sum + (v.comision_monto || 0), 0);
         }
       }
-
-      console.log('[Admin Dashboard] Setting stats:', {
-        ventasTotales: ventas.length,
-        vendedoresActivos: vendedores.length,
-        paquetesActivos: paquetes.length,
-        comisionesPendientes
-      });
 
       setStats({
         ventasTotales: ventas.length,

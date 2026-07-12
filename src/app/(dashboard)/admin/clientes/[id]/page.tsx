@@ -273,14 +273,14 @@ export default function ClienteDetallePage() {
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
-      case "convertida":
+      case "vendida":
         return "bg-green-500/10 text-green-400 border-green-500/20";
-      case "pendiente":
-        return "bg-orange-500/10 text-orange-400 border-orange-500/20";
-      case "respondida":
+      case "enviada":
         return "bg-blue-500/10 text-blue-400 border-blue-500/20";
-      case "vencida":
+      case "perdida":
         return "bg-red-500/10 text-red-400 border-red-500/20";
+      case "nueva":
+        return "bg-orange-500/10 text-orange-400 border-orange-500/20";
       default:
         return "bg-slate-500/10 text-slate-400 border-slate-500/20";
     }

@@ -28,17 +28,17 @@ interface Cotizacion {
   paquete_nombre?: string;
   precio_total: number;
   comision_vendedor?: number;
-  estado: 'pendiente' | 'convertida' | 'vencida' | 'cancelada';
+  estado: 'nueva' | 'enviada' | 'vendida' | 'perdida';
   fecha_creacion: string;
   num_pasajeros: number;
   venta_id?: string | null;
 }
 
 const estadosKanban: { key: Cotizacion['estado']; label: string; color: string }[] = [
-  { key: 'pendiente', label: 'Pendientes', color: 'border-orange-500/30 bg-orange-500/5' },
-  { key: 'convertida', label: 'Convertidas', color: 'border-green-500/30 bg-green-500/5' },
-  { key: 'vencida', label: 'Vencidas', color: 'border-red-500/30 bg-red-500/5' },
-  { key: 'cancelada', label: 'Canceladas', color: 'border-slate-500/30 bg-slate-500/5' }
+  { key: 'nueva', label: 'Nuevas', color: 'border-blue-500/30 bg-blue-500/5' },
+  { key: 'enviada', label: 'Enviadas', color: 'border-orange-500/30 bg-orange-500/5' },
+  { key: 'vendida', label: 'Vendidas', color: 'border-green-500/30 bg-green-500/5' },
+  { key: 'perdida', label: 'Perdidas', color: 'border-slate-500/30 bg-slate-500/5' }
 ];
 
 function KanbanView({ 
@@ -117,7 +117,7 @@ function KanbanView({
                   <div className="flex items-center justify-between">
                     <span className="text-blue-500 font-bold text-sm">${formatCurrency(c.precio_total)}</span>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {c.estado === 'convertida' && c.venta_id && (
+                      {c.estado === 'vendida' && c.venta_id && (
                         <button
                           onClick={(e) => {
                             e.preventDefault();
@@ -182,11 +182,11 @@ export default function AdminCotizaciones() {
 
   const getStatusColor = (estado: string) => {
     switch (estado) {
-      case 'convertida': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20';
-      case 'pendiente': return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20';
-      case 'vencida': return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20';
-      case 'cancelada': return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20';
-      default: return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20';
+      case 'vendida': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20';
+      case 'enviada': return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20';
+      case 'perdida': return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20';
+      case 'nueva': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20';
+      default: return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20';
     }
   };
 
@@ -202,8 +202,8 @@ export default function AdminCotizaciones() {
 
   const stats = {
     total: cotizaciones.length,
-    pendientes: cotizaciones.filter(c => c.estado === 'pendiente').length,
-    convertidas: cotizaciones.filter(c => c.estado === 'convertida').length,
+    pendientes: cotizaciones.filter(c => c.estado === 'nueva' || c.estado === 'enviada').length,
+    convertidas: cotizaciones.filter(c => c.estado === 'vendida').length,
     montoTotal: cotizaciones.reduce((sum, c) => sum + (c.precio_total || 0), 0)
   };
 
@@ -279,7 +279,7 @@ export default function AdminCotizaciones() {
           />
         </div>
         <div className="flex gap-2">
-          {vista === 'lista' && ['todos', 'pendiente', 'convertida', 'vencida', 'cancelada'].map((estado) => (
+          {vista === 'lista' && ['todos', 'nueva', 'enviada', 'vendida', 'perdida'].map((estado) => (
             <button
               key={estado}
               onClick={() => setFiltroEstado(estado)}
@@ -389,7 +389,7 @@ export default function AdminCotizaciones() {
                       >
                         <Eye className="w-4 h-4" />
                       </Link>
-                      {c.estado !== 'convertida' && (
+                      {c.estado !== 'vendida' && (
                         <button
                           onClick={() => abrirModalEliminar(c)}
                           className="p-2 bg-[var(--muted)] rounded-lg hover:bg-red-500 hover:text-white transition-all inline-flex"

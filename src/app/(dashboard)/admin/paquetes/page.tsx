@@ -281,9 +281,6 @@ export default function PaquetesAdmin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // DEBUG: Mostrar qué se va a enviar
-    console.log('Datos a enviar:', formData);
-    
     try {
       let response;
       if (editingPaquete) {
@@ -291,17 +288,13 @@ export default function PaquetesAdmin() {
       } else {
         response = await api.post('/paquetes', formData);
       }
-      console.log('Respuesta exitosa:', response.data);
       setShowModal(false);
       // Limpiar estados del modo itinerario
       setModoItinerario('manual');
       setPnrRaw('');
       fetchPaquetes();
     } catch (err: any) {
-      console.error('Error completo:', err);
-      console.error('Error response:', err.response);
-      console.error('Error response data:', err.response?.data);
-      
+      console.error('Error al guardar paquete:', err.response?.data || err.message);
       const errorMsg = err.response?.data?.error || err.response?.data?.message || err.response?.data?.details || err.message || 'Error desconocido al guardar paquete';
       const errorCode = err.response?.data?.code || '';
       toastError(`Error ${errorCode ? '(' + errorCode + ')' : ''}: ${errorMsg}`, 'Error');

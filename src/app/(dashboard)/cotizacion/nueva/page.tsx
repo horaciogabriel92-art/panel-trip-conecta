@@ -248,15 +248,11 @@ export default function NuevaCotizacionManual() {
         amadeus_pnr_raw: useAmadeus ? amadeusText : null,
       };
 
-      console.log('Enviando datos CRM:', cotizacionData);
       const response = await api.post('/cotizaciones/manual', cotizacionData);
-      
-      console.log('Respuesta:', response.data);
       toastSuccess('Cotización creada exitosamente', '¡Listo!');
       router.push('/cotizaciones');
     } catch (error: any) {
-      console.error('Error completo:', error);
-      console.error('Response:', error.response);
+      console.error('Error al crear cotización:', error.response?.data || error.message);
       const errorMsg = error.response?.data?.details || error.response?.data?.error || error.message || 'Error desconocido';
       toastError(errorMsg, 'Error al crear cotización');
     } finally {

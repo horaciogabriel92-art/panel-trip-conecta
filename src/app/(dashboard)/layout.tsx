@@ -20,9 +20,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, []);
 
   useEffect(() => {
-    console.log('📊 DashboardLayout: isLoading=', isLoading, 'user=', user, 'isClient=', isClient);
     if (isClient && !isLoading && !user) {
-      console.log('🔴 No user found, redirecting to login');
       router.push('/login');
     }
   }, [user, isLoading, router, isClient]);

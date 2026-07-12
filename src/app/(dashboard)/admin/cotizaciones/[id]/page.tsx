@@ -186,7 +186,6 @@ export default function AdminCotizacionDetalle() {
     const fetchCotizacion = async () => {
       try {
         const res = await api.get(`/cotizaciones/${params.id}`);
-        console.log('[Admin Cotizacion] Data recibida:', res.data);
         setCotizacion(res.data);
       } catch (err) {
         console.error('Error cargando cotización:', err);
@@ -275,23 +274,18 @@ export default function AdminCotizacionDetalle() {
 
   const handleDownloadComprobante = async (comprobanteId: string, filename: string, rutaArchivo?: string) => {
     try {
-      console.log('[Download] Descargando comprobante:', { comprobanteId, filename, rutaArchivo });
-      
       let downloadUrl: string;
-      
+
       // Si el ID empieza con 'comp_' es un comprobante legacy del JSON
       // Usar endpoint de descarga por nombre de archivo
       if (comprobanteId.startsWith('comp_') && rutaArchivo) {
         // Extraer solo el nombre del archivo (sin la ruta)
         const filenameFromPath = rutaArchivo.split('/').pop() || filename;
-        console.log('[Download] Filename from path:', filenameFromPath);
         downloadUrl = `/upload/comprobante-pago/download-by-filename/${filenameFromPath}`;
       } else {
         // Comprobante de la tabla comprobantes_pago con ID real
         downloadUrl = `/upload/comprobante-pago/${comprobanteId}/download`;
       }
-      
-      console.log('[Download] URL:', downloadUrl);
       
       // Usar el endpoint de descarga directa del backend
       const response = await api.get(downloadUrl, {
