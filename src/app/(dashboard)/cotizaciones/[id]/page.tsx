@@ -98,6 +98,9 @@ interface Cotizacion {
   pasajeros?: PasajeroVinculado[];
   vuelos?: Vuelo[];
   hospedajes?: Hospedaje[];
+  traslados?: any[];
+  seguros?: any[];
+  extras?: any[];
   // Datos de la cotización
   nombre_cotizacion?: string;
   tipo_cotizacion?: 'paquete' | 'manual';
@@ -107,6 +110,9 @@ interface Cotizacion {
   precio_moneda?: string;
   precio_vuelos?: number;
   precio_hospedajes?: number;
+  precio_traslados?: number;
+  precio_seguros?: number;
+  precio_extras?: number;
   precio_subtotal?: number;
   precio_impuestos?: number;
   comision_vendedor?: number;
