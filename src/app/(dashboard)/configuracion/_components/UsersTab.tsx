@@ -9,7 +9,7 @@ import {
   Check,
   X,
   Loader2,
-  Plus,
+  UserPlus,
   ToggleLeft,
   ToggleRight,
   Users,
@@ -52,11 +52,19 @@ export default function UsersTab() {
   const [isCreating, setIsCreating] = useState(false);
   const [isSaving, setIsSaving] = useState<string | null>(null);
 
-  const [newUser, setNewUser] = useState({
+  const [newUser, setNewUser] = useState<{
+    nombre: string;
+    apellido: string;
+    email: string;
+    password: string;
+    rol: "admin" | "vendedor";
+    permisos: Record<string, boolean>;
+  }>({
     nombre: "",
     apellido: "",
     email: "",
     password: "",
+    rol: "vendedor",
     permisos: { ...defaultVendedorPermissions },
   });
 
@@ -82,23 +90,21 @@ export default function UsersTab() {
     setMessage(null);
     setIsCreating(true);
     try {
-      await api.post("/auth/users", {
-        ...newUser,
-        rol: "vendedor",
-      });
+      await api.post("/auth/users", newUser);
       setNewUser({
         nombre: "",
         apellido: "",
         email: "",
         password: "",
+        rol: "vendedor",
         permisos: { ...defaultVendedorPermissions },
       });
-      setMessage({ type: "success", text: "Vendedor creado exitosamente" });
+      setMessage({ type: "success", text: "Usuario creado exitosamente" });
       fetchUsers();
     } catch (err: any) {
       setMessage({
         type: "error",
-        text: err.response?.data?.error || "Error al crear vendedor",
+        text: err.response?.data?.error || "Error al crear usuario",
       });
     } finally {
       setIsCreating(false);
@@ -173,8 +179,8 @@ export default function UsersTab() {
       {/* Create user form */}
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
-          <Plus className="w-5 h-5 text-emerald-400" />
-          Invitar vendedor
+          <UserPlus className="w-5 h-5 text-emerald-400" />
+          Invitar usuario
         </h3>
         <form onSubmit={handleCreate} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -215,32 +221,55 @@ export default function UsersTab() {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {ALL_PERMISSIONS.map((perm) => (
-              <label
-                key={perm.key}
-                className="flex items-center gap-2 p-3 bg-[var(--muted)] rounded-xl cursor-pointer hover:bg-[var(--border)] transition-colors"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-[var(--muted-foreground)] mb-1">Rol</label>
+              <select
+                value={newUser.rol}
+                onChange={(e) => {
+                  const rol = e.target.value as "admin" | "vendedor";
+                  setNewUser({
+                    ...newUser,
+                    rol,
+                    permisos: rol === "admin" ? {} : { ...defaultVendedorPermissions },
+                  });
+                }}
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
               >
-                <input
-                  type="checkbox"
-                  checked={newUser.permisos[perm.key] || false}
-                  onChange={() =>
-                    setNewUser({ ...newUser, permisos: togglePermission(newUser.permisos, perm.key) })
-                  }
-                  className="w-4 h-4 rounded border-[var(--border)] text-blue-500 focus:ring-blue-500"
-                />
-                <span className="text-sm text-[var(--foreground)]">{perm.label}</span>
-              </label>
-            ))}
+                <option value="vendedor">Vendedor</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
           </div>
+
+          {newUser.rol === "vendedor" && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {ALL_PERMISSIONS.map((perm) => (
+                <label
+                  key={perm.key}
+                  className="flex items-center gap-2 p-3 bg-[var(--muted)] rounded-xl cursor-pointer hover:bg-[var(--border)] transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={newUser.permisos[perm.key] || false}
+                    onChange={() =>
+                      setNewUser({ ...newUser, permisos: togglePermission(newUser.permisos, perm.key) })
+                    }
+                    className="w-4 h-4 rounded border-[var(--border)] text-blue-500 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-[var(--foreground)]">{perm.label}</span>
+                </label>
+              ))}
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={isCreating}
             className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white rounded-xl font-medium transition-colors"
           >
-            {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-            Crear vendedor
+            {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+            Crear usuario
           </button>
         </form>
       </div>
@@ -277,7 +306,17 @@ export default function UsersTab() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span
+                    className={cn(
+                      "px-3 py-1 rounded-full text-xs font-bold uppercase",
+                      u.activo
+                        ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                        : "bg-red-500/10 text-red-400 border border-red-500/20"
+                    )}
+                  >
+                    {u.activo ? "Activo" : "Inactivo"}
+                  </span>
                   <span
                     className={cn(
                       "px-3 py-1 rounded-full text-xs font-bold uppercase",
