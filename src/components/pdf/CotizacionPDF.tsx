@@ -663,6 +663,9 @@ interface CotizacionPDFProps {
       nacionalidad?: string;
     }>;
     hospedaje?: Array<any>;
+    traslados?: Array<any>;
+    seguros?: Array<any>;
+    extras?: Array<any>;
     vuelos?: Array<any>;
     precios: {
       vuelos?: string | number;
@@ -670,6 +673,7 @@ interface CotizacionPDFProps {
       extras?: string | number;
       servicios?: string | number;
       traslados?: string | number;
+      seguros?: string | number;
       subtotal?: string | number;
       impuestos?: string | number;
       total?: string | number;
@@ -711,7 +715,7 @@ function formatPrice(value: string | number): string {
 export function CotizacionPDFDocument({ data, colors }: CotizacionPDFProps) {
   const COLORS = { ...DEFAULT_COLORS, ...colors };
   const styles = createStyles(COLORS);
-  const { cotizacion, cliente, paquete, pasajeros, hospedaje, vuelos, precios, vendedor } = data;
+  const { cotizacion, cliente, paquete, pasajeros, hospedaje, traslados, seguros, extras, vuelos, precios, vendedor } = data;
   
   // Calcular duración del viaje
   const calcularDuracion = () => {
@@ -920,6 +924,99 @@ export function CotizacionPDFDocument({ data, colors }: CotizacionPDFProps) {
           </View>
         )}
 
+        {/* Hospedajes manuales */}
+        {hospedaje && hospedaje.length > 0 && (
+          <View style={styles.section} wrap={false}>
+            <Text style={styles.sectionTitle}>Alojamiento</Text>
+            {hospedaje.map((h, idx) => (
+              <View key={idx} style={[styles.hotelCard, h.seleccionado && { borderLeft: `3px solid ${COLORS.primary}` }]}>
+                <View style={styles.hotelHeader}>
+                  <Text style={styles.hotelName}>
+                    {h.seleccionado ? '★ ' : ''}
+                    {h.nombre_alojamiento || h.nombre_hotel || 'Alojamiento'}
+                    {h.es_opcion ? ' (opción)' : ''}
+                  </Text>
+                  {h.link_hotel && (
+                    <Link src={h.link_hotel}>
+                      <View style={styles.hotelButton}>
+                        <Text style={styles.hotelButtonText}>Ver</Text>
+                      </View>
+                    </Link>
+                  )}
+                </View>
+                <Text style={styles.hotelInfo}>{h.tipo_alojamiento || 'Hotel'} · {h.ciudad || 'Ciudad no especificada'}</Text>
+                {h.fecha_checkin && h.fecha_checkout && (
+                  <Text style={styles.hotelInfo}>Check-in: {h.fecha_checkin} · Check-out: {h.fecha_checkout} · {h.noches || '-'} noches</Text>
+                )}
+                {(h.tipo_habitacion || h.regimen) && (
+                  <Text style={styles.hotelInfo}>Habitación: {h.tipo_habitacion || '-'} · Régimen: {h.regimen || '-'}</Text>
+                )}
+                {h.precio_por_persona > 0 && (
+                  <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(h.precio_por_persona)} {precios.moneda}</Text>
+                )}
+                {h.notas && <Text style={styles.hotelInfo}>Notas: {h.notas}</Text>}
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Transfers */}
+        {traslados && traslados.length > 0 && (
+          <View style={styles.section} wrap={false}>
+            <Text style={styles.sectionTitle}>Transfers</Text>
+            {traslados.map((t, idx) => (
+              <View key={idx} style={styles.hotelCard}>
+                <Text style={styles.hotelName}>{t.nombre || `Transfer ${idx + 1}`}</Text>
+                <Text style={styles.hotelInfo}>{t.origen || '-'} → {t.destino || '-'}</Text>
+                {(t.fecha || t.hora) && (
+                  <Text style={styles.hotelInfo}>{t.fecha}{t.fecha && t.hora ? ' · ' : ''}{t.hora}</Text>
+                )}
+                {t.precio_por_persona > 0 && (
+                  <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(t.precio_por_persona)} {precios.moneda}</Text>
+                )}
+                {t.notas && <Text style={styles.hotelInfo}>Notas: {t.notas}</Text>}
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Seguros */}
+        {seguros && seguros.length > 0 && (
+          <View style={styles.section} wrap={false}>
+            <Text style={styles.sectionTitle}>Seguro de viaje</Text>
+            {seguros.map((s, idx) => (
+              <View key={idx} style={styles.hotelCard}>
+                <Text style={styles.hotelName}>{s.compania || 'Seguro'}</Text>
+                {s.tipo_cobertura && <Text style={styles.hotelInfo}>Cobertura: {s.tipo_cobertura}</Text>}
+                {(s.fecha_inicio || s.fecha_fin) && (
+                  <Text style={styles.hotelInfo}>Vigencia: {s.fecha_inicio || '-'} al {s.fecha_fin || '-'}</Text>
+                )}
+                {s.cobertura_detalle && <Text style={styles.hotelInfo}>{s.cobertura_detalle}</Text>}
+                {s.precio_por_persona > 0 && (
+                  <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(s.precio_por_persona)} {precios.moneda}</Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Extras */}
+        {extras && extras.length > 0 && (
+          <View style={styles.section} wrap={false}>
+            <Text style={styles.sectionTitle}>Extras</Text>
+            {extras.map((e, idx) => (
+              <View key={idx} style={styles.hotelCard}>
+                <Text style={styles.hotelName}>{e.nombre || `Extra ${idx + 1}`}</Text>
+                {e.descripcion && <Text style={styles.hotelInfo}>{e.descripcion}</Text>}
+                {e.fecha && <Text style={styles.hotelInfo}>Fecha: {e.fecha}</Text>}
+                {e.precio_por_persona > 0 && (
+                  <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(e.precio_por_persona)} {precios.moneda}</Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+
         {/* Tabla de Todos los Pasajeros */}
         {pasajeros.length > 0 && (
           <View style={styles.section} wrap={false}>
@@ -968,10 +1065,26 @@ export function CotizacionPDFDocument({ data, colors }: CotizacionPDFProps) {
                   </View>
                 )}
 
+                {/* Transfers */}
+                {parsePrice(precios.traslados || '0') > 0 && (
+                  <View style={styles.priceBreakdownRow}>
+                    <Text style={styles.priceBreakdownLabel}>Transfers</Text>
+                    <Text style={styles.priceBreakdownValue}>${formatPrice(precios.traslados || '0')} {precios.moneda}</Text>
+                  </View>
+                )}
+
+                {/* Seguros */}
+                {parsePrice(precios.seguros || '0') > 0 && (
+                  <View style={styles.priceBreakdownRow}>
+                    <Text style={styles.priceBreakdownLabel}>Seguros</Text>
+                    <Text style={styles.priceBreakdownValue}>${formatPrice(precios.seguros || '0')} {precios.moneda}</Text>
+                  </View>
+                )}
+
                 {/* Extras / Servicios */}
                 {(parsePrice(precios.extras || '0') > 0 || parsePrice(precios.servicios || '0') > 0) && (
                   <View style={styles.priceBreakdownRow}>
-                    <Text style={styles.priceBreakdownLabel}>Extras / Servicios</Text>
+                    <Text style={styles.priceBreakdownLabel}>Extras</Text>
                     <Text style={styles.priceBreakdownValue}>${formatPrice(precios.extras || precios.servicios || '0')} {precios.moneda}</Text>
                   </View>
                 )}

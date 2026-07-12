@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { 
   User, 
   Plane, 
-  Hotel, 
+  Briefcase, 
   FileText, 
   DollarSign,
   ChevronRight,
@@ -15,7 +15,11 @@ import {
   Sparkles,
   AlertCircle,
   Check,
-  X
+  X,
+  BedDouble,
+  Bus,
+  Shield,
+  Ticket
 } from 'lucide-react';
 import { parseAmadeusPNR, isValidAmadeusText, ParsedFlight } from '@/lib/amadeus-parser';
 import { AirlineLogo } from '@/components/flights/AirlineLogo';
@@ -25,7 +29,9 @@ import { useToast } from '@/context/ToastContext';
 import BuscarCliente from '@/components/cotizaciones/BuscarCliente';
 import CrearClienteModal from '@/components/cotizaciones/CrearClienteModal';
 import ManualFlightForm from '@/components/cotizaciones/ManualFlightForm';
+import ServiciosStep from '@/components/cotizaciones/servicios/ServiciosStep';
 import { Cliente, clientesAPI } from '@/lib/api-clientes';
+import type { AlojamientoCotizacion, TransferCotizacion, SeguroCotizacion, ExtraCotizacion } from '@/types/cotizacion';
 
 // ============================================
 // TIPOS
@@ -37,18 +43,6 @@ interface Pasajero {
   documento: string;
   fecha_nacimiento: string;
   nacionalidad: string;
-}
-
-interface Hospedaje {
-  id: number;
-  nombre_hotel: string;
-  link_hotel?: string;
-  ciudad: string;
-  fecha_checkin: string;
-  fecha_checkout: string;
-  tipo_habitacion: 'simple' | 'doble' | 'triple' | 'cuadruple' | 'suite';
-  regimen: 'solo_alojamiento' | 'desayuno' | 'media_pension' | 'todo_incluido';
-  noches: number;
 }
 
 // ============================================
@@ -75,8 +69,11 @@ export default function NuevaCotizacionManual() {
   const [vuelosManuales, setVuelosManuales] = useState<any[]>([]);
   const [useAmadeus, setUseAmadeus] = useState(true);
 
-  // Hospedaje
-  const [hospedajes, setHospedajes] = useState<Hospedaje[]>([]);
+  // Servicios del viaje
+  const [alojamientos, setAlojamientos] = useState<AlojamientoCotizacion[]>([]);
+  const [transfers, setTransfers] = useState<TransferCotizacion[]>([]);
+  const [seguros, setSeguros] = useState<SeguroCotizacion[]>([]);
+  const [extras, setExtras] = useState<ExtraCotizacion[]>([]);
 
   // Datos de la cotización
   const [nombreCotizacion, setNombreCotizacion] = useState('');
@@ -92,6 +89,8 @@ export default function NuevaCotizacionManual() {
     moneda: 'USD' as 'USD' | 'UYU',
     vuelos: '',
     hospedajes: '',
+    traslados: '',
+    seguros: '',
     extras: '',
     subtotal: '',
     impuestos: '',
@@ -106,7 +105,7 @@ export default function NuevaCotizacionManual() {
   const steps = [
     { id: 1, label: 'Cliente', icon: User },
     { id: 2, label: 'Vuelos', icon: Plane },
-    { id: 3, label: 'Hospedaje', icon: Hotel },
+    { id: 3, label: 'Servicios del viaje', icon: Briefcase },
     { id: 4, label: 'Itinerario', icon: FileText },
     { id: 5, label: 'Precios', icon: DollarSign },
   ];
@@ -148,25 +147,6 @@ export default function NuevaCotizacionManual() {
     setPasajeros(pasajeros.filter(p => p.id !== id));
   };
 
-  const handleAddHospedaje = () => {
-    const newId = hospedajes.length + 1;
-    setHospedajes([...hospedajes, {
-      id: newId,
-      nombre_hotel: '',
-      link_hotel: '',
-      ciudad: '',
-      fecha_checkin: '',
-      fecha_checkout: '',
-      tipo_habitacion: 'doble',
-      regimen: 'desayuno',
-      noches: 1,
-    }]);
-  };
-
-  const handleRemoveHospedaje = (id: number) => {
-    setHospedajes(hospedajes.filter(h => h.id !== id));
-  };
-
   const handleAddIncluye = () => {
     setIncluye([...incluye, '']);
   };
@@ -187,10 +167,12 @@ export default function NuevaCotizacionManual() {
   useEffect(() => {
     const vuelos = parseFloat(precios.vuelos) || 0;
     const hospedajes = parseFloat(precios.hospedajes) || 0;
+    const traslados = parseFloat(precios.traslados) || 0;
+    const seguros = parseFloat(precios.seguros) || 0;
     const extras = parseFloat(precios.extras) || 0;
     const impuestos = parseFloat(precios.impuestos) || 0;
     
-    const subtotal = vuelos + hospedajes + extras;
+    const subtotal = vuelos + hospedajes + traslados + seguros + extras;
     const total = subtotal + impuestos;
     
     setPrecios(prev => ({
@@ -198,7 +180,7 @@ export default function NuevaCotizacionManual() {
       subtotal: subtotal.toFixed(2),
       total: total.toFixed(2),
     }));
-  }, [precios.vuelos, precios.hospedajes, precios.extras, precios.impuestos]);
+  }, [precios.vuelos, precios.hospedajes, precios.traslados, precios.seguros, precios.extras, precios.impuestos]);
 
   // Cargar pasajeros frecuentes del cliente seleccionado
   useEffect(() => {
@@ -241,18 +223,12 @@ export default function NuevaCotizacionManual() {
           nacionalidad: p.nacionalidad,
         })),
         pasajero_titular_id: null, // Se asignará automáticamente
-        nombre_cotizacion: nombreCotizacion || `Viaje a ${hospedajes[0]?.ciudad || parsedFlights[0]?.destino_ciudad || 'Destino'}`,
+        nombre_cotizacion: nombreCotizacion || `Viaje a ${alojamientos[0]?.ciudad || parsedFlights[0]?.destino_ciudad || 'Destino'}`,
         vuelos: useAmadeus ? parsedFlights : vuelosManuales,
-        hospedajes: hospedajes.map(h => ({
-          nombre_hotel: h.nombre_hotel,
-          link_hotel: h.link_hotel,
-          ciudad: h.ciudad,
-          fecha_checkin: h.fecha_checkin,
-          fecha_checkout: h.fecha_checkout,
-          tipo_habitacion: h.tipo_habitacion,
-          regimen: h.regimen,
-          noches: h.noches,
-        })),
+        hospedajes: alojamientos,
+        traslados: transfers,
+        seguros: seguros,
+        extras: extras,
         itinerario: { texto: itinerario, dias: [] },
         incluye: incluye.filter(i => i.trim() !== ''),
         no_incluye: noIncluye.filter(i => i.trim() !== ''),
@@ -261,6 +237,8 @@ export default function NuevaCotizacionManual() {
           moneda: precios.moneda,
           vuelos: parseFloat(precios.vuelos) || 0,
           hospedajes: parseFloat(precios.hospedajes) || 0,
+          traslados: parseFloat(precios.traslados) || 0,
+          seguros: parseFloat(precios.seguros) || 0,
           extras: parseFloat(precios.extras) || 0,
           subtotal: parseFloat(precios.subtotal) || 0,
           impuestos: parseFloat(precios.impuestos) || 0,
@@ -583,129 +561,19 @@ RP/DZOUY2100/
   const renderStep3 = () => (
     <div className="space-y-6">
       <div className="glass-card rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-[var(--foreground)] flex items-center gap-2">
-            <Hotel className="w-5 h-5 text-purple-400" />
-            Hospedaje
-          </h3>
-          <button
-            onClick={handleAddHospedaje}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-xl transition-colors text-sm font-bold"
-          >
-            <Plus className="w-4 h-4" />
-            Agregar Hotel
-          </button>
-        </div>
-
-        {hospedajes.length === 0 ? (
-          <div className="text-center py-8 border-2 border-dashed border-[var(--border)] rounded-xl">
-            <Hotel className="w-12 h-12 text-[var(--muted-foreground)] mx-auto mb-3" />
-            <p className="text-[var(--muted-foreground)]">No hay hoteles agregados</p>
-            <p className="text-[var(--muted-foreground)] text-sm">Agrega al menos un hospedaje</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {hospedajes.map((hotel, index) => (
-              <div key={hotel.id} className="bg-[var(--muted)] rounded-xl p-4 border border-[var(--border)]">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm font-bold text-[var(--foreground)]">Hotel {index + 1}</span>
-                  <button
-                    onClick={() => handleRemoveHospedaje(hotel.id)}
-                    className="p-1 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    value={hotel.nombre_hotel}
-                    onChange={(e) => {
-                      const updated = [...hospedajes];
-                      updated[index].nombre_hotel = e.target.value;
-                      setHospedajes(updated);
-                    }}
-                    className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-sm outline-none focus:border-purple-500"
-                    placeholder="Nombre del hotel"
-                  />
-                  <input
-                    type="url"
-                    value={hotel.link_hotel || ''}
-                    onChange={(e) => {
-                      const updated = [...hospedajes];
-                      updated[index].link_hotel = e.target.value;
-                      setHospedajes(updated);
-                    }}
-                    className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-sm outline-none focus:border-purple-500"
-                    placeholder="Link web del hotel (opcional)"
-                  />
-                  <input
-                    type="text"
-                    value={hotel.ciudad}
-                    onChange={(e) => {
-                      const updated = [...hospedajes];
-                      updated[index].ciudad = e.target.value;
-                      setHospedajes(updated);
-                    }}
-                    className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-sm outline-none focus:border-purple-500"
-                    placeholder="Ciudad"
-                  />
-                  <input
-                    type="date"
-                    value={hotel.fecha_checkin}
-                    onChange={(e) => {
-                      const updated = [...hospedajes];
-                      updated[index].fecha_checkin = e.target.value;
-                      setHospedajes(updated);
-                    }}
-                    className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-sm outline-none focus:border-purple-500"
-                    placeholder="Check-in"
-                  />
-                  <input
-                    type="date"
-                    value={hotel.fecha_checkout}
-                    onChange={(e) => {
-                      const updated = [...hospedajes];
-                      updated[index].fecha_checkout = e.target.value;
-                      setHospedajes(updated);
-                    }}
-                    className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-sm outline-none focus:border-purple-500"
-                    placeholder="Check-out"
-                  />
-                  <select
-                    value={hotel.tipo_habitacion}
-                    onChange={(e) => {
-                      const updated = [...hospedajes];
-                      updated[index].tipo_habitacion = e.target.value as any;
-                      setHospedajes(updated);
-                    }}
-                    className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-sm outline-none focus:border-purple-500"
-                  >
-                    <option value="simple" className="bg-[var(--background)]">Simple</option>
-                    <option value="doble" className="bg-[var(--background)]">Doble</option>
-                    <option value="triple" className="bg-[var(--background)]">Triple</option>
-                    <option value="cuadruple" className="bg-[var(--background)]">Cuádruple</option>
-                    <option value="suite" className="bg-[var(--background)]">Suite</option>
-                  </select>
-                  <select
-                    value={hotel.regimen}
-                    onChange={(e) => {
-                      const updated = [...hospedajes];
-                      updated[index].regimen = e.target.value as any;
-                      setHospedajes(updated);
-                    }}
-                    className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-sm outline-none focus:border-purple-500"
-                  >
-                    <option value="solo_alojamiento" className="bg-[var(--background)]">Solo Alojamiento</option>
-                    <option value="desayuno" className="bg-[var(--background)]">Desayuno incluido</option>
-                    <option value="media_pension" className="bg-[var(--background)]">Media Pensión</option>
-                    <option value="todo_incluido" className="bg-[var(--background)]">Todo Incluido</option>
-                  </select>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <ServiciosStep
+          alojamientos={alojamientos}
+          transfers={transfers}
+          seguros={seguros}
+          extras={extras}
+          moneda={precios.moneda}
+          onChange={({ alojamientos: a, transfers: t, seguros: s, extras: e }) => {
+            setAlojamientos(a);
+            setTransfers(t);
+            setSeguros(s);
+            setExtras(e);
+          }}
+        />
       </div>
     </div>
   );
@@ -872,7 +740,7 @@ RP/DZOUY2100/
 
           {/* Hospedajes */}
           <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
-            <Hotel className="w-5 h-5 text-purple-400" />
+            <BedDouble className="w-5 h-5 text-purple-400" />
             <div className="flex-1">
               <label className="block text-xs text-[var(--muted-foreground)]">Hospedajes</label>
               <input
@@ -886,11 +754,43 @@ RP/DZOUY2100/
             <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
           </div>
 
+          {/* Traslados */}
+          <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
+            <Bus className="w-5 h-5 text-cyan-400" />
+            <div className="flex-1">
+              <label className="block text-xs text-[var(--muted-foreground)]">Transfers</label>
+              <input
+                type="number"
+                value={precios.traslados}
+                onChange={(e) => setPrecios({ ...precios, traslados: e.target.value })}
+                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-cyan-500"
+                placeholder="0.00"
+              />
+            </div>
+            <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
+          </div>
+
+          {/* Seguros */}
+          <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
+            <Shield className="w-5 h-5 text-rose-400" />
+            <div className="flex-1">
+              <label className="block text-xs text-[var(--muted-foreground)]">Seguros</label>
+              <input
+                type="number"
+                value={precios.seguros}
+                onChange={(e) => setPrecios({ ...precios, seguros: e.target.value })}
+                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-rose-500"
+                placeholder="0.00"
+              />
+            </div>
+            <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
+          </div>
+
           {/* Extras */}
           <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
-            <Plus className="w-5 h-5 text-orange-400" />
+            <Ticket className="w-5 h-5 text-orange-400" />
             <div className="flex-1">
-              <label className="block text-xs text-[var(--muted-foreground)]">Traslados, Excursiones, Extras</label>
+              <label className="block text-xs text-[var(--muted-foreground)]">Extras</label>
               <input
                 type="number"
                 value={precios.extras}
@@ -947,8 +847,20 @@ RP/DZOUY2100/
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[var(--muted-foreground)]">Hoteles:</span>
-              <span className="text-[var(--foreground)]">{hospedajes.length}</span>
+              <span className="text-[var(--muted-foreground)]">Alojamientos:</span>
+              <span className="text-[var(--foreground)]">{alojamientos.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--muted-foreground)]">Transfers:</span>
+              <span className="text-[var(--foreground)]">{transfers.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--muted-foreground)]">Seguros:</span>
+              <span className="text-[var(--foreground)]">{seguros.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--muted-foreground)]">Extras:</span>
+              <span className="text-[var(--foreground)]">{extras.length}</span>
             </div>
           </div>
         </div>

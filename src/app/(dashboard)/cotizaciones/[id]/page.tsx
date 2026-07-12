@@ -613,16 +613,25 @@ export default function CotizacionDetalle() {
               hospedaje: (() => {
                 // Nuevo schema
                 if (cotizacion.hospedajes && cotizacion.hospedajes.length > 0) {
-                  return cotizacion.hospedajes;
+                  return cotizacion.hospedajes.map((h: any) => ({
+                    ...h,
+                    nombre_alojamiento: h.nombre_alojamiento || h.nombre_hotel,
+                    tipo_alojamiento: h.tipo_alojamiento || 'Hotel',
+                  }));
                 }
                 // Legacy
                 return cotizacion.hospedaje || datosPaqueteDesdeNotas?.hospedaje || [];
               })(),
+              traslados: cotizacion.traslados || [],
+              seguros: cotizacion.seguros || [],
+              extras: cotizacion.extras || [],
               // Desglose de precios
               precios: {
                 vuelos: cotizacion.precio_vuelos ?? (cotizacion.paquete_data as any)?.precio_vuelos,
                 hospedajes: cotizacion.precio_hospedajes ?? (cotizacion.paquete_data as any)?.precio_hospedajes,
-                extras: (cotizacion.paquete_data as any)?.precio_extras,
+                traslados: cotizacion.precio_traslados ?? (cotizacion.paquete_data as any)?.precio_traslados,
+                seguros: cotizacion.precio_seguros ?? (cotizacion.paquete_data as any)?.precio_seguros,
+                extras: cotizacion.precio_extras ?? (cotizacion.paquete_data as any)?.precio_extras,
                 subtotal: cotizacion.precio_subtotal ?? (cotizacion.paquete_data as any)?.precio_subtotal,
                 impuestos: cotizacion.precio_impuestos ?? (cotizacion.paquete_data as any)?.precio_impuestos,
                 total: cotizacion.precio_total,

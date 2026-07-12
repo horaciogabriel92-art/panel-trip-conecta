@@ -6,9 +6,12 @@ import api from '@/lib/api';
 import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 import AirlineLogo from '@/components/flights/AirlineLogo';
+import ServiciosStep from './servicios/ServiciosStep';
+import type { AlojamientoCotizacion, TransferCotizacion, SeguroCotizacion, ExtraCotizacion } from '@/types/cotizacion';
 import {
   ArrowLeft, Save, Plus, Trash2, Plane, Hotel, FileText,
-  DollarSign, Users, Calendar, MapPin, CheckCircle, Loader2
+  DollarSign, Users, Calendar, MapPin, CheckCircle, Loader2,
+  BedDouble, Bus, Shield, Ticket
 } from 'lucide-react';
 
 interface Vuelo {
@@ -31,21 +34,8 @@ interface Vuelo {
   es_escala?: boolean;
 }
 
-interface Hospedaje {
+interface Hospedaje extends AlojamientoCotizacion {
   id?: string;
-  nombre_hotel?: string;
-  link_hotel?: string;
-  ciudad?: string;
-  pais?: string;
-  fecha_checkin?: string;
-  fecha_checkout?: string;
-  noches?: number;
-  tipo_habitacion?: string;
-  regimen?: string;
-  precio_noche?: number;
-  precio_total?: number;
-  moneda?: string;
-  notas?: string;
 }
 
 interface Pasajero {
@@ -60,6 +50,8 @@ interface Precios {
   moneda: string;
   vuelos: number;
   hospedajes: number;
+  traslados: number;
+  seguros: number;
   extras: number;
   subtotal: number;
   impuestos: number;
@@ -107,13 +99,16 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
   const [destino, setDestino] = useState('');
   const [vendedorId, setVendedorId] = useState('');
   const [vuelos, setVuelos] = useState<Vuelo[]>([]);
-  const [hospedajes, setHospedajes] = useState<Hospedaje[]>([]);
+  const [alojamientos, setAlojamientos] = useState<Hospedaje[]>([]);
+  const [transfers, setTransfers] = useState<TransferCotizacion[]>([]);
+  const [seguros, setSeguros] = useState<SeguroCotizacion[]>([]);
+  const [extras, setExtras] = useState<ExtraCotizacion[]>([]);
   const [itinerario, setItinerario] = useState('');
   const [incluye, setIncluye] = useState<string[]>([]);
   const [noIncluye, setNoIncluye] = useState<string[]>([]);
   const [politicas, setPoliticas] = useState('');
   const [precios, setPrecios] = useState<Precios>({
-    moneda: 'USD', vuelos: 0, hospedajes: 0, extras: 0, subtotal: 0, impuestos: 0, total: 0
+    moneda: 'USD', vuelos: 0, hospedajes: 0, traslados: 0, seguros: 0, extras: 0, subtotal: 0, impuestos: 0, total: 0
   });
   const [pasajerosIds, setPasajerosIds] = useState<string[]>([]);
 
@@ -129,7 +124,16 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
         setDestino(data.destino_principal || '');
         setVendedorId(data.vendedor_id || '');
         setVuelos(data.vuelos || []);
-        setHospedajes(data.hospedajes || []);
+        setAlojamientos((data.hospedajes || []).map((h: any) => ({
+          ...h,
+          nombre_alojamiento: h.nombre_alojamiento || h.nombre_hotel,
+          tipo_alojamiento: h.tipo_alojamiento || 'Hotel',
+          es_opcion: h.es_opcion ?? (data.hospedajes?.length > 1),
+          seleccionado: h.seleccionado ?? false,
+        })));
+        setTransfers(data.traslados || []);
+        setSeguros(data.seguros || []);
+        setExtras(data.extras || []);
 
         const itin = typeof data.itinerario === 'string' ? data.itinerario : (data.itinerario?.texto || '');
         setItinerario(itin);
@@ -143,6 +147,8 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
           moneda: data.precio_moneda || 'USD',
           vuelos: Number(pd.precio_vuelos) || 0,
           hospedajes: Number(pd.precio_hospedajes) || 0,
+          traslados: Number(pd.precio_traslados) || 0,
+          seguros: Number(pd.precio_seguros) || 0,
           extras: Number(pd.precio_extras) || 0,
           subtotal: Number(pd.precio_subtotal) || Number(data.precio_total) || 0,
           impuestos: Number(pd.precio_impuestos) || 0,
@@ -169,12 +175,14 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
   useEffect(() => {
     const v = Number(precios.vuelos) || 0;
     const h = Number(precios.hospedajes) || 0;
+    const t = Number(precios.traslados) || 0;
+    const s = Number(precios.seguros) || 0;
     const e = Number(precios.extras) || 0;
     const i = Number(precios.impuestos) || 0;
-    const sub = v + h + e;
+    const sub = v + h + t + s + e;
     const total = sub + i;
     setPrecios((prev) => ({ ...prev, subtotal: sub, total }));
-  }, [precios.vuelos, precios.hospedajes, precios.extras, precios.impuestos]);
+  }, [precios.vuelos, precios.hospedajes, precios.traslados, precios.seguros, precios.extras, precios.impuestos]);
 
   const addVuelo = () => {
     setVuelos([...vuelos, { tipo_trayecto: 'ida', es_escala: false }]);
@@ -188,27 +196,6 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
     const updated = [...vuelos];
     updated[index] = { ...updated[index], [field]: value };
     setVuelos(updated);
-  };
-
-  const addHospedaje = () => {
-    setHospedajes([...hospedajes, { moneda: 'USD' }]);
-  };
-
-  const removeHospedaje = (index: number) => {
-    setHospedajes(hospedajes.filter((_, i) => i !== index));
-  };
-
-  const updateHospedaje = (index: number, field: keyof Hospedaje, value: any) => {
-    const updated = [...hospedajes];
-    updated[index] = { ...updated[index], [field]: value };
-    // Auto-calc noches si checkin y checkout
-    if ((field === 'fecha_checkin' || field === 'fecha_checkout') && updated[index].fecha_checkin && updated[index].fecha_checkout) {
-      const checkin = new Date(updated[index].fecha_checkin!);
-      const checkout = new Date(updated[index].fecha_checkout!);
-      const diff = Math.ceil((checkout.getTime() - checkin.getTime()) / (1000 * 60 * 60 * 24));
-      updated[index].noches = diff > 0 ? diff : 0;
-    }
-    setHospedajes(updated);
   };
 
   const addIncluye = () => setIncluye([...incluye, '']);
@@ -234,7 +221,10 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
         nombre_cotizacion: nombreCotizacion,
         destino_principal: destino,
         vuelos: vuelos.map((v, idx) => ({ ...v, orden: idx + 1 })),
-        hospedajes,
+        hospedajes: alojamientos,
+        traslados: transfers,
+        seguros: seguros,
+        extras: extras,
         itinerario,
         incluye: incluye.filter(Boolean),
         no_incluye: noIncluye.filter(Boolean),
@@ -243,6 +233,8 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
           moneda: precios.moneda,
           vuelos: Number(precios.vuelos) || 0,
           hospedajes: Number(precios.hospedajes) || 0,
+          traslados: Number(precios.traslados) || 0,
+          seguros: Number(precios.seguros) || 0,
           extras: Number(precios.extras) || 0,
           subtotal: Number(precios.subtotal) || 0,
           impuestos: Number(precios.impuestos) || 0,
@@ -374,33 +366,21 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
         </div>
       </Section>
 
-      {/* Hospedajes */}
-      <Section title="Hospedajes" icon={<Hotel className="w-5 h-5 text-purple-400" />}>
-        <div className="space-y-3">
-          {hospedajes.map((h, idx) => (
-            <div key={idx} className="glass-card rounded-xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[var(--muted-foreground)] uppercase">Hotel {idx + 1}</span>
-                <button onClick={() => removeHospedaje(idx)} className="p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-all">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <input placeholder="Nombre del hotel" value={h.nombre_hotel || ''} onChange={(e) => updateHospedaje(idx, 'nombre_hotel', e.target.value)} className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none" />
-                <input placeholder="Ciudad" value={h.ciudad || ''} onChange={(e) => updateHospedaje(idx, 'ciudad', e.target.value)} className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none" />
-                <input type="date" placeholder="Check-in" value={h.fecha_checkin || ''} onChange={(e) => updateHospedaje(idx, 'fecha_checkin', e.target.value)} className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none" />
-                <input type="date" placeholder="Check-out" value={h.fecha_checkout || ''} onChange={(e) => updateHospedaje(idx, 'fecha_checkout', e.target.value)} className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none" />
-                <input placeholder="Noches" type="number" value={h.noches || ''} onChange={(e) => updateHospedaje(idx, 'noches', Number(e.target.value))} className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none" />
-                <input placeholder="Tipo habitación" value={h.tipo_habitacion || ''} onChange={(e) => updateHospedaje(idx, 'tipo_habitacion', e.target.value)} className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none" />
-                <input placeholder="Régimen" value={h.regimen || ''} onChange={(e) => updateHospedaje(idx, 'regimen', e.target.value)} className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none" />
-                <input placeholder="Precio total" type="number" value={h.precio_total || ''} onChange={(e) => updateHospedaje(idx, 'precio_total', Number(e.target.value))} className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none" />
-              </div>
-            </div>
-          ))}
-          <button onClick={addHospedaje} className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 font-medium transition-all">
-            <Plus className="w-4 h-4" /> Agregar hospedaje
-          </button>
-        </div>
+      {/* Servicios del viaje */}
+      <Section title="Servicios del viaje" icon={<Hotel className="w-5 h-5 text-purple-400" />}>
+        <ServiciosStep
+          alojamientos={alojamientos}
+          transfers={transfers}
+          seguros={seguros}
+          extras={extras}
+          moneda={precios.moneda as 'USD' | 'UYU'}
+          onChange={({ alojamientos: a, transfers: t, seguros: s, extras: e }) => {
+            setAlojamientos(a);
+            setTransfers(t);
+            setSeguros(s);
+            setExtras(e);
+          }}
+        />
       </Section>
 
       {/* Itinerario */}
@@ -467,9 +447,11 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
               <option value="UYU">UYU</option>
             </select>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <PriceInput label="Vuelos" value={precios.vuelos} onChange={(v) => setPrecios({ ...precios, vuelos: v })} />
             <PriceInput label="Hospedajes" value={precios.hospedajes} onChange={(v) => setPrecios({ ...precios, hospedajes: v })} />
+            <PriceInput label="Transfers" value={precios.traslados} onChange={(v) => setPrecios({ ...precios, traslados: v })} />
+            <PriceInput label="Seguros" value={precios.seguros} onChange={(v) => setPrecios({ ...precios, seguros: v })} />
             <PriceInput label="Extras" value={precios.extras} onChange={(v) => setPrecios({ ...precios, extras: v })} />
             <PriceInput label="Impuestos" value={precios.impuestos} onChange={(v) => setPrecios({ ...precios, impuestos: v })} />
           </div>
