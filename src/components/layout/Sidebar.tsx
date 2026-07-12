@@ -20,27 +20,6 @@ import {
   CreditCard
 } from 'lucide-react';
 
-const adminLinks = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/clientes', label: 'Clientes', icon: Users },
-  { href: '/admin/cotizaciones', label: 'Cotizaciones', icon: FileText },
-  { href: '/admin/paquetes', label: 'Paquetes', icon: Package },
-  { href: '/admin/ventas', label: 'Ventas', icon: ShoppingCart },
-  { href: '/admin/vendedores', label: 'Vendedores', icon: Users },
-  { href: '/admin/comisiones', label: 'Comisiones', icon: Wallet },
-  { href: '/admin/reportes', label: 'Reportes', icon: BarChart3 },
-  { href: '/configuracion/plan', label: 'Mi Plan', icon: CreditCard },
-];
-
-const vendedorLinks = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/paquetes', label: 'Catálogo', icon: Package },
-  { href: '/cotizaciones', label: 'Cotizaciones', icon: FileText },
-  { href: '/admin/clientes', label: 'Clientes', icon: Users },
-  { href: '/mis-ventas', label: 'Mis Ventas', icon: ShoppingCart },
-  { href: '/configuracion/plan', label: 'Mi Plan', icon: CreditCard },
-];
-
 interface SidebarProps {
   role?: 'admin' | 'vendedor';
   mobileOpen?: boolean;
@@ -49,9 +28,31 @@ interface SidebarProps {
 
 export default function Sidebar({ role = 'vendedor', mobileOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { logout, hasPermission } = useAuth();
   const { tenant } = useTenant();
-  const links = role === 'admin' ? adminLinks : vendedorLinks;
+
+  const isAdmin = role === 'admin';
+
+  const adminLinks = [
+    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/clientes', label: 'Clientes', icon: Users },
+    { href: '/admin/cotizaciones', label: 'Cotizaciones', icon: FileText },
+    { href: '/admin/paquetes', label: 'Paquetes', icon: Package },
+    { href: '/admin/ventas', label: 'Ventas', icon: ShoppingCart },
+    { href: '/admin/vendedores', label: 'Vendedores', icon: Users },
+    { href: '/admin/comisiones', label: 'Comisiones', icon: Wallet, permission: 'ver_comisiones_otros' as const },
+    { href: '/admin/reportes', label: 'Reportes', icon: BarChart3, permission: 'ver_reportes' as const },
+  ].filter(link => !link.permission || hasPermission(link.permission));
+
+  const vendedorLinks = [
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/paquetes', label: 'Catálogo', icon: Package },
+    { href: '/cotizaciones', label: 'Cotizaciones', icon: FileText },
+    { href: '/admin/clientes', label: 'Clientes', icon: Users },
+    { href: '/mis-ventas', label: 'Mis Ventas', icon: ShoppingCart },
+  ];
+
+  const links = isAdmin ? adminLinks : vendedorLinks;
 
   const handleLinkClick = () => {
     if (onClose) onClose();
@@ -59,7 +60,6 @@ export default function Sidebar({ role = 'vendedor', mobileOpen = false, onClose
 
   return (
     <>
-      {/* Mobile backdrop */}
       {mobileOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -133,14 +133,29 @@ export default function Sidebar({ role = 'vendedor', mobileOpen = false, onClose
             onClick={handleLinkClick}
             className={cn(
               "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
-              pathname === '/configuracion'
+              pathname === '/configuracion' || pathname?.startsWith('/configuracion/')
                 ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/20"
                 : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
             )}
           >
-            <Settings className={cn("w-5 h-5 shrink-0", pathname === '/configuracion' ? "text-white" : "")} />
+            <Settings className={cn("w-5 h-5 shrink-0", pathname === '/configuracion' || pathname?.startsWith('/configuracion/') ? "text-white" : "")} />
             <span className="font-medium truncate">Configuración</span>
           </Link>
+          {isAdmin && (
+            <Link 
+              href="/configuracion/plan"
+              onClick={handleLinkClick}
+              className={cn(
+                "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
+                pathname === '/configuracion/plan'
+                  ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/20"
+                  : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+              )}
+            >
+              <CreditCard className={cn("w-5 h-5 shrink-0", pathname === '/configuracion/plan' ? "text-white" : "")} />
+              <span className="font-medium truncate">Mi Plan</span>
+            </Link>
+          )}
           <button 
             onClick={logout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all"

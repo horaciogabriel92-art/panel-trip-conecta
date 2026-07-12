@@ -15,7 +15,9 @@ import {
   FileText,
   Palette,
   RotateCcw,
+  Users,
 } from "lucide-react";
+import UsersTab from "./_components/UsersTab";
 
 const DEFAULT_PDF_COLORS = {
   primary: "#0d9488",
@@ -41,7 +43,7 @@ const COLOR_LABELS: Record<string, string> = {
 
 export default function ConfiguracionPage() {
   const { user, login } = useAuth();
-  const [activeTab, setActiveTab] = useState<"perfil" | "seguridad" | "pdf">("perfil");
+  const [activeTab, setActiveTab] = useState<"perfil" | "seguridad" | "pdf" | "usuarios">("perfil");
   const [isLoading, setIsLoading] = useState(false);
 
   // Perfil
@@ -237,6 +239,20 @@ export default function ConfiguracionPage() {
             <FileText className="w-4 h-4" /> Personalizar PDF
           </span>
         </button>
+        {user?.rol === 'admin' && (
+          <button
+            onClick={() => setActiveTab("usuarios")}
+            className={`px-4 py-2 rounded-t-xl text-sm font-medium transition-colors ${
+              activeTab === "usuarios"
+                ? "bg-[var(--muted)] text-[var(--foreground)] border-t border-x border-[var(--border)]"
+                : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <Users className="w-4 h-4" /> Usuarios
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Tab Perfil */}
@@ -411,6 +427,11 @@ export default function ConfiguracionPage() {
       )}
 
       {/* Tab Personalizar PDF */}
+      {/* Tab Usuarios */}
+      {activeTab === "usuarios" && (
+        <UsersTab />
+      )}
+
       {activeTab === "pdf" && (
         <div className="space-y-6">
           {pdfMessage && (

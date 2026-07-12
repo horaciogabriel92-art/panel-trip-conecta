@@ -1,8 +1,17 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+
+export interface UserPermissions {
+  ver_todas_cotizaciones?: boolean;
+  ver_todas_ventas?: boolean;
+  ver_reportes?: boolean;
+  gestionar_paquetes?: boolean;
+  ver_comisiones_otros?: boolean;
+  editar_clientes_otros?: boolean;
+}
 
 interface User {
   id: number;
@@ -16,6 +25,7 @@ interface User {
   preferencias?: {
     pdf_colors?: Record<string, string>;
   };
+  permisos?: UserPermissions;
 }
 
 interface AuthContextType {
@@ -24,6 +34,8 @@ interface AuthContextType {
   login: (token: string, user: User) => void;
   logout: () => void;
   isLoading: boolean;
+  hasPermission: (permission: keyof UserPermissions) => boolean;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,6 +72,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  const hasPermission = useCallback((permission: keyof UserPermissions): boolean => {
+    if (!user) return false;
+    if (user.rol === 'admin') return true;
+    return user.permisos?.[permission] === true;
+  }, [user]);
+
+  const refreshUser = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await axios.get(`${API_URL}/auth/profile`);
+      const updatedUser = { ...user, ...res.data };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch (err) {
+      console.error('Error refreshing user:', err);
+    }
+  }, [token, user]);
+
   const login = (newToken: string, newUser: User) => {
     console.log('🔐 Login called with user:', newUser);
     setToken(newToken);
@@ -86,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, isLoading, hasPermission, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
