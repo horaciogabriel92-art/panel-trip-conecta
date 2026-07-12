@@ -39,7 +39,6 @@ export default function Sidebar({ role = 'vendedor', mobileOpen = false, onClose
     { href: '/admin/cotizaciones', label: 'Cotizaciones', icon: FileText },
     { href: '/admin/paquetes', label: 'Paquetes', icon: Package },
     { href: '/admin/ventas', label: 'Ventas', icon: ShoppingCart },
-    { href: '/admin/vendedores', label: 'Vendedores', icon: Users },
     { href: '/admin/comisiones', label: 'Comisiones', icon: Wallet, permission: 'ver_comisiones_otros' as const },
     { href: '/admin/reportes', label: 'Reportes', icon: BarChart3, permission: 'ver_reportes' as const },
   ].filter(link => !link.permission || hasPermission(link.permission));

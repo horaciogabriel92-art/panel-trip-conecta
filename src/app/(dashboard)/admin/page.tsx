@@ -135,9 +135,9 @@ export default function AdminDashboard() {
             </h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Link href="/admin/vendedores" className="p-4 rounded-xl bg-[var(--muted)] hover:bg-[var(--border)] transition-all text-center">
+            <Link href="/configuracion" className="p-4 rounded-xl bg-[var(--muted)] hover:bg-[var(--border)] transition-all text-center">
               <Users className="w-8 h-8 mx-auto mb-2 text-purple-400" />
-              <p className="font-bold">Vendedores</p>
+              <p className="font-bold">Usuarios</p>
             </Link>
             <Link href="/admin/paquetes" className="p-4 rounded-xl bg-[var(--muted)] hover:bg-[var(--border)] transition-all text-center">
               <Package className="w-8 h-8 mx-auto mb-2 text-green-400" />
