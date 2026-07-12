@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useTenant } from '@/context/TenantContext';
 import { cn } from '@/lib/utils';
+import SidebarPlanUpsell from '@/components/billing/SidebarPlanUpsell';
 import { 
   LayoutDashboard, 
   Package, 
@@ -166,6 +167,7 @@ export default function Sidebar({
           "border-t border-[var(--border)] space-y-2",
           collapsed ? "p-2" : "p-4"
         )}>
+          <SidebarPlanUpsell collapsed={collapsed} />
           <Link 
             href="/configuracion"
             onClick={handleLinkClick}
