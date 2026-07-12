@@ -180,6 +180,12 @@ const PATTERN_COMPACT = /^(\s*\d+)?\s*([A-Z0-9]{2})(\d{1,5})\s+([A-Z])\s+(\d{1,2
 const PATTERN_ALT = /^(\s*\d+)\s+([A-Z0-9]{2})\s+(\d{1,5})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+(\d)\s+([A-Z]{6})\s+([A-Z]{2}\d{1,3})\s+(\d{1,2}\d{2}[AP]?|\d{4})\s+(\d{1,2}\d{2}[AP]?|\d{4})(?:\+(\d+))?/i;
 
 /**
+ * PATRÓN 4: Sin día de la semana
+ * Ej: "  2  LA 533  Y 20NOV JFKSCL HK1  2015 0545+1 *E*"
+ */
+const PATTERN_NO_DOW = /^(\s*\d+)\s+([A-Z0-9]{2})\s+(\d{1,5})\s+([A-Z])\s+(\d{1,2}[A-Z]{3})\s+([A-Z]{6})\s+([A-Z]{2}\d+)\s+(\d{1,2}\d{2}[AP]?|\d{4})\s+(\d{1,2}\d{2}[AP]?|\d{4})(?:\+(\d+))?/i;
+
+/**
  * Detecta si una línea es un segmento de vuelo
  */
 function isFlightLine(line: string): boolean {
@@ -203,16 +209,19 @@ function isFlightLine(line: string): boolean {
  */
 function parseFlightLineWithPatterns(line: string, year?: number): ParsedFlight | null {
   const patterns = [
-    { name: 'STANDARD', regex: PATTERN_STANDARD },
-    { name: 'COMPACT', regex: PATTERN_COMPACT },
-    { name: 'ALT', regex: PATTERN_ALT }
+    { name: 'STANDARD', regex: PATTERN_STANDARD, hasDow: true },
+    { name: 'COMPACT', regex: PATTERN_COMPACT, hasDow: true },
+    { name: 'ALT', regex: PATTERN_ALT, hasDow: true },
+    { name: 'NO_DOW', regex: PATTERN_NO_DOW, hasDow: false }
   ];
   
-  for (const { name, regex } of patterns) {
+  for (const { name, regex, hasDow } of patterns) {
     const match = line.match(regex);
     if (match) {
       console.log(`✅ Patrón ${name} matched:`, match.slice(0, 10));
-      const result = buildFlightFromMatch(match, line, year);
+      const result = hasDow
+        ? buildFlightFromMatch(match, line, year)
+        : buildFlightFromMatchNoDow(match, line, year);
       if (result) return result;
     }
   }
@@ -221,11 +230,10 @@ function parseFlightLineWithPatterns(line: string, year?: number): ParsedFlight 
 }
 
 /**
- * Construye objeto flight desde match de regex
+ * Construye objeto flight desde match de regex (con día de la semana)
  */
 function buildFlightFromMatch(match: RegExpMatchArray, originalLine: string, year?: number): ParsedFlight | null {
   try {
-    // Determinar índices según el patrón
     // Patrón STANDARD y ALT: 1=linea, 2=aerolinea, 3=vuelo, 4=clase, 5=fecha, 6=dia, 7=origen-destino, 8=status, 9=hora_salida, 10=hora_llegada
     // Patrón COMPACT: puede no tener línea al inicio
     
@@ -299,6 +307,79 @@ function buildFlightFromMatch(match: RegExpMatchArray, originalLine: string, yea
     };
   } catch (error) {
     console.error('Error construyendo flight:', error);
+    return null;
+  }
+}
+
+/**
+ * Construye objeto flight desde match de regex (sin día de la semana)
+ */
+function buildFlightFromMatchNoDow(match: RegExpMatchArray, originalLine: string, year?: number): ParsedFlight | null {
+  try {
+    // Patrón NO_DOW: 1=linea, 2=aerolinea, 3=vuelo, 4=clase, 5=fecha, 6=origen-destino, 7=status, 8=hora_salida, 9=hora_llegada
+    let idx = 1;
+    const linea = parseInt(match[idx++]);
+    const aerolinea_codigo = match[idx++].toUpperCase();
+    const numero_vuelo = match[idx++];
+    const clase_codigo = match[idx++].toUpperCase();
+    const fecha_salida_str = match[idx++].toUpperCase();
+    const origen_destino = match[idx++].toUpperCase();
+    const status_full = match[idx++];
+    const hora_salida_raw = match[idx++];
+    const hora_llegada_raw = match[idx++];
+    const dias_adicionales = match[idx] ? parseInt(match[idx]) : 0;
+
+    const status_match = status_full.match(/^([A-Z]{2})(\d+)?/i);
+    const estado_codigo = status_match ? status_match[1].toUpperCase() : 'HK';
+    const asientos = status_match && status_match[2] ? parseInt(status_match[2]) : 1;
+
+    const origen_codigo = origen_destino.substring(0, 3);
+    const destino_codigo = origen_destino.substring(3, 6);
+
+    const hora_salida_parsed = parseTime(hora_salida_raw);
+    const hora_llegada_parsed = parseTime(hora_llegada_raw);
+
+    if (!hora_salida_parsed || !hora_llegada_parsed) {
+      throw new Error(`No se pudieron parsear las horas: ${hora_salida_raw}, ${hora_llegada_raw}`);
+    }
+
+    const fecha_salida_date = parseAmadeusDate(fecha_salida_str, year);
+    if (!fecha_salida_date) {
+      throw new Error(`Fecha inválida: ${fecha_salida_str}`);
+    }
+
+    const diasOffset = dias_adicionales || extractDaysOffset(hora_llegada_raw);
+    const fecha_llegada_date = new Date(fecha_salida_date);
+    fecha_llegada_date.setDate(fecha_llegada_date.getDate() + diasOffset);
+
+    const origen = getAirportByIATA(origen_codigo);
+    const destino = getAirportByIATA(destino_codigo);
+    const aerolinea = getAirlineByIATA(aerolinea_codigo);
+
+    return {
+      linea,
+      aerolinea_codigo,
+      aerolinea_nombre: aerolinea?.name || aerolinea_codigo,
+      numero_vuelo,
+      clase_codigo,
+      fecha_salida: formatISODate(fecha_salida_date),
+      fecha_salida_original: fecha_salida_str,
+      dia_salida: fecha_salida_date.getDay(),
+      origen_codigo,
+      origen_nombre: origen?.name || origen_codigo,
+      origen_ciudad: origen?.city || origen_codigo,
+      destino_codigo,
+      destino_nombre: destino?.name || destino_codigo,
+      destino_ciudad: destino?.city || destino_codigo,
+      estado_codigo,
+      asientos,
+      hora_salida: hora_salida_parsed.time,
+      hora_llegada: hora_llegada_parsed.time,
+      fecha_llegada: formatISODate(fecha_llegada_date),
+      dias_adicionales: diasOffset,
+    };
+  } catch (error) {
+    console.error('Error construyendo flight (no dow):', error);
     return null;
   }
 }

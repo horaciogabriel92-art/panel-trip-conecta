@@ -25,6 +25,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import BuscarCliente from '@/components/cotizaciones/BuscarCliente';
 import CrearClienteModal from '@/components/cotizaciones/CrearClienteModal';
+import ManualFlightForm from '@/components/cotizaciones/ManualFlightForm';
 import { Cliente, clientesAPI } from '@/lib/api-clientes';
 
 // ============================================
@@ -93,6 +94,7 @@ export default function AdminNuevaCotizacion() {
   const [amadeusText, setAmadeusText] = useState('');
   const [parsedFlights, setParsedFlights] = useState<any[]>([]);
   const [parseError, setParseError] = useState('');
+  const [vuelosManuales, setVuelosManuales] = useState<any[]>([]);
   const [useAmadeus, setUseAmadeus] = useState(true);
 
   // Hospedaje
@@ -304,7 +306,7 @@ export default function AdminNuevaCotizacion() {
           fecha_nacimiento: p.fecha_nacimiento,
           nacionalidad: p.nacionalidad,
         })),
-        vuelos: useAmadeus ? parsedFlights : [],
+        vuelos: useAmadeus ? parsedFlights : vuelosManuales,
         hospedajes: hospedajes.map(h => ({
           nombre_hotel: h.nombre_hotel,
           link_hotel: h.link_hotel,
@@ -786,18 +788,10 @@ RP/DZOUY2100/
           )}
         </div>
       ) : (
-        /* MANUAL ENTRY - TODO */
+        /* MANUAL ENTRY */
         <div className="glass-card rounded-2xl p-6">
           <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Ingreso Manual</h3>
-          <p className="text-[var(--muted-foreground)] text-sm mb-4">
-            Función en desarrollo. Por favor usa la opción de Amadeus o selecciona un paquete del catálogo.
-          </p>
-          <button
-            onClick={() => setUseAmadeus(true)}
-            className="text-teal-400 hover:text-teal-300 text-sm font-bold"
-          >
-            ← Volver a Amadeus
-          </button>
+          <ManualFlightForm flights={vuelosManuales} onChange={setVuelosManuales} />
         </div>
       )}
     </div>
