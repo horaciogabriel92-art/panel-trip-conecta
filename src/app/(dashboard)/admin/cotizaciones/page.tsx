@@ -44,12 +44,17 @@ const estadosKanban: { key: Cotizacion['estado']; label: string; color: string }
 function KanbanView({ 
   cotizaciones, 
   onDelete,
+  onStatusChange,
   isLoading 
 }: { 
   cotizaciones: Cotizacion[]; 
   onDelete: (c: Cotizacion) => void;
+  onStatusChange: (id: string, newEstado: Cotizacion['estado']) => Promise<void>;
   isLoading: boolean;
 }) {
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -67,10 +72,45 @@ function KanbanView({
     );
   }
 
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggedId(id);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', id);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedId(null);
+    setDragOverColumn(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, estadoKey: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverColumn(estadoKey);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverColumn(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, estadoKey: Cotizacion['estado']) => {
+    e.preventDefault();
+    setDragOverColumn(null);
+    const id = e.dataTransfer.getData('text/plain') || draggedId;
+    if (!id) return;
+    
+    const cotizacion = cotizaciones.find(c => c.id === id);
+    if (!cotizacion || cotizacion.estado === estadoKey) return;
+
+    await onStatusChange(id, estadoKey);
+    setDraggedId(null);
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
       {estadosKanban.map((estado) => {
         const items = cotizaciones.filter(c => c.estado === estado.key);
+        const isOver = dragOverColumn === estado.key;
         return (
           <div key={estado.key} className="flex flex-col">
             <div className={cn(
@@ -82,15 +122,27 @@ function KanbanView({
                 {items.length}
               </span>
             </div>
-            <div className={cn(
-              "flex-1 p-3 rounded-b-2xl border-b border-x min-h-[200px] space-y-3",
-              estado.color
-            )}>
+            <div
+              onDragOver={(e) => handleDragOver(e, estado.key)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, estado.key)}
+              className={cn(
+                "flex-1 p-3 rounded-b-2xl border-b border-x min-h-[200px] space-y-3 transition-all",
+                estado.color,
+                isOver && "ring-2 ring-[var(--primary)] ring-offset-2 ring-offset-[var(--background)]"
+              )}
+            >
               {items.map((c) => (
                 <Link
                   key={c.id}
                   href={`/admin/cotizaciones/${c.id}`}
-                  className="block bg-[var(--card)] rounded-xl p-4 border border-[var(--border)] hover:border-[var(--primary)] hover:shadow-lg transition-all group"
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, c.id)}
+                  onDragEnd={handleDragEnd}
+                  className={cn(
+                    "block bg-[var(--card)] rounded-xl p-4 border border-[var(--border)] hover:border-[var(--primary)] hover:shadow-lg transition-all group cursor-grab active:cursor-grabbing",
+                    draggedId === c.id && "opacity-50"
+                  )}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <span className="text-blue-500 font-mono text-xs font-bold">{c.codigo}</span>
@@ -212,6 +264,19 @@ export default function AdminCotizaciones() {
     setShowDeleteModal(true);
   };
 
+  const moverCotizacion = async (id: string, nuevoEstado: Cotizacion['estado']) => {
+    try {
+      // Optimistic update
+      setCotizaciones(prev => prev.map(c => c.id === id ? { ...c, estado: nuevoEstado } : c));
+      await api.put(`/cotizaciones/${id}`, { estado: nuevoEstado });
+    } catch (err: any) {
+      // Revert on error
+      fetchCotizaciones();
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Error al mover la cotización';
+      toastError(errorMsg, 'Error');
+    }
+  };
+
   const eliminarCotizacion = async () => {
     if (!cotizacionToDelete) return;
     
@@ -328,6 +393,7 @@ export default function AdminCotizaciones() {
         <KanbanView 
           cotizaciones={filteredCotizaciones.filter(c => filtroEstado === 'todos' || c.estado === filtroEstado)}
           onDelete={abrirModalEliminar}
+          onStatusChange={moverCotizacion}
           isLoading={isLoading}
         />
       ) : (

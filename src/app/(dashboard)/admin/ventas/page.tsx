@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
 import { useFeature } from '@/hooks/useFeature';
+import { useDragScroll } from '@/hooks/useDragScroll';
 import {
   ShoppingCart,
   Search,
@@ -95,6 +96,8 @@ export default function AdminVentas() {
     return <span className="px-2 py-1 bg-slate-500/20 text-slate-400 text-xs rounded-full font-bold">Pendiente</span>;
   };
 
+  const tableScrollRef = useDragScroll<HTMLDivElement>();
+
   const filteredVentas = ventas.filter(v => {
     const matchesEstado = filtroEstado === 'todos' || v.estado === filtroEstado;
     const term = searchTerm.toLowerCase();
@@ -164,7 +167,7 @@ export default function AdminVentas() {
         </div>
       ) : (
         <div className="glass-card rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
+          <div ref={tableScrollRef} className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[var(--border)] text-left text-xs uppercase text-[var(--muted-foreground)]">
