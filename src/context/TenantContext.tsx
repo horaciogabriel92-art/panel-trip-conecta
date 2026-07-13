@@ -12,6 +12,7 @@ export interface PlanFeatures {
 export interface PlanConfig {
   slug: string;
   nombre: string;
+  description?: string | null;
   max_users: number | null;
   max_cotizaciones_por_mes: number | null;
   max_paquetes: number | null;
