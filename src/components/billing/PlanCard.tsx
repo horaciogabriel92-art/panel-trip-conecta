@@ -27,6 +27,14 @@ interface FeatureItem {
   dynamic?: (plan: PlanConfig) => string | null;
 }
 
+const DESCRIPTION_BY_SLUG: Record<string, string> = {
+  free: "Para empezar a cotizar",
+  freelance: "Para agentes independientes",
+  "pro-agencia": "Para agencias en crecimiento",
+  "pro-ilimitado": "Para agencias que venden en serio",
+  test: "Plan de prueba",
+};
+
 const FEATURES: FeatureItem[] = [
   { key: "pdf_cotizaciones", label: "Cotizaciones en PDF en minutos" },
   { key: "crm_agentes", label: "CRM para agentes de viajes" },
@@ -94,8 +102,10 @@ export default function PlanCard({
 
       <div className="mb-4">
         <h3 className="text-xl font-black text-[var(--foreground)]">{plan.nombre}</h3>
-        {plan.description && (
-          <p className="text-sm text-[var(--muted-foreground)] mt-1">{plan.description}</p>
+        {(plan.description || DESCRIPTION_BY_SLUG[plan.slug]) && (
+          <p className="text-sm text-[var(--muted-foreground)] mt-1">
+            {plan.description || DESCRIPTION_BY_SLUG[plan.slug]}
+          </p>
         )}
         <p className="text-3xl font-black text-[var(--foreground)] mt-3">
           {formatCurrency(plan.precio_mensual_usd)}
