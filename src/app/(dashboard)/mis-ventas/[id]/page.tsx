@@ -106,6 +106,7 @@ export default function VentaDetalle() {
   const [isUploadingVoucher, setIsUploadingVoucher] = useState(false);
   const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>('');
   const [isUpdatingEstado, setIsUpdatingEstado] = useState(false);
+  const [isEnviandoConfirmacion, setIsEnviandoConfirmacion] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -245,6 +246,28 @@ export default function VentaDetalle() {
       toastError(err.response?.data?.error || 'Error al actualizar estado', 'Error');
     } finally {
       setIsUpdatingEstado(false);
+    }
+  };
+
+  const handleEnviarConfirmacion = async () => {
+    if (!venta) return;
+    if (vouchers.length === 0) {
+      toastError('No hay vouchers para adjuntar', 'Sin vouchers');
+      return;
+    }
+    if (!window.confirm(`¿Enviar confirmación a ${venta.cliente_email || 'el cliente'} con ${vouchers.length} voucher(s)?`)) return;
+
+    setIsEnviandoConfirmacion(true);
+    try {
+      await api.post(`/ventas/${venta.id}/enviar-confirmacion`, {
+        voucherIds: vouchers.map(v => v.id)
+      });
+      toastSuccess('Confirmación enviada correctamente', 'Email enviado');
+    } catch (err: any) {
+      console.error('Error enviando confirmación:', err);
+      toastError(err.response?.data?.error || 'Error al enviar confirmación', 'Error');
+    } finally {
+      setIsEnviandoConfirmacion(false);
     }
   };
 
@@ -570,6 +593,21 @@ export default function VentaDetalle() {
                 className="w-full mb-4 px-4 py-3 rounded-xl font-medium text-white bg-orange-600 hover:bg-orange-700 transition-colors"
               >
                 Registrar pago
+              </button>
+            )}
+
+            {venta.cliente_email && vouchers.length > 0 && (
+              <button
+                onClick={handleEnviarConfirmacion}
+                disabled={isEnviandoConfirmacion}
+                className="w-full mb-4 px-4 py-3 rounded-xl font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 transition-colors flex items-center justify-center gap-2"
+              >
+                {isEnviandoConfirmacion ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Mail className="w-4 h-4" />
+                )}
+                Enviar confirmación al cliente
               </button>
             )}
 

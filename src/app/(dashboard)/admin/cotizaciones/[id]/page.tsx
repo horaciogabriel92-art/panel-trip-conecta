@@ -181,6 +181,7 @@ export default function AdminCotizacionDetalle() {
   const [showComisionModal, setShowComisionModal] = useState(false);
   const [comisionMontoInput, setComisionMontoInput] = useState('');
   const [pendingVoucherFile, setPendingVoucherFile] = useState<File | null>(null);
+  const [isEnviandoConfirmacion, setIsEnviandoConfirmacion] = useState(false);
 
   useEffect(() => {
     const fetchCotizacion = async () => {
@@ -416,6 +417,29 @@ export default function AdminCotizacionDetalle() {
     } catch (err: any) {
       console.error('Error eliminando voucher:', err);
       toastError(err.response?.data?.error || 'Error al eliminar voucher', 'Error');
+    }
+  };
+
+  // Enviar confirmación por email
+  const handleEnviarConfirmacion = async () => {
+    if (!cotizacion?.venta?.id) return;
+    if (vouchers.length === 0) {
+      toastError('No hay vouchers para adjuntar', 'Sin vouchers');
+      return;
+    }
+    if (!window.confirm(`¿Enviar confirmación a ${cotizacion.cliente_email || 'el cliente'} con ${vouchers.length} voucher(s)?`)) return;
+
+    setIsEnviandoConfirmacion(true);
+    try {
+      await api.post(`/ventas/${cotizacion.venta.id}/enviar-confirmacion`, {
+        voucherIds: vouchers.map(v => v.id)
+      });
+      toastSuccess('Confirmación enviada correctamente', 'Email enviado');
+    } catch (err: any) {
+      console.error('Error enviando confirmación:', err);
+      toastError(err.response?.data?.error || 'Error al enviar confirmación', 'Error');
+    } finally {
+      setIsEnviandoConfirmacion(false);
     }
   };
 
@@ -814,7 +838,22 @@ export default function AdminCotizacionDetalle() {
                   </p>
                 </div>
               )}
-              
+
+              {vouchers.length > 0 && cotizacion?.cliente_email && (
+                <button
+                  onClick={handleEnviarConfirmacion}
+                  disabled={isEnviandoConfirmacion}
+                  className="w-full mb-6 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  {isEnviandoConfirmacion ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Mail className="w-4 h-4" />
+                  )}
+                  Enviar confirmación al cliente
+                </button>
+              )}
+
               {/* Formulario subir nuevo voucher */}
               <div className="border-t border-[var(--border)] pt-4">
                 <h4 className="text-sm font-medium text-[var(--foreground)] mb-3">Subir nuevo voucher</h4>
