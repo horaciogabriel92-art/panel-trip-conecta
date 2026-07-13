@@ -72,10 +72,34 @@ export function useBilling() {
     }
   }, []);
 
+  const cancelSubscription = useCallback(async (): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/billing/cancel`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Error al cancelar suscripción");
+      }
+
+      return true;
+    } catch (err: any) {
+      setError(err.message);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     isLoading,
     error,
     createCheckout,
     createPortal,
+    cancelSubscription,
   };
 }

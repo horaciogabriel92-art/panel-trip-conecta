@@ -47,7 +47,7 @@ function getDaysLeft(dateString: string | null) {
 
 export default function PlanPage() {
   const { tenant, isLoading: isTenantLoading } = useTenant();
-  const { createCheckout, createPortal, isLoading: isBillingLoading, error: billingError } = useBilling();
+  const { createCheckout, createPortal, cancelSubscription, isLoading: isBillingLoading, error: billingError } = useBilling();
   const searchParams = useSearchParams();
 
   const [plans, setPlans] = useState<PlanConfig[]>([]);
@@ -88,12 +88,21 @@ export default function PlanPage() {
   const handleSelectPlan = async (plan: PlanConfig) => {
     if (plan.slug === "free") return;
     setSelectedPlan(plan.slug);
+    const isProPlan = plan.slug === "pro-agencia" || plan.slug === "pro-ilimitado";
     const url = await createCheckout({
       plan_slug: plan.slug,
-      extra_users: extraUsers,
+      extra_users: isProPlan ? extraUsers : 0,
     });
     if (url) {
       window.location.href = url;
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!confirm("¿Estás seguro de que querés cancelar tu suscripción?")) return;
+    const ok = await cancelSubscription();
+    if (ok) {
+      window.location.reload();
     }
   };
 
@@ -103,6 +112,8 @@ export default function PlanPage() {
       window.location.href = url;
     }
   };
+
+  const canHaveExtraUsers = currentPlanSlug === "pro-agencia" || currentPlanSlug === "pro-ilimitado";
 
   if (isTenantLoading || isPlansLoading) {
     return (
@@ -214,15 +225,26 @@ export default function PlanPage() {
             </p>
           </div>
           {tenant.stripe_customer_id && (
-            <button
-              onClick={handlePortal}
-              disabled={isBillingLoading}
-              className="px-6 py-2.5 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center gap-2"
-            >
-              {isBillingLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-              Gestionar suscripción
-              <ExternalLink className="w-4 h-4" />
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handlePortal}
+                disabled={isBillingLoading}
+                className="px-6 py-2.5 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              >
+                {isBillingLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                Gestionar suscripción
+                <ExternalLink className="w-4 h-4" />
+              </button>
+              {(isActive || isTrial) && (
+                <button
+                  onClick={handleCancel}
+                  disabled={isBillingLoading}
+                  className="px-6 py-2.5 border border-red-500/30 text-red-400 rounded-xl font-medium hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2"
+                >
+                  Cancelar suscripción
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -238,6 +260,9 @@ export default function PlanPage() {
               <h3 className="font-bold text-[var(--foreground)]">Usuarios adicionales</h3>
               <p className="text-sm text-[var(--muted-foreground)]">
                 {formatCurrency(10)} por usuario extra / mes
+              </p>
+              <p className="text-xs text-emerald-500 mt-1">
+                Solo aplica a Pro Agencia y Pro Ilimitado
               </p>
             </div>
           </div>
