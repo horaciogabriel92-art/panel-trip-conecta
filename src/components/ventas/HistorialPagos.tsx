@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle, Clock, AlertCircle, CreditCard, Calendar, FileText } from "lucide-react";
+import { getComprobantePublicUrl } from "@/lib/fileUrl";
 
 interface Pago {
   id: string;
@@ -145,7 +146,7 @@ export default function HistorialPagos({
 
               {pago.comprobante_url && (
                 <a
-                  href={pago.comprobante_url}
+                  href={getComprobantePublicUrl(pago.comprobante_url)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 whitespace-nowrap"
