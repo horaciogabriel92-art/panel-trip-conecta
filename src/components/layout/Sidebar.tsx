@@ -50,6 +50,7 @@ export default function Sidebar({
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/clientes', label: 'Clientes', icon: Users },
     { href: '/admin/cotizaciones', label: 'Cotizaciones', icon: FileText },
+    { href: '/admin/ventas', label: 'Ventas', icon: ShoppingCart },
     { href: '/admin/paquetes', label: 'Paquetes', icon: Package },
     { href: '/admin/comisiones', label: 'Comisiones', icon: Wallet, permission: 'ver_comisiones_otros' as const, hidden: !comisionesEnabled },
     { href: '/admin/reportes', label: 'Reportes', icon: BarChart3, permission: 'ver_reportes' as const },

@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
+import { useFeature } from '@/hooks/useFeature';
 import HistorialPagos from '@/components/ventas/HistorialPagos';
 import AgregarPagoModal from '@/components/ventas/AgregarPagoModal';
+import { PDFDownloadButton } from '@/components/pdf/PDFDownloadButton';
 import { 
   ArrowLeft, 
   FileText, 
@@ -28,7 +30,11 @@ import {
   Hotel,
   MapPin,
   FileDown,
-  Wallet
+  Wallet,
+  BedDouble,
+  Bus,
+  Shield,
+  Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
@@ -45,10 +51,18 @@ interface Pasajero {
 interface Vuelo {
   id?: string;
   origen_ciudad?: string;
+  origen_nombre?: string;
   destino_ciudad?: string;
+  destino_nombre?: string;
   fecha_salida?: string;
+  hora_salida?: string;
+  fecha_llegada?: string;
+  hora_llegada?: string;
   aerolinea_nombre?: string;
+  aerolinea_codigo?: string;
   numero_vuelo?: string;
+  clase_codigo?: string;
+  clase_nombre?: string;
 }
 
 interface Comprobante {
@@ -104,6 +118,27 @@ interface Cotizacion {
   fecha_expiracion?: string;
   fecha_envio?: string;
   fecha_venta?: string;
+  tipo_cotizacion?: 'paquete' | 'manual';
+  nombre_cotizacion?: string;
+  destino_principal?: string;
+  itinerario_manual?: string;
+  itinerario?: any;
+  incluye?: string[];
+  no_incluye?: string[];
+  paquete_data?: {
+    itinerario?: any;
+    incluye?: string[];
+    no_incluye?: string[];
+    hotel_seleccionado?: any;
+    fecha_salida?: string;
+    precio_vuelos?: number;
+    precio_hospedajes?: number;
+    precio_traslados?: number;
+    precio_seguros?: number;
+    precio_extras?: number;
+    precio_subtotal?: number;
+    precio_impuestos?: number;
+  };
   // Campos de pago
   monto_pagado?: number;
   monto_restante?: number;
@@ -121,10 +156,28 @@ interface Cotizacion {
   // Relaciones enriquecidas
   pasajeros?: Pasajero[];
   vuelos?: Vuelo[];
+  hospedajes?: any[];
+  hospedaje?: any[];
+  traslados?: any[];
+  seguros?: any[];
+  extras?: any[];
   paquete?: Paquete;
   venta?: Venta;
   comprobantes_pago?: Comprobante[];
   vouchers?: Voucher[];
+  datos_completos?: {
+    cliente?: any;
+    pasajeros?: any[];
+  };
+  // Desglose de precios
+  precio_vuelos?: number;
+  precio_hospedajes?: number;
+  precio_traslados?: number;
+  precio_seguros?: number;
+  precio_extras?: number;
+  precio_subtotal?: number;
+  precio_impuestos?: number;
+  precio_moneda?: string;
   // Datos completos del cliente desde la BD
   cliente?: {
     id: string;
@@ -148,16 +201,25 @@ interface Paquete {
   id: string;
   titulo: string;
   nombre?: string;  // fallback
+  destino?: string;
   descripcion?: string;
   duracion?: number;
+  duracion_dias?: number;
   noches?: number;
   categoria?: string;
   regimen?: string;
+  imagen_url?: string;
+  imagen_principal?: string;
+  politicas_cancelacion?: string;
+  incluye?: string[];
+  no_incluye?: string[];
   itinerario?: { texto?: string; dias?: any[] } | any[] | string;
+  vuelos?: any[];
 }
 
 export default function AdminCotizacionDetalle() {
   const { success: toastSuccess, error: toastError } = useToast();
+  const { enabled: comisionesEnabled } = useFeature('comisiones');
   const params = useParams();
   const router = useRouter();
   const [cotizacion, setCotizacion] = useState<Cotizacion | null>(null);
@@ -183,18 +245,59 @@ export default function AdminCotizacionDetalle() {
   const [pendingVoucherFile, setPendingVoucherFile] = useState<File | null>(null);
   const [isEnviandoConfirmacion, setIsEnviandoConfirmacion] = useState(false);
 
+  // Estado para datos parseados de notas (cotizaciones de catálogo antiguas)
+  const [datosPaqueteDesdeNotas, setDatosPaqueteDesdeNotas] = useState<{
+    titulo?: string;
+    destino?: string;
+    descripcion?: string;
+    duracion_dias?: number;
+    imagen_principal?: string;
+    politicas_cancelacion?: string;
+    itinerario?: { texto?: string; dias?: any[] } | any[] | string;
+    incluye?: string[];
+    no_incluye?: string[];
+    vuelos?: any[];
+    hospedaje?: any[];
+  } | null>(null);
+
   useEffect(() => {
     const fetchCotizacion = async () => {
       try {
         const res = await api.get(`/cotizaciones/${params.id}`);
-        setCotizacion(res.data);
+        const cotizacionData = res.data;
+        setCotizacion(cotizacionData);
+
+        // Parsear notas si contienen JSON de paquete (cotizaciones antiguas de catálogo)
+        if (cotizacionData.notas && cotizacionData.notas.includes('--- PAQUETE JSON ---')) {
+          try {
+            const paqueteMatch = cotizacionData.notas.match(/--- PAQUETE JSON ---\n([\s\S]+?)(?:\n--- |$)/);
+            if (paqueteMatch) {
+              const paqueteJson = JSON.parse(paqueteMatch[1]);
+              setDatosPaqueteDesdeNotas({
+                titulo: paqueteJson.titulo || paqueteJson.nombre,
+                destino: paqueteJson.destino,
+                descripcion: paqueteJson.descripcion,
+                duracion_dias: paqueteJson.duracion_dias,
+                imagen_principal: paqueteJson.imagen_principal || paqueteJson.imagen_url,
+                politicas_cancelacion: paqueteJson.politicas_cancelacion,
+                itinerario: paqueteJson.itinerario,
+                incluye: paqueteJson.incluye,
+                no_incluye: paqueteJson.no_incluye,
+                vuelos: paqueteJson.vuelos,
+                hospedaje: paqueteJson.hospedaje
+              });
+            }
+          } catch (e) {
+            console.error('Error parseando notas:', e);
+          }
+        }
       } catch (err) {
         console.error('Error cargando cotización:', err);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     if (params.id) {
       fetchCotizacion();
     }
@@ -469,6 +572,115 @@ export default function AdminCotizacionDetalle() {
   const pasajeros = cotizacion.pasajeros || [];
   const vuelos = cotizacion.vuelos || [];
   const paquete = cotizacion.paquete;
+  const numPasajerosReal = cotizacion.pasajeros?.length || cotizacion.num_pasajeros || 1;
+  const imagen = paquete?.imagen_url || paquete?.imagen_principal || datosPaqueteDesdeNotas?.imagen_principal || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800';
+
+  // Datos normalizados para el PDF de cotización
+  const pdfData = {
+    id: cotizacion.id,
+    codigo: cotizacion.codigo,
+    fecha_creacion: cotizacion.fecha_creacion,
+    fecha_expiracion: cotizacion.fecha_expiracion,
+    num_pasajeros: numPasajerosReal,
+    tipo_habitacion: cotizacion.tipo_habitacion,
+    fecha_salida: cotizacion.fecha_salida || (cotizacion.paquete_data as any)?.fecha_salida || (paquete as any)?.fecha_salida,
+    cliente_nombre: cotizacion.cliente_nombre,
+    cliente_apellido: cotizacion.cliente?.apellido,
+    cliente_documento: cotizacion.cliente?.documento,
+    cliente_email: cotizacion.cliente_email,
+    cliente_telefono: cotizacion.cliente_telefono,
+    precio_total: cotizacion.precio_total,
+    tipo_cotizacion: cotizacion.tipo_cotizacion,
+    nombre_cotizacion: cotizacion.nombre_cotizacion,
+    itinerario_manual: cotizacion.itinerario_manual,
+    paquete: {
+      titulo: paquete?.titulo || paquete?.nombre || datosPaqueteDesdeNotas?.titulo || cotizacion.nombre_cotizacion || 'Cotización',
+      destino: paquete?.destino || datosPaqueteDesdeNotas?.destino || cotizacion.destino_principal || cotizacion.hospedaje?.[0]?.ciudad || cotizacion.hospedajes?.[0]?.ciudad || 'Destino no especificado',
+      descripcion: paquete?.descripcion || datosPaqueteDesdeNotas?.descripcion,
+      duracion_dias: paquete?.duracion_dias || paquete?.duracion || datosPaqueteDesdeNotas?.duracion_dias || 0,
+      imagen_principal: paquete?.imagen_principal || paquete?.imagen_url || datosPaqueteDesdeNotas?.imagen_principal,
+      politicas_cancelacion: paquete?.politicas_cancelacion || datosPaqueteDesdeNotas?.politicas_cancelacion,
+      itinerario: (() => {
+        if (paquete?.itinerario) return paquete.itinerario;
+        if (datosPaqueteDesdeNotas?.itinerario) return datosPaqueteDesdeNotas.itinerario;
+        if (cotizacion.itinerario_manual) return { texto: cotizacion.itinerario_manual, dias: [] };
+        if (cotizacion.itinerario) return cotizacion.itinerario;
+        return { texto: '', dias: [] };
+      })(),
+      incluye: paquete?.incluye || datosPaqueteDesdeNotas?.incluye || cotizacion.incluye || [],
+      no_incluye: paquete?.no_incluye || datosPaqueteDesdeNotas?.no_incluye || cotizacion.no_incluye || []
+    },
+    pasajeros: (() => {
+      if (cotizacion.pasajeros && numPasajerosReal > 0) {
+        return cotizacion.pasajeros.map((pv: any) => ({
+          nombre: pv.nombre_snapshot || pv.pasajero?.nombre || '',
+          apellido: pv.apellido_snapshot || pv.pasajero?.apellido || '',
+          documento: pv.documento_snapshot || pv.pasajero?.documento || '',
+          fecha_nacimiento: pv.pasajero?.fecha_nacimiento || '',
+          nacionalidad: pv.pasajero?.nacionalidad || ''
+        }));
+      }
+      const titular = cotizacion.datos_completos?.cliente ? [{
+        nombre: cotizacion.datos_completos.cliente.nombre,
+        apellido: cotizacion.datos_completos.cliente.apellido,
+        documento: cotizacion.datos_completos.cliente.documento,
+        fecha_nacimiento: cotizacion.datos_completos.cliente.fecha_nacimiento,
+        nacionalidad: cotizacion.datos_completos.cliente.nacionalidad
+      }] : [];
+      const otros = cotizacion.datos_completos?.pasajeros || [];
+      return [...titular, ...otros];
+    })(),
+    vuelos: (() => {
+      if (cotizacion.vuelos && cotizacion.vuelos.length > 0) {
+        return cotizacion.vuelos.map((v: any) => ({
+          aerolinea_codigo: v.aerolinea_codigo || '',
+          aerolinea_nombre: v.aerolinea_nombre || '',
+          numero_vuelo: v.numero_vuelo || '',
+          clase_codigo: v.clase_codigo || v.clase_nombre || '',
+          fecha_salida: v.fecha_salida || '',
+          hora_salida: v.hora_salida || '',
+          fecha_llegada: v.fecha_llegada || '',
+          hora_llegada: v.hora_llegada || '',
+          origen_codigo: v.origen_codigo || '',
+          origen_ciudad: v.origen_nombre || v.origen_ciudad || '',
+          destino_codigo: v.destino_codigo || '',
+          destino_ciudad: v.destino_nombre || v.destino_ciudad || ''
+        }));
+      }
+      return paquete?.vuelos || datosPaqueteDesdeNotas?.vuelos || [];
+    })(),
+    hospedaje: (() => {
+      if (cotizacion.hospedajes && cotizacion.hospedajes.length > 0) {
+        return cotizacion.hospedajes.map((h: any) => ({
+          ...h,
+          nombre_alojamiento: h.nombre_alojamiento || h.nombre_hotel,
+          tipo_alojamiento: h.tipo_alojamiento || 'Hotel',
+        }));
+      }
+      return cotizacion.hospedaje || datosPaqueteDesdeNotas?.hospedaje || [];
+    })(),
+    traslados: cotizacion.traslados || [],
+    seguros: cotizacion.seguros || [],
+    extras: cotizacion.extras || [],
+    precios: {
+      vuelos: cotizacion.precio_vuelos ?? (cotizacion.paquete_data as any)?.precio_vuelos,
+      hospedajes: cotizacion.precio_hospedajes ?? (cotizacion.paquete_data as any)?.precio_hospedajes,
+      traslados: cotizacion.precio_traslados ?? (cotizacion.paquete_data as any)?.precio_traslados,
+      seguros: cotizacion.precio_seguros ?? (cotizacion.paquete_data as any)?.precio_seguros,
+      extras: cotizacion.precio_extras ?? (cotizacion.paquete_data as any)?.precio_extras,
+      subtotal: cotizacion.precio_subtotal ?? (cotizacion.paquete_data as any)?.precio_subtotal,
+      impuestos: cotizacion.precio_impuestos ?? (cotizacion.paquete_data as any)?.precio_impuestos,
+      total: cotizacion.precio_total,
+      moneda: cotizacion.precio_moneda || 'USD'
+    },
+    vendedor: cotizacion.vendedor ? {
+      nombre: cotizacion.vendedor.nombre,
+      apellido: cotizacion.vendedor.apellido,
+      email: cotizacion.vendedor.email,
+      telefono: cotizacion.vendedor.telefono
+    } : undefined,
+    paquete_data: cotizacion.paquete_data
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700 max-w-7xl mx-auto">
@@ -495,6 +707,7 @@ export default function AdminCotizacionDetalle() {
           </p>
         </div>
         <div className="flex gap-2">
+          <PDFDownloadButton data={pdfData} />
           {puedeEditar && (
             <Link 
               href={`/admin/cotizaciones/${cotizacion.id}/editar`}
@@ -547,29 +760,250 @@ export default function AdminCotizacionDetalle() {
             </div>
           </div>
 
-          {/* DATOS DEL PAQUETE */}
-          {(paquete || cotizacion.paquete_nombre) && (
+          {/* PAQUETE / NOMBRE DE COTIZACIÓN */}
+          {(paquete || cotizacion.paquete_nombre || cotizacion.nombre_cotizacion || datosPaqueteDesdeNotas) && (
+            <div className="glass-card rounded-2xl overflow-hidden">
+              <div className="relative h-48">
+                <img src={imagen} alt={paquete?.nombre || cotizacion.nombre_cotizacion} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-6">
+                  <p className="text-xs text-blue-300 uppercase font-black mb-1">
+                    {cotizacion.tipo_cotizacion === 'manual' ? 'Cotización Personalizada' : 'Paquete'}
+                  </p>
+                  <h3 className="text-xl font-black text-[var(--foreground)]">
+                    {cotizacion.nombre_cotizacion || paquete?.titulo || paquete?.nombre || datosPaqueteDesdeNotas?.titulo || cotizacion.paquete_nombre || 'Cotización'}
+                  </h3>
+                  {(paquete?.destino || datosPaqueteDesdeNotas?.destino || cotizacion.destino_principal || cotizacion.hospedaje?.[0]?.ciudad || cotizacion.hospedajes?.[0]?.ciudad) && (
+                    <p className="text-[var(--foreground)] text-sm">
+                      {paquete?.destino || datosPaqueteDesdeNotas?.destino || cotizacion.destino_principal || cotizacion.hospedaje?.[0]?.ciudad || cotizacion.hospedajes?.[0]?.ciudad}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="flex gap-4 mb-4">
+                  <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
+                    <span className="text-xs text-[var(--muted-foreground)]">DURACIÓN</span>
+                    <p className="font-bold text-[var(--foreground)]">{(paquete?.duracion_dias || paquete?.duracion || datosPaqueteDesdeNotas?.duracion_dias || (cotizacion.paquete_data as any)?.duracion_dias || '-')} días</p>
+                  </div>
+                  {paquete?.noches && (
+                    <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
+                      <span className="text-xs text-[var(--muted-foreground)]">NOCHES</span>
+                      <p className="font-bold text-[var(--foreground)]">{paquete.noches}</p>
+                    </div>
+                  )}
+                </div>
+                {(paquete?.descripcion || datosPaqueteDesdeNotas?.descripcion) && (
+                  <p className="text-[var(--muted-foreground)] text-sm whitespace-pre-line">
+                    {paquete?.descripcion || datosPaqueteDesdeNotas?.descripcion}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Detalles de la cotización */}
+          <div className="glass-card rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-400" />
+              Detalles de la Cotización
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Pasajeros</p>
+                <p className="text-xl font-black text-[var(--foreground)]">{numPasajerosReal}</p>
+              </div>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Habitación</p>
+                <p className="text-xl font-black text-[var(--foreground)] capitalize">
+                  {cotizacion.tipo_habitacion ||
+                   (cotizacion.paquete_data as any)?.hotel_seleccionado?.tipo_habitacion ||
+                   'No especificada'}
+                </p>
+              </div>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Fecha Salida</p>
+                <p className="text-lg font-black text-[var(--foreground)]">
+                  {(cotizacion.fecha_salida || (cotizacion.paquete_data as any)?.fecha_salida || (paquete as any)?.fecha_salida)
+                    ? new Date(cotizacion.fecha_salida || (cotizacion.paquete_data as any)?.fecha_salida || (paquete as any)?.fecha_salida).toLocaleDateString('es-AR')
+                    : 'A definir'
+                  }
+                </p>
+              </div>
+              <div className="p-4 bg-[var(--muted)] rounded-xl">
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Total</p>
+                <p className="text-xl font-black text-blue-400">${formatCurrency(cotizacion.precio_total)}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Itinerario - Prioridad: paquete_data > paquete > notas parseadas > manual */}
+          {(() => {
+            const itin = cotizacion.paquete_data?.itinerario || paquete?.itinerario || datosPaqueteDesdeNotas?.itinerario || cotizacion.itinerario;
+            if (!itin && !cotizacion.itinerario_manual) return null;
+            return (
+              <div className="glass-card rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-blue-400" />
+                  Itinerario
+                </h3>
+                {(() => {
+                  const itinFinal = itin || { texto: cotizacion.itinerario_manual, dias: [] };
+                  if (typeof itinFinal === 'string') {
+                    return <p className="text-[var(--foreground)] whitespace-pre-line break-words overflow-hidden">{itinFinal}</p>;
+                  }
+                  if (itinFinal && typeof itinFinal === 'object' && !Array.isArray(itinFinal) && 'texto' in itinFinal) {
+                    const itinObj = itinFinal as { texto?: string; dias?: any[] };
+                    return (
+                      <div className="space-y-4">
+                        {itinObj.texto && (
+                          <p className="text-[var(--foreground)] whitespace-pre-line break-words overflow-hidden">{itinObj.texto}</p>
+                        )}
+                        {Array.isArray(itinObj.dias) && itinObj.dias.length > 0 && (
+                          <div className="space-y-3">
+                            {itinObj.dias.map((dia: any, idx: number) => (
+                              <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border-l-2 border-blue-500">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
+                                    Día {dia.dia || idx + 1}
+                                  </span>
+                                  <span className="font-medium text-[var(--foreground)]">{dia.titulo}</span>
+                                </div>
+                                <p className="text-[var(--foreground)] text-sm break-words overflow-hidden">{dia.descripcion}</p>
+                                {dia.actividades && dia.actividades.length > 0 && (
+                                  <ul className="mt-2 space-y-1">
+                                    {dia.actividades.map((act: string, actIdx: number) => (
+                                      <li key={actIdx} className="text-[var(--muted-foreground)] text-sm break-words overflow-hidden">• {act}</li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  if (Array.isArray(itinFinal) && itinFinal.length > 0) {
+                    return (
+                      <div className="space-y-3">
+                        {itinFinal.map((dia: any, idx: number) => (
+                          <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border-l-2 border-blue-500">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
+                                Día {dia.dia || idx + 1}
+                              </span>
+                              <span className="font-medium text-[var(--foreground)]">{dia.titulo}</span>
+                            </div>
+                            <p className="text-[var(--foreground)] text-sm break-words overflow-hidden">{dia.descripcion}</p>
+                            {dia.actividades && dia.actividades.length > 0 && (
+                              <ul className="mt-2 space-y-1">
+                                {dia.actividades.map((act: string, actIdx: number) => (
+                                  <li key={actIdx} className="text-[var(--muted-foreground)] text-sm break-words overflow-hidden">• {act}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+            );
+          })()}
+
+          {/* Vuelos - Cotizaciones de catálogo (desde paquete) */}
+          {cotizacion.tipo_cotizacion !== 'manual' && (paquete?.vuelos?.length || datosPaqueteDesdeNotas?.vuelos?.length) && (
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-blue-400" />
-                Paquete: {paquete?.titulo || paquete?.nombre || cotizacion.paquete_nombre || 'No especificado'}
+                <Plane className="w-5 h-5 text-blue-400" />
+                Vuelos del Paquete
               </h3>
-              {paquete && (
-                <div className="p-4 bg-[var(--muted)] rounded-xl">
-                  <div className="flex gap-4">
-                    <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
-                      <span className="text-xs text-[var(--muted-foreground)]">DURACIÓN</span>
-                      <p className="font-bold text-[var(--foreground)]">{paquete.duracion || '-'} días</p>
+              <div className="space-y-3">
+                {(paquete?.vuelos || datosPaqueteDesdeNotas?.vuelos || []).map((vuelo: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border border-[var(--border)]">
+                    <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
+                      <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold uppercase">
+                        {vuelo.tipo === 'ida' ? 'Vuelo de Ida' : 'Vuelo de Vuelta'}
+                      </span>
+                      {vuelo.numero_vuelo && (
+                        <span className="text-sm text-[var(--muted-foreground)]">{vuelo.numero_vuelo}</span>
+                      )}
                     </div>
-                    {paquete.noches && (
-                      <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
-                        <span className="text-xs text-[var(--muted-foreground)]">NOCHES</span>
-                        <p className="font-bold text-[var(--foreground)]">{paquete.noches}</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Origen</p>
+                        <p className="text-[var(--foreground)] font-medium">{vuelo.origen_nombre || vuelo.origen_codigo || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Destino</p>
+                        <p className="text-[var(--foreground)] font-medium">{vuelo.destino_nombre || vuelo.destino_codigo || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Fecha</p>
+                        <p className="text-[var(--foreground)]">{vuelo.fecha_salida || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Horario</p>
+                        <p className="text-[var(--foreground)]">{vuelo.hora_salida || '--:--'} - {vuelo.hora_llegada || '--:--'}</p>
+                      </div>
+                    </div>
+                    {(vuelo.aerolinea_nombre || vuelo.clase) && (
+                      <div className="grid grid-cols-2 gap-4 text-sm mt-2 pt-2 border-t border-[var(--border)]">
+                        {vuelo.aerolinea_nombre && (
+                          <div>
+                            <p className="text-[var(--muted-foreground)] text-xs">Aerolínea</p>
+                            <p className="text-[var(--foreground)]">{vuelo.aerolinea_nombre}</p>
+                          </div>
+                        )}
+                        {vuelo.clase && (
+                          <div>
+                            <p className="text-[var(--muted-foreground)] text-xs">Clase</p>
+                            <p className="text-[var(--foreground)]">{vuelo.clase}</p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Incluye / No incluye */}
+          {(cotizacion.paquete_data?.incluye?.length || cotizacion.paquete_data?.no_incluye?.length ||
+            paquete?.incluye?.length || paquete?.no_incluye?.length ||
+            datosPaqueteDesdeNotas?.incluye?.length || datosPaqueteDesdeNotas?.no_incluye?.length ||
+            cotizacion.incluye?.length || cotizacion.no_incluye?.length) && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-blue-400" />
+                Detalles del Servicio
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(cotizacion.paquete_data?.incluye?.length || paquete?.incluye?.length || datosPaqueteDesdeNotas?.incluye?.length || cotizacion.incluye?.length) && (
+                  <div className="p-4 bg-green-500/10 rounded-xl border border-green-500/20">
+                    <p className="text-green-400 font-bold mb-2">Incluye</p>
+                    <ul className="space-y-1">
+                      {(cotizacion.paquete_data?.incluye || paquete?.incluye || datosPaqueteDesdeNotas?.incluye || cotizacion.incluye || []).map((item: string, idx: number) => (
+                        <li key={idx} className="text-[var(--foreground)] text-sm">+ {item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {(cotizacion.paquete_data?.no_incluye?.length || paquete?.no_incluye?.length || datosPaqueteDesdeNotas?.no_incluye?.length || cotizacion.no_incluye?.length) && (
+                  <div className="p-4 bg-red-500/10 rounded-xl border border-red-500/20">
+                    <p className="text-red-400 font-bold mb-2">No incluye</p>
+                    <ul className="space-y-1">
+                      {(cotizacion.paquete_data?.no_incluye || paquete?.no_incluye || datosPaqueteDesdeNotas?.no_incluye || cotizacion.no_incluye || []).map((item: string, idx: number) => (
+                        <li key={idx} className="text-[var(--foreground)] text-sm">- {item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -674,35 +1108,224 @@ export default function AdminCotizacionDetalle() {
             </div>
           )}
 
-          {/* VUELOS */}
+          {/* VUELOS (nuevo schema / manual) */}
           {vuelos.length > 0 && (
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Plane className="w-5 h-5 text-blue-400" />
-                Vuelos
+                Vuelos ({vuelos.length})
               </h3>
               <div className="space-y-3">
                 {vuelos.map((v, idx) => (
-                  <div key={v.id || idx} className="p-4 bg-[var(--muted)] rounded-xl">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-4 min-w-0">
-                        <div className="text-center min-w-0">
-                          <p className="text-lg font-black text-[var(--foreground)] break-words">{v.origen_ciudad || '?'}</p>
-                          <p className="text-xs text-[var(--muted-foreground)]">Origen</p>
-                        </div>
-                        <ArrowRight className="w-5 h-5 text-blue-400" />
-                        <div className="text-center min-w-0">
-                          <p className="text-lg font-black text-[var(--foreground)] break-words">{v.destino_ciudad || '?'}</p>
-                          <p className="text-xs text-[var(--muted-foreground)]">Destino</p>
-                        </div>
+                  <div key={v.id || idx} className="p-4 bg-[var(--muted)] rounded-xl border border-[var(--border)]">
+                    <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
+                      <span className="text-[var(--foreground)] font-bold">
+                        {v.origen_ciudad || v.origen_nombre || '?'} → {v.destino_ciudad || v.destino_nombre || '?'}
+                      </span>
+                      <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
+                        {v.aerolinea_codigo || 'AV'} {v.numero_vuelo}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Origen</p>
+                        <p className="text-[var(--foreground)] font-medium">{v.origen_ciudad || v.origen_nombre || '-'}</p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium text-[var(--foreground)]">{v.aerolinea_nombre || 'Aerolínea'}</p>
-                        {v.fecha_salida && (
-                          <p className="text-sm text-[var(--muted-foreground)]">
-                            {new Date(v.fecha_salida).toLocaleDateString('es-AR')}
-                          </p>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Destino</p>
+                        <p className="text-[var(--foreground)] font-medium">{v.destino_ciudad || v.destino_nombre || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Fecha</p>
+                        <p className="text-[var(--foreground)]">{v.fecha_salida ? new Date(v.fecha_salida).toLocaleDateString('es-AR') : '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Horario</p>
+                        <p className="text-[var(--foreground)]">{v.hora_salida || '--:--'} - {v.hora_llegada || '--:--'}</p>
+                      </div>
+                    </div>
+                    {(v.aerolinea_nombre || v.clase_codigo) && (
+                      <div className="grid grid-cols-2 gap-4 text-sm mt-2 pt-2 border-t border-[var(--border)]">
+                        {v.aerolinea_nombre && (
+                          <div>
+                            <p className="text-[var(--muted-foreground)] text-xs">Aerolínea</p>
+                            <p className="text-[var(--foreground)]">{v.aerolinea_nombre}</p>
+                          </div>
                         )}
+                        {v.clase_codigo && (
+                          <div>
+                            <p className="text-[var(--muted-foreground)] text-xs">Clase</p>
+                            <p className="text-[var(--foreground)]">{v.clase_codigo}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* HOSSEDajes (nuevo schema o legacy) */}
+          {(cotizacion.hospedajes?.length || cotizacion.hospedaje?.length) && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <BedDouble className="w-5 h-5 text-blue-400" />
+                Hospedaje
+              </h3>
+              <div className="space-y-3">
+                {(cotizacion.hospedajes || cotizacion.hospedaje || []).map((hotel: any, idx: number) => (
+                  <div key={hotel.id || idx} className="p-4 bg-[var(--muted)] rounded-xl border border-[var(--border)]">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="text-[var(--foreground)] font-bold">{hotel.nombre_alojamiento || hotel.nombre_hotel || hotel.nombre}</p>
+                        <p className="text-[var(--muted-foreground)] text-sm">{hotel.ciudad || hotel.ubicacion}</p>
+                      </div>
+                      {hotel.link_hotel && (
+                        <a
+                          href={hotel.link_hotel}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-lg text-xs font-bold hover:bg-blue-500/30 transition-colors"
+                        >
+                          Ver Hotel
+                        </a>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-3">
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Check-in</p>
+                        <p className="text-[var(--foreground)]">{hotel.fecha_checkin || hotel.check_in || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Check-out</p>
+                        <p className="text-[var(--foreground)]">{hotel.fecha_checkout || hotel.check_out || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Habitación</p>
+                        <p className="text-[var(--foreground)]">{hotel.tipo_habitacion || hotel.tipo_alojamiento || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Régimen</p>
+                        <p className="text-[var(--foreground)] capitalize">{hotel.regimen?.replace('_', ' ') || 'N/A'}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TRASLADOS */}
+          {cotizacion.traslados && cotizacion.traslados.length > 0 && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <Bus className="w-5 h-5 text-blue-400" />
+                Traslados
+              </h3>
+              <div className="space-y-3">
+                {cotizacion.traslados.map((t: any, idx: number) => (
+                  <div key={t.id || idx} className="p-4 bg-[var(--muted)] rounded-xl border border-[var(--border)]">
+                    <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
+                      <span className="text-[var(--foreground)] font-bold">{t.nombre || t.tipo || 'Traslado'}</span>
+                      {t.precio_por_persona > 0 && (
+                        <span className="text-sm text-blue-400">${formatCurrency(t.precio_por_persona)} por persona</span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Origen</p>
+                        <p className="text-[var(--foreground)]">{t.origen || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Destino</p>
+                        <p className="text-[var(--foreground)]">{t.destino || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Fecha</p>
+                        <p className="text-[var(--foreground)]">{t.fecha || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Hora</p>
+                        <p className="text-[var(--foreground)]">{t.hora || 'N/A'}</p>
+                      </div>
+                    </div>
+                    {t.notas && (
+                      <p className="text-[var(--muted-foreground)] text-sm mt-2 pt-2 border-t border-[var(--border)]">{t.notas}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* SEGUROS */}
+          {cotizacion.seguros && cotizacion.seguros.length > 0 && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <Shield className="w-5 h-5 text-blue-400" />
+                Seguros
+              </h3>
+              <div className="space-y-3">
+                {cotizacion.seguros.map((s: any, idx: number) => (
+                  <div key={s.id || idx} className="p-4 bg-[var(--muted)] rounded-xl border border-[var(--border)]">
+                    <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
+                      <span className="text-[var(--foreground)] font-bold">{s.compania || s.compañia || 'Seguro'}</span>
+                      {s.precio_por_persona > 0 && (
+                        <span className="text-sm text-blue-400">${formatCurrency(s.precio_por_persona)} por persona</span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Cobertura</p>
+                        <p className="text-[var(--foreground)]">{s.tipo_cobertura || s.cobertura || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Detalle</p>
+                        <p className="text-[var(--foreground)]">{s.cobertura_detalle || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Inicio</p>
+                        <p className="text-[var(--foreground)]">{s.fecha_inicio || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Fin</p>
+                        <p className="text-[var(--foreground)]">{s.fecha_fin || 'N/A'}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* EXTRAS */}
+          {cotizacion.extras && cotizacion.extras.length > 0 && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-blue-400" />
+                Extras
+              </h3>
+              <div className="space-y-3">
+                {cotizacion.extras.map((e: any, idx: number) => (
+                  <div key={e.id || idx} className="p-4 bg-[var(--muted)] rounded-xl border border-[var(--border)]">
+                    <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
+                      <span className="text-[var(--foreground)] font-bold">{e.nombre || 'Extra'}</span>
+                      {e.precio_por_persona > 0 && (
+                        <span className="text-sm text-blue-400">${formatCurrency(e.precio_por_persona)} por persona</span>
+                      )}
+                    </div>
+                    {e.descripcion && (
+                      <p className="text-[var(--muted-foreground)] text-sm">{e.descripcion}</p>
+                    )}
+                    <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Fecha</p>
+                        <p className="text-[var(--foreground)]">{e.fecha || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[var(--muted-foreground)] text-xs">Tipo</p>
+                        <p className="text-[var(--foreground)] capitalize">{e.tipo || 'N/A'}</p>
                       </div>
                     </div>
                   </div>
@@ -924,7 +1547,7 @@ export default function AdminCotizacionDetalle() {
                 <span className="text-lg font-bold text-[var(--foreground)]">Total</span>
                 <span className="text-2xl font-black text-blue-400">${formatCurrency(cotizacion.precio_total)}</span>
               </div>
-              {cotizacion.comision_vendedor && (
+              {comisionesEnabled && cotizacion.comision_vendedor && (
                 <div className="flex justify-between text-sm pt-2">
                   <span className="text-[var(--muted-foreground)]">Comisión vendedor</span>
                   <span className="text-green-400 font-medium">${formatCurrency(cotizacion.comision_vendedor)}</span>
@@ -959,20 +1582,22 @@ export default function AdminCotizacionDetalle() {
                   <p className="text-[var(--muted-foreground)] text-sm mt-1">
                     Venta {venta.codigo}
                   </p>
-                  {venta.comision_estado === 'pagada' ? (
-                    <span className="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-xs font-medium">
-                      <CheckCircle className="w-3 h-3" />
-                      Comisión pagada
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-medium">
-                      <AlertCircle className="w-3 h-3" />
-                      Comisión pendiente
-                    </span>
+                  {comisionesEnabled && (
+                    venta.comision_estado === 'pagada' ? (
+                      <span className="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-xs font-medium">
+                        <CheckCircle className="w-3 h-3" />
+                        Comisión pagada
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-medium">
+                        <AlertCircle className="w-3 h-3" />
+                        Comisión pendiente
+                      </span>
+                    )
                   )}
                 </div>
                 
-                {venta.comision_estado !== 'pagada' && (
+                {comisionesEnabled && venta.comision_estado !== 'pagada' && (
                   <button
                     onClick={() => setShowPagarComision(true)}
                     className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
@@ -1079,7 +1704,7 @@ export default function AdminCotizacionDetalle() {
       )}
 
       {/* Modal Pagar Comisión */}
-      {showPagarComision && (
+      {comisionesEnabled && showPagarComision && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="glass-card w-full max-w-md rounded-3xl p-8 max-h-[90vh] overflow-y-auto">
             <h3 className="text-2xl font-black text-[var(--foreground)] mb-4">Pagar Comisión</h3>
