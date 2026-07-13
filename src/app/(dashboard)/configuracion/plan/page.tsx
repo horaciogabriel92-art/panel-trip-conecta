@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTenant, type PlanConfig } from "@/context/TenantContext";
+import { useAuth } from "@/context/AuthContext";
 import { useBilling } from "@/hooks/useBilling";
 import PlanCard from "@/components/billing/PlanCard";
 import InvoiceHistory from "@/components/billing/InvoiceHistory";
@@ -46,6 +47,7 @@ function getDaysLeft(dateString: string | null) {
 }
 
 export default function PlanPage() {
+  const { user } = useAuth();
   const { tenant, isLoading: isTenantLoading } = useTenant();
   const { createCheckout, createPortal, cancelSubscription, isLoading: isBillingLoading, error: billingError } = useBilling();
   const searchParams = useSearchParams();
@@ -119,6 +121,21 @@ export default function PlanPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+      </div>
+    );
+  }
+
+  if (user?.rol !== "admin") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+        <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4">
+          <AlertCircle className="w-8 h-8 text-red-400" />
+        </div>
+        <h2 className="text-2xl font-black text-[var(--foreground)] mb-2">Acceso restringido</h2>
+        <p className="text-[var(--muted-foreground)] max-w-md">
+          La gestión de planes y pagos está disponible solo para administradores.
+          Contactá al administrador de tu agencia si necesitás cambiar tu plan.
+        </p>
       </div>
     );
   }

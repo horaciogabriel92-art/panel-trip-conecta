@@ -113,8 +113,21 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const fetchTenant = async () => {
       try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         const domain = window.location.hostname;
-        const response = await fetch(`${API_URL}/config/tenant?domain=${encodeURIComponent(domain)}`);
+
+        // Si el usuario está autenticado, obtenemos su tenant real.
+        // Si no, fallback al dominio (público).
+        const url = token
+          ? `${API_URL}/config/tenant/me`
+          : `${API_URL}/config/tenant?domain=${encodeURIComponent(domain)}`;
+
+        const headers: HeadersInit = {};
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
+
+        const response = await fetch(url, { headers });
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

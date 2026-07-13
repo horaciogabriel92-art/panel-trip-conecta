@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { useTenant, type PlanConfig } from "@/context/TenantContext";
+import { useAuth } from "@/context/AuthContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -12,6 +13,7 @@ interface SidebarPlanUpsellProps {
 }
 
 export default function SidebarPlanUpsell({ collapsed }: SidebarPlanUpsellProps) {
+  const { user } = useAuth();
   const { tenant } = useTenant();
   const [plans, setPlans] = useState<PlanConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +46,7 @@ export default function SidebarPlanUpsell({ collapsed }: SidebarPlanUpsellProps)
   }, [plans, tenant.plan]);
 
   if (collapsed) return null;
+  if (user?.rol !== "admin") return null;
   if (tenant.plan?.slug !== "free") return null;
   if (isLoading || !nextPlan) return null;
 
