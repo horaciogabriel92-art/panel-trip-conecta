@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useWorkflowMode } from '@/hooks/useWorkflowMode';
 import { formatCurrency } from '@/lib/utils';
 
 interface Cliente {
@@ -506,9 +507,12 @@ export default function CotizacionDetalle() {
     );
   }
 
+  const { isVendedorAutoconfirma } = useWorkflowMode();
   const imagen = paquete?.imagen_url || paquete?.imagen_principal || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800';
   const puedeEditar = cotizacion.estado === 'nueva' && user?.rol === 'vendedor';
-  const puedeConvertir = cotizacion.estado === 'nueva' || cotizacion.estado === 'enviada';
+  const puedeConvertir =
+    (cotizacion.estado === 'nueva' || cotizacion.estado === 'enviada') &&
+    (user?.rol === 'admin' || isVendedorAutoconfirma);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700 max-w-6xl mx-auto">

@@ -20,11 +20,14 @@ import {
   Ticket,
   Shield,
   FileCheck,
-  AlertCircle
+  AlertCircle,
+  Upload,
+  Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/context/ToastContext';
+import { useWorkflowMode } from '@/hooks/useWorkflowMode';
 import NotasVenta from '@/components/NotasVenta';
 import HistorialPagos from '@/components/ventas/HistorialPagos';
 import AgregarPagoModal from '@/components/ventas/AgregarPagoModal';
@@ -88,31 +91,41 @@ const tiposDocumentos: Record<string, { icon: any; label: string; color: string 
 };
 
 export default function VentaDetalle() {
-  const { error: toastError } = useToast();
+  const { success: toastSuccess, error: toastError } = useToast();
   const params = useParams();
   const router = useRouter();
+  const { isVendedorAutoconfirma } = useWorkflowMode();
   const [venta, setVenta] = useState<Venta | null>(null);
   const [documentos, setDocumentos] = useState<Documento[]>([]);
+  const [vouchers, setVouchers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [showPagoModal, setShowPagoModal] = useState(false);
+  const [voucherFile, setVoucherFile] = useState<File | null>(null);
+  const [tipoVoucher, setTipoVoucher] = useState<string>('otro');
+  const [isUploadingVoucher, setIsUploadingVoucher] = useState(false);
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>('');
+  const [isUpdatingEstado, setIsUpdatingEstado] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ventaRes, docsRes] = await Promise.all([
+        const [ventaRes, docsRes, vouchersRes] = await Promise.all([
           api.get(`/ventas/${params.id}`),
-          api.get(`/documentos/venta/${params.id}`)
+          api.get(`/documentos/venta/${params.id}`),
+          api.get(`/upload/vouchers/${params.id}`)
         ]);
         setVenta(ventaRes.data);
         setDocumentos(docsRes.data || []);
+        setVouchers(vouchersRes.data || []);
+        setEstadoSeleccionado(ventaRes.data?.estado || '');
       } catch (err) {
         console.error('Error cargando datos:', err);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     if (params.id) {
       fetchData();
     }
@@ -180,6 +193,58 @@ export default function VentaDetalle() {
       toastError('Error al descargar el comprobante', 'Descarga fallida');
     } finally {
       setDownloadingId(null);
+    }
+  };
+
+  const handleUploadVoucher = async () => {
+    if (!voucherFile || !venta) return;
+    setIsUploadingVoucher(true);
+    try {
+      const formData = new FormData();
+      formData.append('voucher', voucherFile);
+      formData.append('tipo_documento', tipoVoucher);
+      await api.post(`/upload/voucher/${venta.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      const res = await api.get(`/upload/vouchers/${venta.id}`);
+      setVouchers(res.data);
+      setVoucherFile(null);
+      toastSuccess('Voucher subido exitosamente', 'Subida OK');
+    } catch (err: any) {
+      console.error('Error subiendo voucher:', err);
+      toastError(err.response?.data?.error || 'Error al subir voucher', 'Error');
+    } finally {
+      setIsUploadingVoucher(false);
+    }
+  };
+
+  const handleDeleteVoucher = async (voucherId: string) => {
+    if (!confirm('¿Estás seguro de eliminar este voucher?')) return;
+    try {
+      await api.delete(`/upload/voucher/${voucherId}`);
+      if (venta) {
+        const res = await api.get(`/upload/vouchers/${venta.id}`);
+        setVouchers(res.data);
+      }
+      toastSuccess('Voucher eliminado exitosamente', 'Eliminado');
+    } catch (err: any) {
+      console.error('Error eliminando voucher:', err);
+      toastError(err.response?.data?.error || 'Error al eliminar voucher', 'Error');
+    }
+  };
+
+  const handleUpdateEstado = async () => {
+    if (!venta || !estadoSeleccionado || estadoSeleccionado === venta.estado) return;
+    setIsUpdatingEstado(true);
+    try {
+      await api.put(`/ventas/${venta.id}/estado`, { estado: estadoSeleccionado });
+      setVenta({ ...venta, estado: estadoSeleccionado });
+      toastSuccess('Estado actualizado correctamente', 'Actualizado');
+    } catch (err: any) {
+      console.error('Error actualizando estado:', err);
+      toastError(err.response?.data?.error || 'Error al actualizar estado', 'Error');
+    } finally {
+      setIsUpdatingEstado(false);
     }
   };
 
@@ -419,6 +484,84 @@ export default function VentaDetalle() {
                 </div>
               )}
             </div>
+
+            {/* Acciones para modo vendedor_autoconfirma */}
+            {isVendedorAutoconfirma && (
+              <div className="space-y-4 mb-4">
+                <div className="p-4 bg-[var(--muted)] rounded-xl space-y-3">
+                  <h4 className="text-sm font-bold text-[var(--foreground)]">Acciones</h4>
+
+                  <div>
+                    <label className="block text-xs text-[var(--muted-foreground)] mb-1">Estado de la venta</label>
+                    <div className="flex gap-2">
+                      <select
+                        value={estadoSeleccionado}
+                        onChange={(e) => setEstadoSeleccionado(e.target.value)}
+                        className="flex-1 bg-[var(--card)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-blue-500"
+                      >
+                        <option value="pendiente">Pendiente</option>
+                        <option value="confirmada">Confirmada</option>
+                        <option value="en_proceso">En proceso</option>
+                        <option value="emitida">Emitida</option>
+                      </select>
+                      <button
+                        onClick={handleUpdateEstado}
+                        disabled={isUpdatingEstado || estadoSeleccionado === venta.estado}
+                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white rounded-xl text-sm font-medium transition-colors"
+                      >
+                        {isUpdatingEstado ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          'Guardar'
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-[var(--muted-foreground)] mb-1">Subir voucher</label>
+                    <select
+                      value={tipoVoucher}
+                      onChange={(e) => setTipoVoucher(e.target.value)}
+                      className="w-full mb-2 bg-[var(--card)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-blue-500"
+                    >
+                      <option value="boleto_aereo">Boleto Aéreo</option>
+                      <option value="voucher_hotel">Voucher Hotel</option>
+                      <option value="voucher_actividad">Voucher Actividad</option>
+                      <option value="seguro">Seguro de Viaje</option>
+                      <option value="itinerario_final">Itinerario Final</option>
+                      <option value="e_ticket">E-Ticket</option>
+                      <option value="boarding_pass">Boarding Pass</option>
+                      <option value="otro">Otro</option>
+                    </select>
+                    <div className="flex gap-2">
+                      <label className="flex-1 cursor-pointer">
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={(e) => setVoucherFile(e.target.files?.[0] || null)}
+                          className="hidden"
+                        />
+                        <div className="w-full px-3 py-2 bg-[var(--card)] border border-[var(--border)] border-dashed rounded-xl text-sm text-[var(--muted-foreground)] truncate text-center hover:border-blue-500 transition-colors">
+                          {voucherFile ? voucherFile.name : 'Seleccionar archivo'}
+                        </div>
+                      </label>
+                      <button
+                        onClick={handleUploadVoucher}
+                        disabled={!voucherFile || isUploadingVoucher}
+                        className="px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-600/50 text-white rounded-xl text-sm font-medium transition-colors"
+                      >
+                        {isUploadingVoucher ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Upload className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Botón registrar pago si hay restante */}
             {venta.cotizacion_id && venta.tipo_pago !== 'total' && (venta.monto_restante || Math.max(0, venta.precio_total - (venta.monto_pagado || 0))) > 0 && (
