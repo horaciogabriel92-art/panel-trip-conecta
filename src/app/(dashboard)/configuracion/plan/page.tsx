@@ -1,17 +1,23 @@
 "use client";
 
-import { useTenant } from "@/context/TenantContext";
+import { useEffect, useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
+import { useTenant, type PlanConfig } from "@/context/TenantContext";
+import { useBilling } from "@/hooks/useBilling";
+import PlanCard from "@/components/billing/PlanCard";
+import InvoiceHistory from "@/components/billing/InvoiceHistory";
 import {
   CreditCard,
   Calendar,
-  Users,
-  FileText,
-  Package,
-  Globe,
   AlertCircle,
   CheckCircle2,
   Loader2,
+  Users,
+  ExternalLink,
+  X,
 } from "lucide-react";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("es-UY", {
@@ -40,11 +46,65 @@ function getDaysLeft(dateString: string | null) {
 }
 
 export default function PlanPage() {
-  const { tenant, isLoading } = useTenant();
-  const plan = tenant.plan;
-  const daysLeft = getDaysLeft(tenant.trial_ends_at);
+  const { tenant, isLoading: isTenantLoading } = useTenant();
+  const { createCheckout, createPortal, isLoading: isBillingLoading, error: billingError } = useBilling();
+  const searchParams = useSearchParams();
 
-  if (isLoading) {
+  const [plans, setPlans] = useState<PlanConfig[]>([]);
+  const [isPlansLoading, setIsPlansLoading] = useState(true);
+  const [extraUsers, setExtraUsers] = useState(0);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+
+  const success = searchParams.get("success");
+  const canceled = searchParams.get("canceled");
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await fetch(`${API_URL}/config/plans`);
+        if (!res.ok) throw new Error("No se pudieron cargar los planes");
+        const data = await res.json();
+        setPlans(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("[PlanPage] Error fetching plans:", err);
+      } finally {
+        setIsPlansLoading(false);
+      }
+    };
+    fetchPlans();
+  }, []);
+
+  const currentPlanSlug = tenant.plan?.slug || "free";
+  const isTrial = tenant.estado_suscripcion === "trial";
+  const isActive = tenant.estado_suscripcion === "activo";
+  const isSuspended = tenant.estado_suscripcion === "suspendido";
+  const daysLeft = getDaysLeft(tenant.trial_ends_at);
+  const trialExpiringSoon = isTrial && daysLeft !== null && daysLeft <= 3;
+
+  const sortedPlans = useMemo(() => {
+    return [...plans].sort((a, b) => a.precio_mensual_usd - b.precio_mensual_usd);
+  }, [plans]);
+
+  const handleSelectPlan = async (plan: PlanConfig) => {
+    if (plan.slug === "free") return;
+    setSelectedPlan(plan.slug);
+    const url = await createCheckout({
+      plan_slug: plan.slug,
+      extra_users: extraUsers,
+    });
+    if (url) {
+      window.location.href = url;
+    }
+  };
+
+  const handlePortal = async () => {
+    const url = await createPortal();
+    if (url) {
+      window.location.href = url;
+    }
+  };
+
+  if (isTenantLoading || isPlansLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
@@ -52,34 +112,8 @@ export default function PlanPage() {
     );
   }
 
-  const isTrial = tenant.estado_suscripcion === "trial";
-  const trialExpiringSoon = isTrial && daysLeft !== null && daysLeft <= 3;
-
-  const limits = [
-    {
-      icon: <Users className="w-5 h-5 text-blue-400" />,
-      label: "Usuarios",
-      value: plan?.max_users === null ? "Ilimitados" : plan?.max_users,
-    },
-    {
-      icon: <FileText className="w-5 h-5 text-emerald-400" />,
-      label: "Cotizaciones/mes",
-      value: plan?.max_cotizaciones_por_mes === null ? "Ilimitadas" : plan?.max_cotizaciones_por_mes,
-    },
-    {
-      icon: <Package className="w-5 h-5 text-purple-400" />,
-      label: "Paquetes",
-      value: plan?.max_paquetes === null ? "Ilimitados" : plan?.max_paquetes,
-    },
-    {
-      icon: <Globe className="w-5 h-5 text-cyan-400" />,
-      label: "Dominio propio",
-      value: plan?.permite_dominio_propio ? "Incluido" : "No incluido",
-    },
-  ];
-
   return (
-    <div className="space-y-6 animate-in fade-in duration-700 max-w-4xl mx-auto">
+    <div className="space-y-6 animate-in fade-in duration-700 max-w-5xl mx-auto">
       {/* Header */}
       <div>
         <h2 className="text-2xl font-black text-[var(--foreground)] flex items-center gap-2">
@@ -91,7 +125,31 @@ export default function PlanPage() {
         </p>
       </div>
 
-      {/* Trial banner */}
+      {/* Stripe redirect messages */}
+      {success && (
+        <div className="rounded-2xl p-4 border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 flex items-start gap-3">
+          <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">¡Suscripción actualizada!</p>
+            <p className="text-sm opacity-90">
+              Tu pago fue procesado correctamente. En breve se reflejará en tu cuenta.
+            </p>
+          </div>
+        </div>
+      )}
+      {canceled && (
+        <div className="rounded-2xl p-4 border border-amber-500/20 bg-amber-500/10 text-amber-400 flex items-start gap-3">
+          <X className="w-5 h-5 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">Pago cancelado</p>
+            <p className="text-sm opacity-90">
+              No se realizó ningún cargo. Podés intentarlo nuevamente cuando quieras.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Trial / status banner */}
       {isTrial && (
         <div
           className={`rounded-2xl p-4 border flex items-start gap-3 ${
@@ -102,9 +160,7 @@ export default function PlanPage() {
         >
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium">
-              Estás en periodo de prueba gratuita de 7 días
-            </p>
+            <p className="font-medium">Estás en periodo de prueba gratuita de 7 días</p>
             <p className="text-sm opacity-90">
               {daysLeft !== null && daysLeft > 0
                 ? `Te quedan ${daysLeft} días de prueba. Vence el ${formatDate(tenant.trial_ends_at)}.`
@@ -114,7 +170,19 @@ export default function PlanPage() {
         </div>
       )}
 
-      {/* Plan card */}
+      {isSuspended && (
+        <div className="rounded-2xl p-4 border border-red-500/20 bg-red-500/10 text-red-400 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">Suscripción suspendida</p>
+            <p className="text-sm opacity-90">
+              Tu último pago no pudo procesarse. Actualizá tu medio de pago para seguir usando todas las funciones.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Current plan card */}
       <div className="glass-card rounded-2xl p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -127,91 +195,99 @@ export default function PlanPage() {
                   Trial
                 </span>
               )}
+              {isActive && (
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                  Activo
+                </span>
+              )}
+              {isSuspended && (
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+                  Suspendido
+                </span>
+              )}
             </div>
             <h3 className="text-3xl font-black text-[var(--foreground)]">
-              {plan?.nombre || "Free"}
+              {tenant.plan?.nombre || "Free"}
             </h3>
             <p className="text-[var(--muted-foreground)] mt-1">
-              {formatCurrency(plan?.precio_mensual_usd || 0)} / mes
+              {formatCurrency(tenant.plan?.precio_mensual_usd || 0)} / mes
             </p>
           </div>
-          <button
-            disabled
-            className="px-6 py-2.5 bg-[var(--muted)] text-[var(--muted-foreground)] rounded-xl font-medium cursor-not-allowed"
-          >
-            Actualizar plan (próximamente)
-          </button>
+          {tenant.stripe_customer_id && (
+            <button
+              onClick={handlePortal}
+              disabled={isBillingLoading}
+              className="px-6 py-2.5 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center gap-2"
+            >
+              {isBillingLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+              Gestionar suscripción
+              <ExternalLink className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Limits grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {limits.map((item) => (
-          <div
-            key={item.label}
-            className="glass-card rounded-2xl p-5 flex items-center gap-4"
-          >
-            <div className="w-12 h-12 rounded-xl bg-[var(--muted)] flex items-center justify-center">
-              {item.icon}
+      {/* Extra users selector */}
+      <div className="glass-card rounded-2xl p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[var(--muted)] flex items-center justify-center">
+              <Users className="w-5 h-5 text-emerald-500" />
             </div>
             <div>
-              <p className="text-sm text-[var(--muted-foreground)]">{item.label}</p>
-              <p className="text-xl font-bold text-[var(--foreground)]">{item.value}</p>
+              <h3 className="font-bold text-[var(--foreground)]">Usuarios adicionales</h3>
+              <p className="text-sm text-[var(--muted-foreground)]">
+                {formatCurrency(10)} por usuario extra / mes
+              </p>
             </div>
           </div>
-        ))}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setExtraUsers(Math.max(0, extraUsers - 1))}
+              className="w-10 h-10 rounded-xl bg-[var(--muted)] text-[var(--foreground)] font-bold hover:bg-[var(--border)] transition-colors"
+            >
+              −
+            </button>
+            <span className="w-8 text-center font-bold text-[var(--foreground)]">{extraUsers}</span>
+            <button
+              onClick={() => setExtraUsers(extraUsers + 1)}
+              className="w-10 h-10 rounded-xl bg-[var(--muted)] text-[var(--foreground)] font-bold hover:bg-[var(--border)] transition-colors"
+            >
+              +
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Extra user price */}
-      {(plan?.precio_usuario_extra_usd || 0) > 0 && (
-        <div className="glass-card rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-[var(--foreground)] mb-2">
-            Usuarios adicionales
-          </h3>
-          <p className="text-[var(--muted-foreground)]">
-            Cada usuario extra cuesta{" "}
-            <span className="font-semibold text-[var(--foreground)]">
-              {formatCurrency(plan?.precio_usuario_extra_usd || 0)} / mes
-            </span>
-          </p>
+      {billingError && (
+        <div className="rounded-2xl p-4 border border-red-500/20 bg-red-500/10 text-red-400 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+          <p className="text-sm">{billingError}</p>
         </div>
       )}
 
-      {/* Status details */}
+      {/* Plans grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        {sortedPlans.map((plan) => (
+          <PlanCard
+            key={plan.slug}
+            plan={plan}
+            isCurrent={plan.slug === currentPlanSlug}
+            isDisabled={isBillingLoading}
+            isLoading={selectedPlan === plan.slug && isBillingLoading}
+            extraUsers={extraUsers}
+            onSelect={handleSelectPlan}
+          />
+        ))}
+      </div>
+
+      {/* Invoice history */}
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
           <Calendar className="w-5 h-5 text-blue-400" />
-          Detalles de la suscripción
+          Historial de pagos
         </h3>
-        <div className="space-y-3">
-          <div className="flex justify-between py-2 border-b border-[var(--border)]">
-            <span className="text-[var(--muted-foreground)]">Estado</span>
-            <span className="font-medium text-[var(--foreground)] capitalize">
-              {tenant.estado_suscripcion || "—"}
-            </span>
-          </div>
-          <div className="flex justify-between py-2 border-b border-[var(--border)]">
-            <span className="text-[var(--muted-foreground)]">Inicio del plan</span>
-            <span className="font-medium text-[var(--foreground)]">
-              {formatDate(tenant.plan_started_at)}
-            </span>
-          </div>
-          <div className="flex justify-between py-2 border-b border-[var(--border)]">
-            <span className="text-[var(--muted-foreground)]">Fin de prueba</span>
-            <span className="font-medium text-[var(--foreground)]">
-              {formatDate(tenant.trial_ends_at)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Help note */}
-      <div className="rounded-2xl p-4 border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 flex items-start gap-3">
-        <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
-        <p className="text-sm">
-          Durante el periodo de prueba tienes acceso completo al plan seleccionado.
-          Al vencer, tu cuenta pasará al plan Free a menos que actives una suscripción paga.
-        </p>
+        <InvoiceHistory />
       </div>
     </div>
   );

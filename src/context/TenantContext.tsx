@@ -32,6 +32,9 @@ export interface TenantConfig {
   trial_ends_at: string | null;
   estado_suscripcion: string | null;
   plan_started_at: string | null;
+  stripe_customer_id?: string | null;
+  stripe_subscription_id?: string | null;
+  extra_users_billed?: number;
   configuracion: Record<string, any>;
   plan: PlanConfig | null;
 }
@@ -69,6 +72,9 @@ const DEFAULT_TENANT: TenantConfig = {
   trial_ends_at: null,
   estado_suscripcion: null,
   plan_started_at: null,
+  stripe_customer_id: null,
+  stripe_subscription_id: null,
+  extra_users_billed: 0,
   configuracion: {
     features: { comisiones: { enabled: false } },
     workflow: { mode: 'admin_confirma' }
