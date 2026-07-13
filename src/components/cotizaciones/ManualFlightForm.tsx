@@ -25,6 +25,7 @@ const emptyFlight = (linea: number): ParsedFlight => ({
   destino_nombre: "",
   destino_ciudad: "",
   estado_codigo: "HK",
+  estado_nombre: "Confirmed",
   asientos: 1,
   hora_salida: "",
   hora_llegada: "",
