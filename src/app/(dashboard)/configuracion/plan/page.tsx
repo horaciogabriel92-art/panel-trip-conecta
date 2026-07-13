@@ -240,6 +240,18 @@ export default function PlanPage() {
             <p className="text-[var(--muted-foreground)] mt-1">
               {formatCurrency(tenant.plan?.precio_mensual_usd || 0)} / mes
             </p>
+            {(isActive || isTrial) && tenant.subscription_renewal_date && (
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                <span className="text-[var(--muted-foreground)]">
+                  Próxima renovación: <span className="text-[var(--foreground)] font-medium">{formatDate(tenant.subscription_renewal_date)}</span>
+                </span>
+                {tenant.next_invoice_amount_usd != null && tenant.next_invoice_amount_usd > 0 && (
+                  <span className="text-[var(--muted-foreground)]">
+                    Próxima factura: <span className="text-emerald-500 font-medium">{formatCurrency(tenant.next_invoice_amount_usd)}</span>
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           {tenant.stripe_customer_id && (
             <div className="flex flex-col sm:flex-row gap-3">
