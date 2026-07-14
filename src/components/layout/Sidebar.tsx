@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/context/AuthContext';
 import { useTenant } from '@/context/TenantContext';
 import { useFeature } from '@/hooks/useFeature';
@@ -39,6 +40,7 @@ export default function Sidebar({
   collapsed = false,
   onToggleCollapse
 }: SidebarProps) {
+  const t = useTranslations('navigation');
   const pathname = usePathname();
   const { logout, hasPermission } = useAuth();
   const { tenant } = useTenant();
@@ -47,21 +49,21 @@ export default function Sidebar({
   const isAdmin = role === 'admin';
 
   const adminLinks = [
-    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/clientes', label: 'Clientes', icon: Users },
-    { href: '/admin/cotizaciones', label: 'Cotizaciones', icon: FileText },
-    { href: '/admin/ventas', label: 'Ventas', icon: ShoppingCart },
-    { href: '/admin/paquetes', label: 'Paquetes', icon: Package },
-    { href: '/admin/comisiones', label: 'Comisiones', icon: Wallet, permission: 'ver_comisiones_otros' as const, hidden: !comisionesEnabled },
-    { href: '/admin/reportes', label: 'Reportes', icon: BarChart3, permission: 'ver_reportes' as const },
+    { href: '/admin', label: t('dashboard'), icon: LayoutDashboard },
+    { href: '/admin/clientes', label: t('clientes'), icon: Users },
+    { href: '/admin/cotizaciones', label: t('cotizaciones'), icon: FileText },
+    { href: '/admin/ventas', label: t('ventas'), icon: ShoppingCart },
+    { href: '/admin/paquetes', label: t('paquetes'), icon: Package },
+    { href: '/admin/comisiones', label: t('comisiones') || 'Comisiones', icon: Wallet, permission: 'ver_comisiones_otros' as const, hidden: !comisionesEnabled },
+    { href: '/admin/reportes', label: t('reportes') || 'Reportes', icon: BarChart3, permission: 'ver_reportes' as const },
   ].filter(link => (!link.permission || hasPermission(link.permission)) && !link.hidden);
 
   const vendedorLinks = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/paquetes', label: 'Catálogo', icon: Package },
-    { href: '/cotizaciones', label: 'Cotizaciones', icon: FileText },
-    { href: '/admin/clientes', label: 'Clientes', icon: Users },
-    { href: '/mis-ventas', label: 'Mis Ventas', icon: ShoppingCart },
+    { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
+    { href: '/paquetes', label: t('catalogo') || 'Catálogo', icon: Package },
+    { href: '/cotizaciones', label: t('cotizaciones'), icon: FileText },
+    { href: '/admin/clientes', label: t('clientes'), icon: Users },
+    { href: '/mis-ventas', label: t('misVentas'), icon: ShoppingCart },
   ];
 
   const links = isAdmin ? adminLinks : vendedorLinks;
@@ -117,8 +119,8 @@ export default function Sidebar({
           <button
             onClick={onToggleCollapse}
             className="hidden lg:flex p-1.5 rounded-lg hover:bg-[var(--muted)] text-[var(--muted-foreground)] transition-colors"
-            aria-label={collapsed ? "Expandir menú" : "Colapsar menú"}
-            title={collapsed ? "Expandir" : "Colapsar"}
+            aria-label={collapsed ? t('expandirMenu') || 'Expandir menú' : t('colapsarMenu') || 'Colapsar menú'}
+            title={collapsed ? t('expandir') || 'Expandir' : t('colapsar') || 'Colapsar'}
           >
             {collapsed ? (
               <PanelRightOpen className="w-4 h-4" />
@@ -129,7 +131,7 @@ export default function Sidebar({
           <button
             onClick={onClose}
             className="lg:hidden p-2 rounded-lg hover:bg-[var(--muted)] text-[var(--muted-foreground)]"
-            aria-label="Cerrar menú"
+            aria-label={t('cerrarMenu') || 'Cerrar menú'}
           >
             <X className="w-5 h-5" />
           </button>
@@ -174,7 +176,7 @@ export default function Sidebar({
           <Link 
             href="/configuracion"
             onClick={handleLinkClick}
-            title={collapsed ? "Configuración" : undefined}
+            title={collapsed ? t('configuracion') : undefined}
             className={cn(
               "flex items-center rounded-xl transition-all",
               collapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3",
@@ -184,13 +186,13 @@ export default function Sidebar({
             )}
           >
             <Settings className={cn("w-5 h-5 shrink-0", pathname === '/configuracion' || pathname?.startsWith('/configuracion/') ? "text-white" : "")} />
-            {!collapsed && <span className="font-medium truncate">Configuración</span>}
+            {!collapsed && <span className="font-medium truncate">{t('configuracion')}</span>}
           </Link>
           {isAdmin && (
             <Link 
               href="/configuracion/plan"
               onClick={handleLinkClick}
-              title={collapsed ? "Mi Plan" : undefined}
+              title={collapsed ? t('miPlan') || 'Mi Plan' : undefined}
               className={cn(
                 "flex items-center rounded-xl transition-all",
                 collapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3",
@@ -200,19 +202,19 @@ export default function Sidebar({
               )}
             >
               <CreditCard className={cn("w-5 h-5 shrink-0", pathname === '/configuracion/plan' ? "text-white" : "")} />
-              {!collapsed && <span className="font-medium truncate">Mi Plan</span>}
+              {!collapsed && <span className="font-medium truncate">{t('miPlan') || 'Mi Plan'}</span>}
             </Link>
           )}
           <button 
             onClick={logout}
-            title={collapsed ? "Cerrar Sesión" : undefined}
+            title={collapsed ? t('logout') : undefined}
             className={cn(
               "flex items-center rounded-xl text-red-500 hover:bg-red-500/10 transition-all",
               collapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"
             )}
           >
             <LogOut className="w-5 h-5 shrink-0" />
-            {!collapsed && <span className="font-medium truncate">Cerrar Sesión</span>}
+            {!collapsed && <span className="font-medium truncate">{t('logout')}</span>}
           </button>
         </div>
       </aside>

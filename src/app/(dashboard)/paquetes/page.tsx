@@ -5,10 +5,12 @@ import api from '@/lib/api';
 import { Search, Filter, MapPin, Calendar, Users, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 export default function PaquetesCatalogo() {
   const [paquetes, setPaquetes] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const t = useTranslations('paquetes');
 
   useEffect(() => {
     const fetchPaquetes = async () => {
@@ -28,13 +30,13 @@ export default function PaquetesCatalogo() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">Catálogo de Destinos</h2>
-          <p className="text-[var(--muted-foreground)]">Encuentra el viaje perfecto para tus clientes</p>
+          <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">{t('title')}</h2>
+          <p className="text-[var(--muted-foreground)]">{t('subtitle')}</p>
         </div>
         <div className="flex gap-3">
            <div className="flex items-center gap-3 bg-[var(--muted)] border border-[var(--border)] rounded-2xl px-4 py-2 w-full md:w-64">
              <Search className="w-4 h-4 text-[var(--muted-foreground)]" />
-             <input type="text" placeholder="Buscar destino..." className="bg-transparent border-none outline-none text-sm w-full text-[var(--foreground)]" />
+             <input type="text" placeholder={t('searchPlaceholder')} className="bg-transparent border-none outline-none text-sm w-full text-[var(--foreground)]" />
            </div>
            <button className="p-3 bg-[var(--muted)] rounded-2xl border border-[var(--border)] hover:bg-[var(--muted)] transition-all">
              <Filter className="w-5 h-5 text-[var(--muted-foreground)]" />
@@ -71,18 +73,18 @@ export default function PaquetesCatalogo() {
               <div className="p-6 flex-1 flex flex-col">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   <div className="bg-[var(--muted)] p-3 rounded-2xl">
-                    <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-black mb-1">Desde</p>
+                    <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-black mb-1">{t('from')}</p>
                     <p className="text-xl font-black text-[var(--foreground)]">${p.precio_doble}</p>
                   </div>
                   <div className="bg-[var(--muted)] p-3 rounded-2xl">
-                    <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-black mb-1">Disponibles</p>
+                    <p className="text-[10px] text-[var(--muted-foreground)] uppercase font-black mb-1">{t('available')}</p>
                     <p className="text-xl font-black text-[var(--foreground)]">{p.cupos_disponibles}</p>
                   </div>
                 </div>
 
                 <div className="space-y-3 mb-6 flex-1">
                   <p className="text-xs text-[var(--muted-foreground)] line-clamp-3 leading-relaxed">
-                    {p.descripcion || "Disfruta de una experiencia inolvidable en este destino seleccionado cuidadosamente para tus clientes. Incluye hotel, traslados y actividades principales."}
+                    {p.descripcion || t('defaultDescription')}
                   </p>
                 </div>
 
@@ -90,7 +92,7 @@ export default function PaquetesCatalogo() {
                   href={`/paquetes/${p.id}`} 
                   className="mt-auto w-full group/btn bg-[var(--muted)] hover:bg-blue-600 border border-[var(--border)] hover:border-blue-500 text-[var(--foreground)] py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-2"
                 >
-                  Continuar a Cotizar 
+                  {t('cta')}
                   <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
                 </Link>
               </div>

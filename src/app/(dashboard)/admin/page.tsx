@@ -6,9 +6,11 @@ import { ShoppingCart, Users, Package, Wallet, TrendingUp, Calendar, Loader2 } f
 import { useFeature } from '@/hooks/useFeature';
 import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 export default function AdminDashboard() {
   const { enabled: comisionesEnabled } = useFeature('comisiones');
+  const t = useTranslations('admin');
 
   const [stats, setStats] = useState({
     ventasTotales: 0,
@@ -82,17 +84,17 @@ export default function AdminDashboard() {
   };
 
   const cards = [
-    { title: 'Ventas Totales', value: stats.ventasTotales, icon: ShoppingCart, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { title: 'Vendedores', value: stats.vendedoresActivos, icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10' },
-    { title: 'Paquetes', value: stats.paquetesActivos, icon: Package, color: 'text-green-400', bg: 'bg-green-500/10' },
-    ...(comisionesEnabled ? [{ title: 'Comisiones Pend.', value: `$${formatCurrency(stats.comisionesPendientes)}`, icon: Wallet, color: 'text-orange-400', bg: 'bg-orange-500/10' }] : []),
+    { title: t('stats.totalSales'), value: stats.ventasTotales, icon: ShoppingCart, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { title: t('stats.sellers'), value: stats.vendedoresActivos, icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+    { title: t('stats.packages'), value: stats.paquetesActivos, icon: Package, color: 'text-green-400', bg: 'bg-green-500/10' },
+    ...(comisionesEnabled ? [{ title: t('stats.pendingCommissions'), value: `$${formatCurrency(stats.comisionesPendientes)}`, icon: Wallet, color: 'text-orange-400', bg: 'bg-orange-500/10' }] : []),
   ];
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div>
-        <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">Panel de Administración</h2>
-        <p className="text-[var(--muted-foreground)]">Resumen general del sistema Trip Conecta</p>
+        <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">{t('title')}</h2>
+        <p className="text-[var(--muted-foreground)]">{t('subtitle')}</p>
       </div>
 
       {isLoading ? (
@@ -120,22 +122,22 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-xl font-bold flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-blue-400" />
-              Acciones Rápidas
+              {t('quickActions')}
             </h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link href="/configuracion" className="p-4 rounded-xl bg-[var(--muted)] hover:bg-[var(--border)] transition-all text-center">
               <Users className="w-8 h-8 mx-auto mb-2 text-purple-400" />
-              <p className="font-bold">Usuarios</p>
+              <p className="font-bold">{t('users')}</p>
             </Link>
             <Link href="/admin/paquetes" className="p-4 rounded-xl bg-[var(--muted)] hover:bg-[var(--border)] transition-all text-center">
               <Package className="w-8 h-8 mx-auto mb-2 text-green-400" />
-              <p className="font-bold">Paquetes</p>
+              <p className="font-bold">{t('packages')}</p>
             </Link>
             {comisionesEnabled && (
               <Link href="/admin/comisiones" className="p-4 rounded-xl bg-[var(--muted)] hover:bg-[var(--border)] transition-all text-center">
                 <Wallet className="w-8 h-8 mx-auto mb-2 text-orange-400" />
-                <p className="font-bold">Comisiones</p>
+                <p className="font-bold">{t('commissions')}</p>
               </Link>
             )}
           </div>
@@ -144,14 +146,14 @@ export default function AdminDashboard() {
         <div className="glass-card p-6 md:p-8 rounded-3xl">
           <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-purple-400" />
-            Ventas Recientes
+            {t('recentSales')}
           </h3>
           {isLoading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
             </div>
           ) : ventasRecientes.length === 0 ? (
-            <p className="text-[var(--muted-foreground)] text-center py-8">No hay ventas registradas</p>
+            <p className="text-[var(--muted-foreground)] text-center py-8">{t('noSales')}</p>
           ) : (
             <div className="space-y-6">
               {ventasRecientes.map((venta: any, i: number) => (
@@ -162,7 +164,7 @@ export default function AdminDashboard() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate">{venta.paquete_nombre || 'Paquete'}</p>
                     <p className="text-xs text-[var(--muted-foreground)]">
-                      {venta.fecha_creacion ? new Date(venta.fecha_creacion).toLocaleDateString() : 'Fecha no disponible'}
+                      {venta.fecha_creacion ? new Date(venta.fecha_creacion).toLocaleDateString() : t('dateNotAvailable')}
                     </p>
                   </div>
                   <p className="text-sm font-bold text-green-400">+${formatCurrency(venta.total || 0)}</p>

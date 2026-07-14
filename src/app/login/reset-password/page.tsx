@@ -6,8 +6,11 @@ import { motion } from "framer-motion";
 import { useToast } from "@/context/ToastContext";
 import { Lock, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 function ResetPasswordForm() {
+  const t = useTranslations("auth.resetPassword");
+  const tCommon = useTranslations("common");
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const [password, setPassword] = useState("");
@@ -19,15 +22,15 @@ function ResetPasswordForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) {
-      toastError("Token inválido o expirado", "Error");
+      toastError(t("tokenInvalidError"), tCommon("error"));
       return;
     }
     if (password.length < 6) {
-      toastError("La contraseña debe tener al menos 6 caracteres", "Error");
+      toastError(t("passwordMinLength"), tCommon("error"));
       return;
     }
     if (password !== confirm) {
-      toastError("Las contraseñas no coinciden", "Error");
+      toastError(t("passwordMismatch"), tCommon("error"));
       return;
     }
 
@@ -43,12 +46,12 @@ function ResetPasswordForm() {
 
       if (res.ok) {
         setDone(true);
-        toastSuccess("Contraseña actualizada", "Ya podés iniciar sesión");
+        toastSuccess(t("successTitle"), t("successBody"));
       } else {
-        toastError(data.error || "No se pudo restablecer la contraseña", "Error");
+        toastError(data.error || t("resetError"), tCommon("error"));
       }
     } catch (err) {
-      toastError("Error de conexión", "No se pudo contactar al servidor");
+      toastError(t("connectionError"), t("connectionErrorBody"));
     } finally {
       setIsLoading(false);
     }
@@ -64,21 +67,21 @@ function ResetPasswordForm() {
       >
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-[var(--foreground)] mb-2">
-            Nueva contraseña
+            {t("title")}
           </h2>
           <p className="text-[var(--muted-foreground)] text-sm">
-            Elegí una contraseña segura para tu cuenta.
+            {t("subtitle")}
           </p>
         </div>
 
         {!token ? (
           <div className="text-center space-y-4">
-            <p className="text-red-400">El link es inválido o ha expirado.</p>
+            <p className="text-red-400">{t("invalidToken")}</p>
             <Link
               href="/login/forgot-password"
               className="inline-flex items-center gap-2 text-[var(--primary)] hover:underline"
             >
-              Solicitar un nuevo link
+              {t("requestNewLink")}
             </Link>
           </div>
         ) : done ? (
@@ -87,21 +90,21 @@ function ResetPasswordForm() {
               <CheckCircle2 className="w-8 h-8 text-green-400" />
             </div>
             <p className="text-[var(--foreground)]">
-              Tu contraseña se actualizó correctamente.
+              {t("successMessage")}
             </p>
             <Link
               href="/login"
               className="inline-flex items-center gap-2 text-[var(--primary)] hover:underline"
             >
               <ArrowLeft className="w-4 h-4" />
-              Ir al login
+              {t("goToLogin")}
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <label className="text-sm font-medium text-[var(--foreground)] ml-1">
-                Nueva contraseña
+                {t("password")}
               </label>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] group-focus-within:text-[var(--primary)] transition-colors" />
@@ -122,7 +125,7 @@ function ResetPasswordForm() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-[var(--foreground)] ml-1">
-                Repetir contraseña
+                {t("repeatPassword")}
               </label>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] group-focus-within:text-[var(--primary)] transition-colors" />
@@ -149,7 +152,7 @@ function ResetPasswordForm() {
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
               ) : (
-                <span>Guardar nueva contraseña</span>
+                <span>{t("submit")}</span>
               )}
             </button>
 
@@ -159,7 +162,7 @@ function ResetPasswordForm() {
                 className="inline-flex items-center gap-2 text-sm text-[var(--primary)] hover:underline"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Volver al login
+                {t("backToLogin")}
               </Link>
             </div>
           </form>
@@ -170,13 +173,14 @@ function ResetPasswordForm() {
 }
 
 export default function ResetPasswordPage() {
+  const t = useTranslations("auth.resetPassword");
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4 bg-[var(--background)]">
       <div className="gradient-bg" />
       <Suspense fallback={
         <div className="relative z-10 w-full max-w-md">
           <div className="glass-card rounded-3xl p-8 text-center text-[var(--muted-foreground)]">
-            Cargando...
+            {t("loading")}
           </div>
         </div>
       }>

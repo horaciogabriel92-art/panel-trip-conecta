@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { Clock } from "lucide-react";
 import { useTenant } from "@/context/TenantContext";
+import { useTranslations } from "next-intl";
 
 export default function TrialBanner() {
   const { tenant } = useTenant();
+  const t = useTranslations("plan.trialBanner");
 
   if (!tenant || tenant.estado_suscripcion !== "trial" || !tenant.trial_ends_at) {
     return null;
@@ -26,17 +28,16 @@ export default function TrialBanner() {
       <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center">
         <Clock className="w-4 h-4 shrink-0" />
         <span>
-          Estás probando el plan <strong className="font-bold">{planName}</strong>.
-          {" "}
+          {t("message", { planName })}{" "}
           {daysLeft === 0
-            ? "Tu prueba gratuita vence hoy."
-            : `Te quedan ${daysLeft} ${daysLeft === 1 ? "día" : "días"} de prueba gratuita.`}
+            ? t("endsToday")
+            : t("daysLeft", { days: daysLeft })}
         </span>
         <Link
           href="/configuracion/plan"
           className="inline-flex items-center gap-1 font-bold underline underline-offset-2 hover:text-white/90 transition-colors"
         >
-          Ver planes
+          {t("viewPlans")}
         </Link>
       </div>
     </div>

@@ -4,11 +4,13 @@ import { useState } from "react";
 import { useTenant } from "@/context/TenantContext";
 import { useFeature } from "@/hooks/useFeature";
 import { configAPI } from "@/lib/api-config";
+import { useTranslations } from "next-intl";
 import { Wallet, Loader2, CheckCircle, AlertCircle, Lock } from "lucide-react";
 
 export default function FeaturesTab() {
   const { tenant } = useTenant();
   const { enabled, allowed, disabledByPlan } = useFeature("comisiones");
+  const t = useTranslations("configuracion.features");
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -26,7 +28,7 @@ export default function FeaturesTab() {
       });
       setMessage({
         type: "success",
-        text: enabled ? "Comisiones desactivadas correctamente" : "Comisiones activadas correctamente",
+        text: enabled ? t("disabledSuccess") : t("enabledSuccess"),
       });
       // Recargar la página para refrescar TenantContext
       window.location.reload();
@@ -34,7 +36,7 @@ export default function FeaturesTab() {
       console.error("Error actualizando configuración:", error);
       setMessage({
         type: "error",
-        text: error.response?.data?.error || "Error al actualizar la configuración",
+        text: error.response?.data?.error || t("updateError"),
       });
     } finally {
       setIsSaving(false);
@@ -59,25 +61,25 @@ export default function FeaturesTab() {
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
           <Wallet className="w-5 h-5 text-orange-400" />
-          Módulos disponibles
+          {t("availableModules")}
         </h3>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-[var(--muted)] rounded-xl">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-[var(--foreground)]">Comisiones</span>
+                <span className="font-medium text-[var(--foreground)]">{t("commissions")}</span>
                 {!allowed && (
                   <span className="text-xs flex items-center gap-1 text-[var(--muted-foreground)]">
                     <Lock className="w-3 h-3" />
-                    Disponible en planes Pro
+                    {t("proOnly")}
                   </span>
                 )}
               </div>
               <p className="text-sm text-[var(--muted-foreground)]">
                 {allowed
-                  ? "Permite gestionar y pagar comisiones a los vendedores."
-                  : "Actualiza a un plan Pro Agencia o Pro Ilimitado para habilitar comisiones."}
+                  ? t("commissionsDescription")
+                  : t("commissionsUpgrade")}
               </p>
             </div>
             <button

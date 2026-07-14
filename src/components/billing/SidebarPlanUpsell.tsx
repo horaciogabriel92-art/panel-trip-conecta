@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { useTenant, type PlanConfig } from "@/context/TenantContext";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslations } from "next-intl";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
@@ -15,6 +16,7 @@ interface SidebarPlanUpsellProps {
 export default function SidebarPlanUpsell({ collapsed }: SidebarPlanUpsellProps) {
   const { user } = useAuth();
   const { tenant } = useTenant();
+  const t = useTranslations("plan.upsell");
   const [plans, setPlans] = useState<PlanConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,25 +54,25 @@ export default function SidebarPlanUpsell({ collapsed }: SidebarPlanUpsellProps)
 
   const features: string[] = [];
   if (nextPlan.max_users != null) {
-    features.push(`Hasta ${nextPlan.max_users} ${nextPlan.max_users === 1 ? "usuario" : "usuarios"}`);
+    features.push(t("users.upTo", { count: nextPlan.max_users }));
   } else {
-    features.push("Usuarios ilimitados");
+    features.push(t("users.unlimited"));
   }
 
   if (nextPlan.max_cotizaciones_por_mes != null) {
-    features.push(`${nextPlan.max_cotizaciones_por_mes} cotizaciones/mes`);
+    features.push(t("quotes.perMonth", { count: nextPlan.max_cotizaciones_por_mes }));
   } else {
-    features.push("Cotizaciones ilimitadas");
+    features.push(t("quotes.unlimited"));
   }
 
   if (nextPlan.max_paquetes != null) {
-    features.push(`${nextPlan.max_paquetes} ${nextPlan.max_paquetes === 1 ? "paquete" : "paquetes"}`);
+    features.push(t("packages.count", { count: nextPlan.max_paquetes }));
   } else {
-    features.push("Paquetes ilimitados");
+    features.push(t("packages.unlimited"));
   }
 
   if (nextPlan.permite_dominio_propio) {
-    features.push("Dominio propio");
+    features.push(t("customDomain"));
   }
 
   return (
@@ -78,15 +80,15 @@ export default function SidebarPlanUpsell({ collapsed }: SidebarPlanUpsellProps)
       <div className="flex items-center gap-2 mb-2">
         <Sparkles className="w-4 h-4" />
         <span className="text-xs font-bold uppercase tracking-wider opacity-95">
-          Llevá tu agencia al siguiente nivel
+          {t("title")}
         </span>
       </div>
 
       <h4 className="font-bold text-lg leading-tight mb-1">
-        Subí a {nextPlan.nombre}
+        {t("upgradeTo", { planName: nextPlan.nombre })}
       </h4>
       <p className="text-sm font-medium opacity-95 mb-3">
-        Desde ${nextPlan.precio_mensual_usd}/mes
+        {t("price", { price: nextPlan.precio_mensual_usd })}
       </p>
 
       <div className="flex flex-wrap gap-2 mb-4">
@@ -105,7 +107,7 @@ export default function SidebarPlanUpsell({ collapsed }: SidebarPlanUpsellProps)
         href="/configuracion/plan"
         className="group flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-white text-orange-600 font-bold text-sm hover:bg-orange-50 transition-colors shadow-md"
       >
-        Ver planes
+        {t("viewPlans")}
         <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
       </Link>
     </div>

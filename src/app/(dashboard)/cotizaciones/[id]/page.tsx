@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 // Configuración para forzar renderizado dinámico y evitar problemas de build
@@ -194,6 +195,8 @@ export default function CotizacionDetalle() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const { success: toastSuccess, error: toastError } = useToast();
+  const t = useTranslations('cotizaciones');
+  
   
   // Detectar si venimos del kanban con accion=cerrar
   const accion = searchParams.get('accion');
@@ -349,7 +352,7 @@ export default function CotizacionDetalle() {
         for (const file of comprobantes) {
           const formData = new FormData();
           formData.append('comprobante', file);
-          formData.append('descripcion', `Comprobante de ${ventaData.tipo_pago === 'total' ? 'pago total' : 'adelanto'} - ${ventaData.medio_pago}`);
+          formData.append('descripcion', t('detail.actions.paymentReceiptDescription', { type: ventaData.tipo_pago === 'total' ? t('detail.actions.paymentTotal') : t('detail.actions.paymentAdvance'), method: t(`detail.actions.methods.${ventaData.medio_pago}`) }));
           
           await api.post(`/upload/comprobante-pago/${params.id}`, formData);
         }
@@ -363,7 +366,7 @@ export default function CotizacionDetalle() {
       
       // 3. Validar fecha_pago_resto si hay restante
       if (montoRestante > 0 && !ventaData.fecha_pago_resto) {
-        toastError('Debes indicar la fecha de pago del restante', 'Fecha requerida');
+        toastError(t('new.errors.restPaymentDateRequired'), t('new.errors.dateRequired'));
         setIsConverting(false);
         return;
       }
@@ -379,7 +382,7 @@ export default function CotizacionDetalle() {
         datos_pasajeros: ventaData.datos_pasajeros
       });
       
-      toastSuccess('Cotización convertida a venta exitosamente', '¡Venta confirmada!');
+      toastSuccess(t('success.convertedToSale'), t('success.saleConfirmed'));
       setShowVentaModal(false);
       router.push('/mis-ventas');
     } catch (err: any) {
@@ -407,13 +410,13 @@ export default function CotizacionDetalle() {
       
       // Validar tipo
       if (!file.type.match(/image\/(jpeg|png|webp)|application\/pdf/)) {
-        toastError(`El archivo ${file.name} no es válido. Solo se permiten imágenes (JPG, PNG, WebP) o PDFs.`, 'Archivo inválido');
+        toastError(t('new.errors.fileInvalid', { name: file.name }), t('new.errors.invalidFileTitle'));
         continue;
       }
       
       // Validar tamaño (10MB)
       if (file.size > 10 * 1024 * 1024) {
-        toastError(`El archivo ${file.name} excede el límite de 10MB.`, 'Archivo muy grande');
+        toastError(t('new.errors.fileTooLarge', { name: file.name }), t('new.errors.largeFileTitle'));
         continue;
       }
       
@@ -440,9 +443,9 @@ export default function CotizacionDetalle() {
       await api.put(`/cotizaciones/${params.id}`, editData);
       setCotizacion({ ...cotizacion!, ...editData });
       setShowEditModal(false);
-      toastSuccess('Cotización actualizada', 'Guardado');
+      toastSuccess(t('success.updated'), t('success.saved'));
     } catch (err: any) {
-      toastError(err.response?.data?.error || 'Error al actualizar', 'Error');
+      toastError(err.response?.data?.error || t('errors.update'), t('common.error'));
     }
   };
   
@@ -464,7 +467,7 @@ export default function CotizacionDetalle() {
       window.URL.revokeObjectURL(url);
     } catch (err: any) {
       console.error('Error descargando voucher:', err);
-      toastError('Error al descargar voucher', 'Descarga fallida');
+      toastError(t('detail.actions.voucherError'), t('detail.actions.downloadFailed'));
     }
   };
 
@@ -496,12 +499,19 @@ export default function CotizacionDetalle() {
     );
   }
 
+  const statusLabels: Record<string, string> = {
+    nueva: t('detail.status.nueva'),
+    enviada: t('detail.status.enviada'),
+    vendida: t('detail.status.vendida'),
+    perdida: t('detail.status.perdida')
+  };
+
   if (!cotizacion) {
     return (
       <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-[var(--foreground)]">Cotización no encontrada</h2>
+        <h2 className="text-2xl font-bold text-[var(--foreground)]">{t('detail.notFound')}</h2>
         <Link href="/cotizaciones" className="text-blue-400 hover:text-blue-300 mt-4 inline-block">
-          ← Volver a cotizaciones
+          {t('detail.backToQuotes')}
         </Link>
       </div>
     );
@@ -523,14 +533,14 @@ export default function CotizacionDetalle() {
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-black text-[var(--foreground)]">Cotización {cotizacion.codigo}</h2>
+            <h2 className="text-2xl font-black text-[var(--foreground)]">{t('detail.quoteTitle', { codigo: cotizacion.codigo })}</h2>
             <span className={`px-3 py-1 rounded-full text-xs font-black uppercase border ${getStatusColor(cotizacion.estado)}`}>
-              {cotizacion.estado}
+              {statusLabels[cotizacion.estado] || cotizacion.estado}
             </span>
           </div>
           <p className="text-[var(--muted-foreground)] text-sm">
-            Creada el {new Date(cotizacion.fecha_creacion).toLocaleDateString('es-AR')}
-            {cotizacion.fecha_expiracion && ` • Vence el ${new Date(cotizacion.fecha_expiracion).toLocaleDateString('es-AR')}`}
+            {t('detail.created', { date: new Date(cotizacion.fecha_creacion).toLocaleDateString('es-AR') })}
+            {cotizacion.fecha_expiracion && ` • ${t('detail.expires', { date: new Date(cotizacion.fecha_expiracion).toLocaleDateString('es-AR') })}`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -552,8 +562,8 @@ export default function CotizacionDetalle() {
               itinerario_manual: cotizacion.itinerario_manual,
               // Paquete: combina datos directos + parseados de notas
               paquete: {
-                titulo: paquete?.titulo || paquete?.nombre || datosPaqueteDesdeNotas?.titulo || cotizacion.nombre_cotizacion || 'Cotización',
-                destino: paquete?.destino || datosPaqueteDesdeNotas?.destino || cotizacion.destino_principal || cotizacion.hospedaje?.[0]?.ciudad || cotizacion.hospedajes?.[0]?.ciudad || 'Destino no especificado',
+                titulo: paquete?.titulo || paquete?.nombre || datosPaqueteDesdeNotas?.titulo || cotizacion.nombre_cotizacion || t('detail.quoteNotAvailable'),
+                destino: paquete?.destino || datosPaqueteDesdeNotas?.destino || cotizacion.destino_principal || cotizacion.hospedaje?.[0]?.ciudad || cotizacion.hospedajes?.[0]?.ciudad || t('detail.details.toBeDefined'),
                 descripcion: paquete?.descripcion || datosPaqueteDesdeNotas?.descripcion,
                 duracion_dias: paquete?.duracion_dias || datosPaqueteDesdeNotas?.duracion_dias || 0,
                 imagen_principal: paquete?.imagen_principal || paquete?.imagen_url || datosPaqueteDesdeNotas?.imagen_principal,
@@ -659,7 +669,7 @@ export default function CotizacionDetalle() {
             <Link 
               href={`/cotizaciones/${cotizacion.id}/editar`}
               className="p-3 bg-[var(--muted)] rounded-xl hover:bg-[var(--border)] transition-all"
-              title="Editar"
+              title={t('detail.actions.edit')}
             >
               <Edit className="w-5 h-5 text-[var(--muted-foreground)]" />
             </Link>
@@ -677,10 +687,10 @@ export default function CotizacionDetalle() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
               <div className="absolute bottom-4 left-6">
                 <p className="text-xs text-blue-300 uppercase font-black mb-1">
-                  {cotizacion.tipo_cotizacion === 'manual' ? 'Cotización Personalizada' : 'Paquete'}
+                  {cotizacion.tipo_cotizacion === 'manual' ? t('detail.customQuote') : t('detail.package')}
                 </p>
                 <h3 className="text-xl font-black text-[var(--foreground)]">
-                  {cotizacion.nombre_cotizacion || paquete?.nombre || paquete?.titulo || 'Cotización no disponible'}
+                  {cotizacion.nombre_cotizacion || paquete?.nombre || paquete?.titulo || t('detail.quoteNotAvailable')}
                 </h3>
                 {(paquete?.destino || cotizacion.hospedaje?.[0]?.ciudad) && (
                   <p className="text-[var(--foreground)] text-sm">
@@ -695,32 +705,32 @@ export default function CotizacionDetalle() {
           <div className="glass-card rounded-2xl p-6">
             <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <FileText className="w-5 h-5 text-blue-400" />
-              Detalles de la Cotización
+              {t('detail.details.title')}
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-4 bg-[var(--muted)] rounded-xl">
-                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Pasajeros</p>
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">{t('detail.details.passengers')}</p>
                 <p className="text-xl font-black text-[var(--foreground)]">{cotizacion.pasajeros?.length || cotizacion.num_pasajeros || 1}</p>
               </div>
               <div className="p-4 bg-[var(--muted)] rounded-xl">
-                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Habitación</p>
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">{t('detail.details.room')}</p>
                 <p className="text-xl font-black text-[var(--foreground)] capitalize">
                   {cotizacion.tipo_habitacion || 
                    cotizacion.paquete_data?.hotel_seleccionado?.tipo_habitacion || 
-                   'No especificada'}
+                   t('detail.details.notSpecified')}
                 </p>
               </div>
               <div className="p-4 bg-[var(--muted)] rounded-xl">
-                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Fecha Salida</p>
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">{t('detail.details.departureDate')}</p>
                 <p className="text-lg font-black text-[var(--foreground)]">
                   {(cotizacion.fecha_salida || (cotizacion.paquete_data as any)?.fecha_salida || (paquete as any)?.fecha_salida)
                     ? new Date(cotizacion.fecha_salida || (cotizacion.paquete_data as any)?.fecha_salida || (paquete as any)?.fecha_salida).toLocaleDateString('es-AR')
-                    : 'A definir'
+                    : t('detail.details.toBeDefined')
                   }
                 </p>
               </div>
               <div className="p-4 bg-[var(--muted)] rounded-xl">
-                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Total</p>
+                <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">{t('detail.details.total')}</p>
                 <p className="text-xl font-black text-blue-400">${formatCurrency(cotizacion.precio_total)}</p>
               </div>
             </div>
@@ -734,7 +744,7 @@ export default function CotizacionDetalle() {
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-blue-400" />
-                Itinerario
+                {t('detail.itinerary')}
               </h3>
               {(() => {
                 // Formato string (legacy)
@@ -755,7 +765,7 @@ export default function CotizacionDetalle() {
                             <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border-l-2 border-blue-500">
                               <div className="flex items-center gap-2 mb-2">
                                 <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
-                                  Día {dia.dia || idx + 1}
+                                  {t('detail.day', { day: dia.dia || idx + 1 })}
                                 </span>
                                 <span className="font-medium text-[var(--foreground)]">{dia.titulo}</span>
                               </div>
@@ -782,7 +792,7 @@ export default function CotizacionDetalle() {
                         <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border-l-2 border-blue-500">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
-                              Día {dia.dia || idx + 1}
+                              {t('detail.day', { day: dia.dia || idx + 1 })}
                             </span>
                             <span className="font-medium text-[var(--foreground)]">{dia.titulo}</span>
                           </div>
@@ -810,14 +820,14 @@ export default function CotizacionDetalle() {
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Plane className="w-5 h-5 text-blue-400" />
-                Vuelos
+                {t('detail.flights.title')}
               </h3>
               <div className="space-y-3">
                 {(paquete?.vuelos || datosPaqueteDesdeNotas?.vuelos || []).map((vuelo: any, idx: number) => (
                   <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl border border-[var(--border)]">
                     <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
                       <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold uppercase">
-                        {vuelo.tipo === 'ida' ? 'Vuelo de Ida' : 'Vuelo de Vuelta'}
+                        {vuelo.tipo === 'ida' ? t('detail.flights.outbound') : t('detail.flights.return')}
                       </span>
                       {vuelo.numero_vuelo && (
                         <span className="text-sm text-[var(--muted-foreground)]">{vuelo.numero_vuelo}</span>
@@ -825,19 +835,19 @@ export default function CotizacionDetalle() {
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
-                        <p className="text-[var(--muted-foreground)] text-xs">Origen</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">{t('detail.flights.origin')}</p>
                         <p className="text-[var(--foreground)] font-medium">{vuelo.origen_nombre || vuelo.origen_codigo || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-[var(--muted-foreground)] text-xs">Destino</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">{t('detail.flights.destination')}</p>
                         <p className="text-[var(--foreground)] font-medium">{vuelo.destino_nombre || vuelo.destino_codigo || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-[var(--muted-foreground)] text-xs">Fecha</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">{t('detail.flights.date')}</p>
                         <p className="text-[var(--foreground)]">{vuelo.fecha_salida || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-[var(--muted-foreground)] text-xs">Horario</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">{t('detail.flights.schedule')}</p>
                         <p className="text-[var(--foreground)]">{vuelo.hora_salida || '--:--'} - {vuelo.hora_llegada || '--:--'}</p>
                       </div>
                     </div>
@@ -845,13 +855,13 @@ export default function CotizacionDetalle() {
                       <div className="grid grid-cols-2 gap-4 text-sm mt-2 pt-2 border-t border-[var(--border)]">
                         {vuelo.aerolinea_nombre && (
                           <div>
-                            <p className="text-[var(--muted-foreground)] text-xs">Aerolínea</p>
+                            <p className="text-[var(--muted-foreground)] text-xs">{t('detail.flights.airline')}</p>
                             <p className="text-[var(--foreground)]">{vuelo.aerolinea_nombre}</p>
                           </div>
                         )}
                         {vuelo.clase && (
                           <div>
-                            <p className="text-[var(--muted-foreground)] text-xs">Clase</p>
+                            <p className="text-[var(--muted-foreground)] text-xs">{t('detail.flights.class')}</p>
                             <p className="text-[var(--foreground)]">{vuelo.clase}</p>
                           </div>
                         )}
@@ -870,12 +880,12 @@ export default function CotizacionDetalle() {
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-blue-400" />
-                Detalles del Servicio
+                {t('detail.serviceDetails')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {(cotizacion.paquete_data?.incluye?.length || paquete?.incluye?.length || datosPaqueteDesdeNotas?.incluye?.length) && (
                   <div className="p-4 bg-green-500/10 rounded-xl border border-green-500/20">
-                    <p className="text-green-400 font-bold mb-2">Incluye</p>
+                    <p className="text-green-400 font-bold mb-2">{t('detail.includes')}</p>
                     <ul className="space-y-1">
                       {(cotizacion.paquete_data?.incluye || paquete?.incluye || datosPaqueteDesdeNotas?.incluye || []).map((item: string, idx: number) => (
                         <li key={idx} className="text-[var(--foreground)] text-sm">+ {item}</li>
@@ -885,7 +895,7 @@ export default function CotizacionDetalle() {
                 )}
                 {(cotizacion.paquete_data?.no_incluye?.length || paquete?.no_incluye?.length || datosPaqueteDesdeNotas?.no_incluye?.length) && (
                   <div className="p-4 bg-red-500/10 rounded-xl border border-red-500/20">
-                    <p className="text-red-400 font-bold mb-2">No incluye</p>
+                    <p className="text-red-400 font-bold mb-2">{t('detail.notIncludes')}</p>
                     <ul className="space-y-1">
                       {(cotizacion.paquete_data?.no_incluye || paquete?.no_incluye || datosPaqueteDesdeNotas?.no_incluye || []).map((item: string, idx: number) => (
                         <li key={idx} className="text-[var(--foreground)] text-sm">- {item}</li>
@@ -902,7 +912,7 @@ export default function CotizacionDetalle() {
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Plane className="w-5 h-5 text-blue-400" />
-                Vuelos ({cotizacion.vuelos.length})
+                {t('detail.flights.manual.title', { count: cotizacion.vuelos.length })}
               </h3>
               <div className="space-y-3">
                 {cotizacion.vuelos.map((vuelo: any, idx: number) => (
@@ -918,16 +928,16 @@ export default function CotizacionDetalle() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                       <div>
-                        <p className="text-[var(--muted-foreground)] text-xs">Salida</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">{t('detail.flights.manual.departure')}</p>
                         <p className="text-[var(--foreground)]">{vuelo.hora_salida}</p>
                         <p className="text-[var(--muted-foreground)] text-xs">{vuelo.fecha_salida}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-[var(--muted-foreground)] text-xs">Clase</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">{t('detail.flights.class')}</p>
                         <p className="text-blue-400">{vuelo.clase_codigo}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[var(--muted-foreground)] text-xs">Llegada</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">{t('detail.flights.manual.arrival')}</p>
                         <p className="text-[var(--foreground)]">{vuelo.hora_llegada}</p>
                         <p className="text-[var(--muted-foreground)] text-xs">{vuelo.fecha_llegada}</p>
                       </div>
@@ -943,7 +953,7 @@ export default function CotizacionDetalle() {
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <BedDouble className="w-5 h-5 text-blue-400" />
-                Hospedaje
+                {t('detail.accommodation.title')}
               </h3>
               <div className="space-y-3">
                 {cotizacion.hospedaje.map((hotel: any, idx: number) => (
@@ -960,21 +970,21 @@ export default function CotizacionDetalle() {
                           rel="noopener noreferrer"
                           className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-lg text-xs font-bold hover:bg-blue-500/30 transition-colors"
                         >
-                          Ver Hotel
+                          {t('detail.accommodation.viewHotel')}
                         </a>
                       )}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm mt-3">
                       <div>
-                        <p className="text-[var(--muted-foreground)] text-xs">Check-in</p>
-                        <p className="text-[var(--foreground)]">{hotel.fecha_checkin || 'N/A'}</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">{t('detail.accommodation.checkin')}</p>
+                        <p className="text-[var(--foreground)]">{hotel.fecha_checkin || t('detail.accommodation.notAvailable')}</p>
                       </div>
                       <div>
-                        <p className="text-[var(--muted-foreground)] text-xs">Check-out</p>
-                        <p className="text-[var(--foreground)]">{hotel.fecha_checkout || 'N/A'}</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">{t('detail.accommodation.checkout')}</p>
+                        <p className="text-[var(--foreground)]">{hotel.fecha_checkout || t('detail.accommodation.notAvailable')}</p>
                       </div>
                       <div>
-                        <p className="text-[var(--muted-foreground)] text-xs">Regimen</p>
+                        <p className="text-[var(--muted-foreground)] text-xs">{t('detail.accommodation.regimen')}</p>
                         <p className="text-[var(--foreground)] capitalize">{hotel.regimen?.replace('_', ' ')}</p>
                       </div>
                     </div>
@@ -989,7 +999,7 @@ export default function CotizacionDetalle() {
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-blue-400" />
-                Itinerario
+                {t('detail.itinerary')}
               </h3>
               <div className="p-4 bg-[var(--muted)] rounded-xl">
                 <p className="text-[var(--foreground)] whitespace-pre-line break-words overflow-hidden">{cotizacion.itinerario_manual}</p>
@@ -1002,12 +1012,12 @@ export default function CotizacionDetalle() {
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-blue-400" />
-                Detalles del Servicio
+                {t('detail.serviceDetails')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {cotizacion.incluye && cotizacion.incluye.length > 0 && (
                   <div className="p-4 bg-green-500/10 rounded-xl border border-green-500/20">
-                    <p className="text-green-400 font-bold mb-2">Incluye</p>
+                    <p className="text-green-400 font-bold mb-2">{t('detail.includes')}</p>
                     <ul className="space-y-1">
                       {cotizacion.incluye.map((item: string, idx: number) => (
                         <li key={idx} className="text-[var(--foreground)] text-sm">+ {item}</li>
@@ -1017,7 +1027,7 @@ export default function CotizacionDetalle() {
                 )}
                 {cotizacion.no_incluye && cotizacion.no_incluye.length > 0 && (
                   <div className="p-4 bg-red-500/10 rounded-xl border border-red-500/20">
-                    <p className="text-red-400 font-bold mb-2">No incluye</p>
+                    <p className="text-red-400 font-bold mb-2">{t('detail.notIncludes')}</p>
                     <ul className="space-y-1">
                       {cotizacion.no_incluye.map((item: string, idx: number) => (
                         <li key={idx} className="text-[var(--foreground)] text-sm">- {item}</li>
@@ -1029,19 +1039,19 @@ export default function CotizacionDetalle() {
             </div>
           )}
 
-          {/* Datos del Cliente - Nuevo Schema CRM */}
+          {/* {t('detail.client.title')} - Nuevo Schema CRM */}
           {(cotizacion.cliente || cotizacion.cliente_nombre) && (
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <User className="w-5 h-5 text-blue-400" />
-                Datos del Cliente
+                {t('detail.client.title')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Nombre */}
                 <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
                   <User className="w-5 h-5 text-[var(--muted-foreground)]" />
                   <div>
-                    <p className="text-xs text-[var(--muted-foreground)] uppercase">Nombre</p>
+                    <p className="text-xs text-[var(--muted-foreground)] uppercase">{t('detail.client.name')}</p>
                     <p className="font-medium text-[var(--foreground)]">
                       {cotizacion.cliente 
                         ? `${cotizacion.cliente.nombre} ${cotizacion.cliente.apellido}`
@@ -1054,7 +1064,7 @@ export default function CotizacionDetalle() {
                   <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
                     <Mail className="w-5 h-5 text-[var(--muted-foreground)]" />
                     <div>
-                      <p className="text-xs text-[var(--muted-foreground)] uppercase">Email</p>
+                      <p className="text-xs text-[var(--muted-foreground)] uppercase">{t('detail.client.email')}</p>
                       <p className="font-medium text-[var(--foreground)]">
                         {cotizacion.cliente?.email || cotizacion.cliente_email}
                       </p>
@@ -1066,7 +1076,7 @@ export default function CotizacionDetalle() {
                   <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
                     <Phone className="w-5 h-5 text-[var(--muted-foreground)]" />
                     <div>
-                      <p className="text-xs text-[var(--muted-foreground)] uppercase">Teléfono</p>
+                      <p className="text-xs text-[var(--muted-foreground)] uppercase">{t('detail.client.phone')}</p>
                       <p className="font-medium text-[var(--foreground)]">
                         {cotizacion.cliente?.telefono || cotizacion.cliente_telefono}
                       </p>
@@ -1078,7 +1088,7 @@ export default function CotizacionDetalle() {
                   <div className="flex items-center gap-3 p-4 bg-[var(--muted)] rounded-xl">
                     <FileText className="w-5 h-5 text-[var(--muted-foreground)]" />
                     <div>
-                      <p className="text-xs text-[var(--muted-foreground)] uppercase">Documento</p>
+                      <p className="text-xs text-[var(--muted-foreground)] uppercase">{t('detail.client.document')}</p>
                       <p className="font-medium text-[var(--foreground)]">
                         {cotizacion.cliente.tipo_documento} {cotizacion.cliente.documento}
                       </p>
@@ -1094,7 +1104,7 @@ export default function CotizacionDetalle() {
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5 text-blue-400" />
-                Pasajeros ({numPasajerosReal})
+                {t('detail.passengersTitle', { count: numPasajerosReal })}
               </h3>
               <div className="space-y-3">
                 {cotizacion.pasajeros.map((pv: PasajeroVinculado, idx: number) => (
@@ -1107,7 +1117,7 @@ export default function CotizacionDetalle() {
                         <span className="font-medium text-[var(--foreground)]">
                           {pv.nombre_snapshot} {pv.apellido_snapshot}
                           {pv.es_titular && (
-                            <span className="ml-2 text-xs text-blue-400">(Titular)</span>
+                            <span className="ml-2 text-xs text-blue-400">{t('detail.holder')}</span>
                           )}
                         </span>
                       </div>
@@ -1115,7 +1125,7 @@ export default function CotizacionDetalle() {
                     {pv.documento_snapshot && (
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <p className="text-xs text-[var(--muted-foreground)]">Documento</p>
+                          <p className="text-xs text-[var(--muted-foreground)]">{t('detail.client.document')}</p>
                           <p className="text-[var(--foreground)]">{pv.documento_snapshot}</p>
                         </div>
                       </div>
@@ -1141,7 +1151,7 @@ export default function CotizacionDetalle() {
                   <>
                     <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                       <Users className="w-5 h-5 text-blue-400" />
-                      Pasajeros ({todos.length})
+                      {t('detail.passengersTitle', { count: todos.length })}
                     </h3>
                     <div className="space-y-3">
                       {todos.map((pasajero: any, idx: number) => (
@@ -1154,14 +1164,14 @@ export default function CotizacionDetalle() {
                               <span className="font-medium text-[var(--foreground)]">
                                 {pasajero.nombre} {pasajero.apellido}
                                 {pasajero.es_titular && (
-                                  <span className="ml-2 text-xs text-blue-400">(Titular)</span>
+                                  <span className="ml-2 text-xs text-blue-400">{t('detail.holder')}</span>
                                 )}
                               </span>
                             </div>
                           </div>
                           {pasajero.documento && (
                             <div className="text-sm">
-                              <p className="text-xs text-[var(--muted-foreground)]">Documento</p>
+                              <p className="text-xs text-[var(--muted-foreground)]">{t('detail.client.document')}</p>
                               <p className="text-[var(--foreground)]">{pasajero.documento}</p>
                             </div>
                           )}
@@ -1177,7 +1187,7 @@ export default function CotizacionDetalle() {
           {/* Notas - solo si no es cotización de catálogo o si hay notas reales */}
           {cotizacion.notas && !cotizacion.notas.includes('--- PAQUETE JSON ---') && (
             <div className="glass-card rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Notas</h3>
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">{t('detail.notes')}</h3>
               <p className="text-[var(--foreground)] whitespace-pre-wrap">{cotizacion.notas}</p>
             </div>
           )}
@@ -1187,12 +1197,12 @@ export default function CotizacionDetalle() {
         <div className="space-y-6">
           {/* Resumen */}
           <div className="glass-card rounded-2xl p-6 sticky top-6">
-            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Resumen</h3>
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">{t('detail.summary.title')}</h3>
             <div className="space-y-3 mb-6">
               {/* Hotel seleccionado */}
               {cotizacion.paquete_data?.hotel_seleccionado && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--muted-foreground)]">Hotel</span>
+                  <span className="text-[var(--muted-foreground)]">{t('detail.summary.hotel')}</span>
                   <div className="text-right">
                     <span className="text-[var(--foreground)] font-medium">
                       {cotizacion.paquete_data.hotel_seleccionado.nombre}
@@ -1204,34 +1214,34 @@ export default function CotizacionDetalle() {
                         rel="noopener noreferrer"
                         className="block text-xs text-blue-400 hover:text-blue-300"
                       >
-                        Ver hotel →
+                        {t('detail.accommodation.viewHotel')} →
                       </a>
                     )}
                   </div>
                 </div>
               )}
               <div className="flex justify-between text-sm">
-                <span className="text-[var(--muted-foreground)]">Habitación</span>
+                <span className="text-[var(--muted-foreground)]">{t('detail.summary.room')}</span>
                 <span className="text-[var(--foreground)] capitalize">{cotizacion.tipo_habitacion || 'Doble'}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-[var(--muted-foreground)]">Precio por persona</span>
+                <span className="text-[var(--muted-foreground)]">{t('detail.summary.pricePerPerson')}</span>
                 <span className="text-[var(--foreground)]">
                   ${formatCurrency(Math.round(cotizacion.precio_total / cotizacion.num_pasajeros))}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-[var(--muted-foreground)]">Pasajeros</span>
+                <span className="text-[var(--muted-foreground)]">{t('detail.summary.passengers')}</span>
                 <span className="text-[var(--foreground)]">{numPasajerosReal}</span>
               </div>
               <div className="h-px bg-[var(--muted)] my-3" />
               <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-[var(--foreground)]">Total</span>
+                <span className="text-lg font-bold text-[var(--foreground)]">{t('detail.summary.total')}</span>
                 <span className="text-2xl font-black text-blue-400">${formatCurrency(cotizacion.precio_total)}</span>
               </div>
               {cotizacion.comision_vendedor && (
                 <div className="flex justify-between text-sm pt-2">
-                  <span className="text-[var(--muted-foreground)]">Tu comisión</span>
+                  <span className="text-[var(--muted-foreground)]">{t('detail.summary.commission')}</span>
                   <span className="text-green-400 font-medium">${formatCurrency(cotizacion.comision_vendedor)}</span>
                 </div>
               )}
@@ -1243,7 +1253,7 @@ export default function CotizacionDetalle() {
                 className="w-full py-4 bg-green-600 hover:bg-green-700 text-[var(--foreground)] font-black rounded-2xl transition-all flex items-center justify-center gap-2"
               >
                 <CheckCircle className="w-5 h-5" />
-                Convertir a Venta
+                {t('detail.actions.convertToSale')}
               </button>
             )}
 
@@ -1252,9 +1262,9 @@ export default function CotizacionDetalle() {
                 {/* Banner venta confirmada */}
                 <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-center">
                   <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                  <p className="text-green-400 font-medium">Esta cotización ya fue convertida en venta</p>
+                  <p className="text-green-400 font-medium">{t('detail.actions.alreadyConverted')}</p>
                   <Link href="/mis-ventas" className="text-blue-400 hover:text-blue-300 text-sm mt-2 inline-block">
-                    Ver mis ventas →
+                    {t('detail.actions.viewMySales')}
                   </Link>
                 </div>
                 
@@ -1273,14 +1283,14 @@ export default function CotizacionDetalle() {
                     onClick={() => setShowPagoModal(true)}
                     className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition-colors"
                   >
-                    Registrar pago
+                    {t('detail.actions.registerPayment')}
                   </button>
                 )}
                 
                 {/* VOUCHERS - Solo lectura para vendedor */}
                 {vouchers.length > 0 && (
                   <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                    <h4 className="text-sm font-medium text-purple-400 mb-3">📄 Vouchers de Viaje ({vouchers.length})</h4>
+                    <h4 className="text-sm font-medium text-purple-400 mb-3">{t('detail.vouchersTitle', { count: vouchers.length })}</h4>
                     <div className="space-y-2">
                       {vouchers.map((v) => (
                         <div key={v.id} className="flex items-center justify-between p-3 bg-[var(--muted)] rounded-lg">
@@ -1291,10 +1301,10 @@ export default function CotizacionDetalle() {
                             <div>
                               <p className="text-sm font-medium text-[var(--foreground)] truncate max-w-[150px]">{v.nombre_archivo}</p>
                               <p className="text-xs text-[var(--muted-foreground)] capitalize">
-                                {v.tipo_documento === 'vuelo' && '✈️ Vuelo'}
-                                {v.tipo_documento === 'hotel' && '🏨 Hotel'}
-                                {v.tipo_documento === 'seguro' && '🛡️ Seguro'}
-                                {v.tipo_documento === 'otro' && '📄 Otro'}
+                                {v.tipo_documento === 'vuelo' && t('detail.voucherTypes.vuelo')}
+                                {v.tipo_documento === 'hotel' && t('detail.voucherTypes.hotel')}
+                                {v.tipo_documento === 'seguro' && t('detail.voucherTypes.seguro')}
+                                {v.tipo_documento === 'otro' && <>📄 {t('detail.actions.methods.otro')}</>}
                               </p>
                             </div>
                           </div>
@@ -1319,10 +1329,10 @@ export default function CotizacionDetalle() {
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="glass-card w-full max-w-lg rounded-3xl p-8">
-            <h3 className="text-2xl font-black text-[var(--foreground)] mb-6">Editar Cotización</h3>
+            <h3 className="text-2xl font-black text-[var(--foreground)] mb-6">{t('detail.actions.editQuote')}</h3>
             <form onSubmit={handleUpdate} className="space-y-4">
               <div>
-                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Nombre del Cliente</label>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">{t('detail.actions.clientName')}</label>
                 <input
                   type="text"
                   value={editData.cliente_nombre || ''}
@@ -1332,7 +1342,7 @@ export default function CotizacionDetalle() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Email</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">{t('detail.client.email')}</label>
                   <input
                     type="email"
                     value={editData.cliente_email || ''}
@@ -1341,7 +1351,7 @@ export default function CotizacionDetalle() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Teléfono</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">{t('detail.client.phone')}</label>
                   <input
                     type="tel"
                     value={editData.cliente_telefono || ''}
@@ -1352,7 +1362,7 @@ export default function CotizacionDetalle() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Pasajeros</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">{t('detail.details.passengers')}</label>
                   <input
                     type="number"
                     min={1}
@@ -1362,20 +1372,20 @@ export default function CotizacionDetalle() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Tipo Habitación</label>
+                  <label className="text-sm text-[var(--muted-foreground)] mb-1 block">{t('detail.actions.roomType')}</label>
                   <select
                     value={editData.tipo_habitacion || 'doble'}
                     onChange={(e) => setEditData({...editData, tipo_habitacion: e.target.value})}
                     className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                   >
-                    <option value="doble">Doble</option>
-                    <option value="triple">Triple</option>
-                    <option value="cuadruple">Cuádruple</option>
+                    <option value="doble">{t('detail.actions.double')}</option>
+                    <option value="triple">{t('detail.actions.triple')}</option>
+                    <option value="cuadruple">{t('detail.actions.quadruple')}</option>
                   </select>
                 </div>
               </div>
               <div>
-                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Fecha de Salida</label>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">{t('detail.actions.departureDate')}</label>
                 <input
                   type="date"
                   value={editData.fecha_salida || ''}
@@ -1384,7 +1394,7 @@ export default function CotizacionDetalle() {
                 />
               </div>
               <div>
-                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Notas</label>
+                <label className="text-sm text-[var(--muted-foreground)] mb-1 block">{t('detail.notes')}</label>
                 <textarea
                   rows={3}
                   value={editData.notas || ''}
@@ -1398,13 +1408,13 @@ export default function CotizacionDetalle() {
                   onClick={() => setShowEditModal(false)}
                   className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
                 >
-                  Cancelar
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] font-bold transition-all"
                 >
-                  Guardar Cambios
+                  {t('detail.actions.saveChanges')}
                 </button>
               </div>
             </form>
@@ -1412,13 +1422,13 @@ export default function CotizacionDetalle() {
         </div>
       )}
 
-      {/* Modal Convertir a Venta */}
+      {/* Modal {t('detail.actions.convertToSale')} */}
       {showVentaModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="glass-card w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-8">
-            <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">Cerrar Venta</h3>
+            <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t('detail.actions.closeSale')}</h3>
             <p className="text-[var(--muted-foreground)] text-sm mb-6">
-              Cotización: <span className="text-blue-400 font-mono">{cotizacion.codigo}</span>
+              {t('detail.actions.quoteLabel')} <span className="text-blue-400 font-mono">{cotizacion.codigo}</span>
             </p>
             
             <form onSubmit={handleConvertirAVenta} className="space-y-6">
@@ -1426,7 +1436,7 @@ export default function CotizacionDetalle() {
               <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-2xl space-y-4">
                 <h4 className="font-bold text-[var(--foreground)] flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-blue-400" />
-                  ¿El cliente ya realizó algún pago?
+                  {t('detail.actions.didReceivePayment')}
                 </h4>
                 
                 <div className="flex gap-3">
@@ -1439,7 +1449,7 @@ export default function CotizacionDetalle() {
                         : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]'
                     }`}
                   >
-                    ✅ Sí, recibí pago
+                    {t('detail.actions.yesReceived')}
                   </button>
                   <button
                     type="button"
@@ -1450,7 +1460,7 @@ export default function CotizacionDetalle() {
                         : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]'
                     }`}
                   >
-                    ⏳ No, aún no
+                    {t('detail.actions.notYet')}
                   </button>
                 </div>
               </div>
@@ -1460,12 +1470,12 @@ export default function CotizacionDetalle() {
                 <div className="p-4 bg-[var(--muted)] rounded-2xl space-y-4">
                   <h4 className="font-bold text-[var(--foreground)] flex items-center gap-2">
                     <CreditCard className="w-5 h-5 text-green-400" />
-                    Detalles del Pago Recibido
+                    {t('detail.actions.paymentDetailsReceived')}
                   </h4>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Monto Recibido *</label>
+                      <label className="text-sm text-[var(--muted-foreground)] mb-1 block">{t('detail.actions.amountReceived')}</label>
                       <input
                         type="number"
                         required={ventaData.pago_realizado}
@@ -1477,31 +1487,31 @@ export default function CotizacionDetalle() {
                       />
                     </div>
                     <div>
-                      <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Tipo de Pago *</label>
+                      <label className="text-sm text-[var(--muted-foreground)] mb-1 block">{t('detail.actions.paymentType')}</label>
                       <select
                         value={ventaData.tipo_pago}
                         onChange={(e) => setVentaData({...ventaData, tipo_pago: e.target.value as 'total' | 'adelanto'})}
                         className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                       >
-                        <option value="adelanto">Adelanto / Seña</option>
-                        <option value="total">Pago Total</option>
+                        <option value="adelanto">{t('detail.actions.paymentAdvance')}</option>
+                        <option value="total">{t('detail.actions.paymentTotal')}</option>
                       </select>
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Medio de Pago *</label>
+                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">{t('detail.actions.paymentMethod')}</label>
                     <select
                       value={ventaData.medio_pago}
                       onChange={(e) => setVentaData({...ventaData, medio_pago: e.target.value})}
                       className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                     >
-                      <option value="transferencia">Transferencia Bancaria</option>
-                      <option value="efectivo">Efectivo</option>
-                      <option value="tarjeta">Tarjeta de Crédito/Débito</option>
-                      <option value="mercadopago">Mercado Pago</option>
-                      <option value="paypal">PayPal</option>
-                      <option value="otro">Otro</option>
+                      <option value="transferencia">{t('detail.actions.methods.transferencia')}</option>
+                      <option value="efectivo">{t('detail.actions.methods.efectivo')}</option>
+                      <option value="tarjeta">{t('detail.actions.methods.tarjeta')}</option>
+                      <option value="mercadopago">{t('detail.actions.methods.mercadopago')}</option>
+                      <option value="paypal">{t('detail.actions.methods.paypal')}</option>
+                      <option value="otro">{t('detail.actions.methods.otro')}</option>
                     </select>
                   </div>
 
@@ -1510,14 +1520,14 @@ export default function CotizacionDetalle() {
                     <>
                       <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl">
                         <p className="text-sm text-orange-400">
-                          <strong>Resta cobrar:</strong> ${formatCurrency(cotizacion.precio_total - (parseFloat(ventaData.monto_pagado) || 0))}
+                          <strong>{t('detail.actions.remainingToCollect')}</strong> ${formatCurrency(cotizacion.precio_total - (parseFloat(ventaData.monto_pagado) || 0))}
                         </p>
                       </div>
                       
-                      {/* NUEVO: Fecha de pago del restante */}
+                      {/* NUEVO: {t('detail.actions.paymentRestDate')} */}
                       <div>
                         <label className="text-sm text-[var(--muted-foreground)] mb-1 block">
-                          Fecha de pago del restante *
+                          {t('detail.actions.paymentRestDate')}
                         </label>
                         <input
                           type="date"
@@ -1528,7 +1538,7 @@ export default function CotizacionDetalle() {
                           className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                         />
                         <p className="text-xs text-[var(--muted-foreground)] mt-1">
-                          Indica cuándo el cliente pagará el saldo restante
+                          {t('detail.actions.paymentRestDateHint')}
                         </p>
                       </div>
                     </>
@@ -1537,7 +1547,7 @@ export default function CotizacionDetalle() {
                   {/* Upload de comprobantes */}
                   <div>
                     <label className="text-sm text-[var(--muted-foreground)] mb-2 block">
-                      Comprobante de Pago (opcional)
+                      {t('detail.actions.paymentReceipt')}
                     </label>
                     
                     {comprobantesPreview.length === 0 ? (
@@ -1546,8 +1556,8 @@ export default function CotizacionDetalle() {
                           <svg className="w-8 h-8 text-[var(--muted-foreground)] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                           </svg>
-                          <p className="text-sm text-[var(--muted-foreground)]">Click para subir comprobante</p>
-                          <p className="text-xs text-[var(--muted-foreground)]">Imagen o PDF (máx. 10MB)</p>
+                          <p className="text-sm text-[var(--muted-foreground)]">{t('detail.actions.uploadReceipt')}</p>
+                          <p className="text-xs text-[var(--muted-foreground)]">{t('detail.actions.fileHint')}</p>
                         </div>
                         <input 
                           type="file" 
@@ -1574,7 +1584,7 @@ export default function CotizacionDetalle() {
                           </div>
                         ))}
                         <label className="flex items-center justify-center w-full py-2 border border-dashed border-white/20 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-[var(--muted)] transition-all text-sm text-[var(--muted-foreground)]">
-                          + Agregar otro comprobante
+                          {t('detail.actions.addReceipt')}
                           <input 
                             type="file" 
                             className="hidden" 
@@ -1593,40 +1603,40 @@ export default function CotizacionDetalle() {
                 <div className="p-4 bg-orange-500/5 border border-orange-500/20 rounded-2xl space-y-4">
                   <h4 className="font-bold text-[var(--foreground)] flex items-center gap-2">
                     <Clock className="w-5 h-5 text-orange-400" />
-                    Información de Pago Pendiente
+                    {t('detail.actions.pendingPaymentInfo')}
                   </h4>
                   <p className="text-sm text-[var(--muted-foreground)]">
-                    Indica cuándo o cómo planeas recibir el pago. Esta información será útil para el administrador.
+                    {t('detail.actions.pendingPaymentHint')}
                   </p>
                   <div>
-                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Detalles / Acuerdo de pago</label>
+                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">{t('detail.actions.paymentDetails')}</label>
                     <textarea
                       rows={3}
                       value={ventaData.observaciones_pago}
                       onChange={(e) => setVentaData({...ventaData, observaciones_pago: e.target.value})}
                       className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 resize-none"
-                      placeholder="Ej: El cliente pagará el lunes por transferencia..."
+                      placeholder={t('detail.actions.paymentPlaceholder')}
                     />
                   </div>
                 </div>
               )}
 
-              {/* Datos de Pasajeros */}
+              {/* {t('detail.actions.passengerDataTitle')} */}
               <div className="p-4 bg-[var(--muted)] rounded-2xl space-y-4">
                 <h4 className="font-bold text-[var(--foreground)] flex items-center gap-2">
                   <Users className="w-5 h-5 text-blue-400" />
-                  Datos de Pasajeros
+                  {t('detail.actions.passengerDataTitle')}
                 </h4>
                 <div>
                   <label className="text-sm text-[var(--muted-foreground)] mb-1 block">
-                    Datos completos de los {numPasajerosReal} pasajero(s)
+                    {t('detail.actions.passengerDataFull', { count: numPasajerosReal })}
                   </label>
                   <textarea
                     rows={4}
                     value={ventaData.datos_pasajeros}
                     onChange={(e) => setVentaData({...ventaData, datos_pasajeros: e.target.value})}
                     className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 resize-none"
-                    placeholder={`Nombre completo, DNI/Pasaporte, Fecha de nacimiento de cada pasajero...\n\nEjemplo:\n1. Juan Pérez, DNI 12345678, 15/03/1985\n2. María López, DNI 87654321, 20/07/1990`}
+                    placeholder={`{t('detail.actions.passengerDataPlaceholder')}`}
                   />
                 </div>
               </div>
@@ -1635,18 +1645,18 @@ export default function CotizacionDetalle() {
               <div className="p-4 bg-[var(--muted)] rounded-2xl space-y-4">
                 <h4 className="font-bold text-[var(--foreground)] flex items-center gap-2">
                   <FileText className="w-5 h-5 text-purple-400" />
-                  Observaciones / Dónde cobrar
+                  {t('detail.actions.paymentObservations')}
                 </h4>
                 <div>
                   <label className="text-sm text-[var(--muted-foreground)] mb-1 block">
-                    Detalles adicionales, cuenta bancaria, dirección de cobro, etc.
+                    {t('detail.actions.paymentObservationsPlaceholder')}
                   </label>
                   <textarea
                     rows={3}
                     value={ventaData.observaciones_pago}
                     onChange={(e) => setVentaData({...ventaData, observaciones_pago: e.target.value})}
                     className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 resize-none"
-                    placeholder="CBU para transferencia, dirección si hay que ir a cobrar, notas especiales..."
+                    placeholder={t('detail.actions.observationsPlaceholder')}
                   />
                 </div>
               </div>
@@ -1654,14 +1664,14 @@ export default function CotizacionDetalle() {
               {/* Resumen de Pago */}
               <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-[var(--foreground)]">Total del viaje:</span>
+                  <span className="text-[var(--foreground)]">{t('detail.actions.totalTrip')}</span>
                   <span className="text-xl font-black text-[var(--foreground)]">${formatCurrency(cotizacion.precio_total)}</span>
                 </div>
                 
                 {ventaData.pago_realizado && ventaData.monto_pagado && (
                   <>
                     <div className="flex justify-between items-center text-sm mb-2">
-                      <span className="text-green-400">Recibido:</span>
+                      <span className="text-green-400">{t('detail.actions.received')}</span>
                       <span className="text-green-400 font-medium">${formatCurrency(parseFloat(ventaData.monto_pagado) || 0)}</span>
                     </div>
                     
@@ -1670,7 +1680,7 @@ export default function CotizacionDetalle() {
                       const montoRestante = Math.max(0, cotizacion.precio_total - (parseFloat(ventaData.monto_pagado) || 0));
                       return montoRestante > 0 ? (
                         <div className="flex justify-between items-center text-sm mb-2">
-                          <span className="text-orange-400">Restante:</span>
+                          <span className="text-orange-400">{t('detail.actions.remaining')}</span>
                           <span className="text-orange-400 font-medium">${formatCurrency(montoRestante)}</span>
                         </div>
                       ) : null;
@@ -1684,7 +1694,7 @@ export default function CotizacionDetalle() {
                     if (!ventaData.pago_realizado) {
                       return (
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400">
-                          Sin pago - se enviará a administrador
+                          {t('detail.actions.noPayment')}
                         </span>
                       );
                     }
@@ -1693,14 +1703,14 @@ export default function CotizacionDetalle() {
                       return (
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
                           <CheckCircle className="w-3 h-3 mr-1" />
-                          PAGO TOTAL
+                          {t('detail.actions.totalPayment')}
                         </span>
                       );
                     } else {
                       return (
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400">
                           <AlertCircle className="w-3 h-3 mr-1" />
-                          PAGO PARCIAL - Resta ${formatCurrency(montoRestante)}
+                          {t('detail.actions.partialPayment', { amount: formatCurrency(montoRestante) })}
                         </span>
                       );
                     }
@@ -1714,7 +1724,7 @@ export default function CotizacionDetalle() {
                   onClick={() => setShowVentaModal(false)}
                   className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
                 >
-                  Cancelar
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -1724,12 +1734,12 @@ export default function CotizacionDetalle() {
                   {isConverting ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      {isUploadingComprobantes ? 'Subiendo comprobantes...' : 'Procesando...'}
+                      {isUploadingComprobantes ? t('detail.actions.uploadingReceipts') : t('detail.actions.processing')}
                     </>
                   ) : (
                     <>
                       <CheckCircle className="w-5 h-5" />
-                      {ventaData.pago_realizado ? 'Confirmar Venta' : 'Enviar a Administrador'}
+                      {ventaData.pago_realizado ? t('detail.actions.confirmSale') : t('detail.actions.sendToAdmin')}
                     </>
                   )}
                 </button>

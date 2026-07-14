@@ -4,8 +4,10 @@ import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 export function ThemeToggle() {
+  const t = useTranslations("theme");
   const { theme, toggleTheme, isRippling } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -35,7 +37,7 @@ export function ThemeToggle() {
           : "bg-slate-800 border-2 border-blue-500/30 shadow-lg shadow-blue-500/20"
         }
       `}
-      aria-label={`Cambiar a modo ${theme === "light" ? "oscuro" : "claro"}`}
+      aria-label={t("toggle", { mode: theme === "light" ? t("dark") : t("light") })}
     >
       {/* Ripple Effect Overlay */}
       <AnimatePresence>

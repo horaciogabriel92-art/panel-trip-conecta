@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
+import { useTranslations } from "next-intl";
 import {
   Mail,
   Shield,
@@ -27,12 +28,12 @@ interface UserItem {
 }
 
 const ALL_PERMISSIONS = [
-  { key: "ver_todas_cotizaciones", label: "Ver todas las cotizaciones" },
-  { key: "ver_todas_ventas", label: "Ver todas las ventas" },
-  { key: "ver_reportes", label: "Ver reportes" },
-  { key: "gestionar_paquetes", label: "Gestionar paquetes" },
-  { key: "ver_comisiones_otros", label: "Ver comisiones de otros" },
-  { key: "editar_clientes_otros", label: "Editar clientes de otros" },
+  { key: "ver_todas_cotizaciones" },
+  { key: "ver_todas_ventas" },
+  { key: "ver_reportes" },
+  { key: "gestionar_paquetes" },
+  { key: "ver_comisiones_otros" },
+  { key: "editar_clientes_otros" },
 ];
 
 const defaultVendedorPermissions: Record<string, boolean> = {
@@ -46,6 +47,8 @@ const defaultVendedorPermissions: Record<string, boolean> = {
 
 export default function UsersTab() {
   const { user: currentUser } = useAuth();
+  const t = useTranslations("configuracion.users");
+  const tAuth = useTranslations("auth");
   const [users, setUsers] = useState<UserItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -79,7 +82,7 @@ export default function UsersTab() {
       setUsers(res.data || []);
     } catch (err) {
       console.error("Error fetching users:", err);
-      setMessage({ type: "error", text: "Error al cargar usuarios" });
+      setMessage({ type: "error", text: t("loadError") });
     } finally {
       setIsLoading(false);
     }
@@ -99,12 +102,12 @@ export default function UsersTab() {
         rol: "vendedor",
         permisos: { ...defaultVendedorPermissions },
       });
-      setMessage({ type: "success", text: "Usuario creado exitosamente" });
+      setMessage({ type: "success", text: t("createSuccess") });
       fetchUsers();
     } catch (err: any) {
       setMessage({
         type: "error",
-        text: err.response?.data?.error || "Error al crear usuario",
+        text: err.response?.data?.error || t("createError"),
       });
     } finally {
       setIsCreating(false);
@@ -116,12 +119,12 @@ export default function UsersTab() {
     setMessage(null);
     try {
       await api.put(`/auth/users/${userId}`, { permisos });
-      setMessage({ type: "success", text: "Permisos actualizados" });
+      setMessage({ type: "success", text: t("permissionsUpdated") });
       fetchUsers();
     } catch (err: any) {
       setMessage({
         type: "error",
-        text: err.response?.data?.error || "Error al actualizar permisos",
+        text: err.response?.data?.error || t("permissionsUpdateError"),
       });
     } finally {
       setIsSaving(null);
@@ -130,19 +133,19 @@ export default function UsersTab() {
 
   const handleToggleActive = async (u: UserItem) => {
     if (String(u.id) === String(currentUser?.id)) {
-      setMessage({ type: "error", text: "No podés desactivar tu propio usuario" });
+      setMessage({ type: "error", text: t("cannotDeactivateSelf") });
       return;
     }
     setIsSaving(u.id);
     setMessage(null);
     try {
       await api.put(`/auth/users/${u.id}`, { activo: !u.activo });
-      setMessage({ type: "success", text: `Usuario ${u.activo ? "desactivado" : "activado"}` });
+      setMessage({ type: "success", text: u.activo ? t("userDeactivated") : t("userActivated") });
       fetchUsers();
     } catch (err: any) {
       setMessage({
         type: "error",
-        text: err.response?.data?.error || "Error al cambiar estado",
+        text: err.response?.data?.error || t("statusChangeError"),
       });
     } finally {
       setIsSaving(null);
@@ -180,13 +183,13 @@ export default function UsersTab() {
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
           <UserPlus className="w-5 h-5 text-emerald-400" />
-          Invitar usuario
+          {t("inviteTitle")}
         </h3>
         <form onSubmit={handleCreate} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="text"
-              placeholder="Nombre"
+              placeholder={t("firstNamePlaceholder")}
               value={newUser.nombre}
               onChange={(e) => setNewUser({ ...newUser, nombre: e.target.value })}
               className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
@@ -194,7 +197,7 @@ export default function UsersTab() {
             />
             <input
               type="text"
-              placeholder="Apellido"
+              placeholder={t("lastNamePlaceholder")}
               value={newUser.apellido}
               onChange={(e) => setNewUser({ ...newUser, apellido: e.target.value })}
               className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
@@ -204,7 +207,7 @@ export default function UsersTab() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="email"
-              placeholder="Email"
+              placeholder={t("emailPlaceholder")}
               value={newUser.email}
               onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
               className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
@@ -212,7 +215,7 @@ export default function UsersTab() {
             />
             <input
               type="password"
-              placeholder="Contraseña temporal"
+              placeholder={t("tempPasswordPlaceholder")}
               value={newUser.password}
               onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
               className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
@@ -223,7 +226,7 @@ export default function UsersTab() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-[var(--muted-foreground)] mb-1">Rol</label>
+              <label className="block text-sm text-[var(--muted-foreground)] mb-1">{tAuth("profile.role")}</label>
               <select
                 value={newUser.rol}
                 onChange={(e) => {
@@ -236,8 +239,8 @@ export default function UsersTab() {
                 }}
                 className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
               >
-                <option value="vendedor">Vendedor</option>
-                <option value="admin">Administrador</option>
+                <option value="vendedor">{tAuth("roles.vendedor")}</option>
+                <option value="admin">{tAuth("roles.admin")}</option>
               </select>
             </div>
           </div>
@@ -257,7 +260,7 @@ export default function UsersTab() {
                     }
                     className="w-4 h-4 rounded border-[var(--border)] text-blue-500 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-[var(--foreground)]">{perm.label}</span>
+                  <span className="text-sm text-[var(--foreground)]">{t(`permissionLabels.${perm.key}`)}</span>
                 </label>
               ))}
             </div>
@@ -269,7 +272,7 @@ export default function UsersTab() {
             className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white rounded-xl font-medium transition-colors"
           >
             {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-            Crear usuario
+            {t("createUser")}
           </button>
         </form>
       </div>
@@ -278,7 +281,7 @@ export default function UsersTab() {
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
           <Users className="w-5 h-5 text-blue-400" />
-          Usuarios del tenant
+          {t("usersListTitle")}
         </h3>
 
         <div className="space-y-4">
@@ -315,7 +318,7 @@ export default function UsersTab() {
                         : "bg-red-500/10 text-red-400 border border-red-500/20"
                     )}
                   >
-                    {u.activo ? "Activo" : "Inactivo"}
+                    {u.activo ? t("active") : t("inactive")}
                   </span>
                   <span
                     className={cn(
@@ -325,7 +328,7 @@ export default function UsersTab() {
                         : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
                     )}
                   >
-                    {u.rol}
+                    {u.rol === "admin" ? tAuth("roles.admin") : tAuth("roles.vendedor")}
                   </span>
                   {!isCurrentUser && (
                     <button
@@ -342,11 +345,11 @@ export default function UsersTab() {
                         <Loader2 className="w-3 h-3 animate-spin" />
                       ) : u.activo ? (
                         <>
-                          <X className="w-3 h-3" /> Desactivar
+                          <X className="w-3 h-3" /> {t("deactivate")}
                         </>
                       ) : (
                         <>
-                          <Check className="w-3 h-3" /> Activar
+                          <Check className="w-3 h-3" /> {t("activate")}
                         </>
                       )}
                     </button>
@@ -357,7 +360,7 @@ export default function UsersTab() {
               {u.rol !== "admin" && !isCurrentUser && (
                 <div className="space-y-3">
                   <p className="text-sm font-medium text-[var(--muted-foreground)] flex items-center gap-2">
-                    <Shield className="w-4 h-4" /> Permisos
+                    <Shield className="w-4 h-4" /> {t("permissions")}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                     {ALL_PERMISSIONS.map((perm) => {
@@ -376,7 +379,7 @@ export default function UsersTab() {
                               : "bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)]"
                           )}
                         >
-                          <span>{perm.label}</span>
+                          <span>{t(`permissionLabels.${perm.key}`)}</span>
                           {isEnabled ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
                         </button>
                       );

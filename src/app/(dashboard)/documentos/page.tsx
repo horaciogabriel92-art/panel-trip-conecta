@@ -5,11 +5,13 @@ import axios from 'axios';
 import { Files, Download, Upload, Trash2, Eye, User, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
+import { useTranslations } from 'next-intl';
 
 export default function DocumentosPage() {
   const [documentos, setDocumentos] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+  const t = useTranslations('documentos');
 
   useEffect(() => {
     const fetchDocumentos = async () => {
@@ -23,13 +25,13 @@ export default function DocumentosPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-black text-[var(--foreground)]">Bandeja de Documentos</h2>
-          <p className="text-[var(--muted-foreground)]">Accede a vouchers, itinerarios y boletos</p>
+          <h2 className="text-3xl font-black text-[var(--foreground)]">{t('title')}</h2>
+          <p className="text-[var(--muted-foreground)]">{t('subtitle')}</p>
         </div>
         {user?.rol === 'admin' && (
           <button className="bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2">
             <Upload className="w-5 h-5" />
-            Subir Documento
+            {t('uploadDocument')}
           </button>
         )}
       </div>
@@ -43,7 +45,7 @@ export default function DocumentosPage() {
              
              <div className="space-y-2">
                <div className="flex items-center justify-between">
-                 <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">VOUCHER</span>
+                 <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">{t('voucher')}</span>
                  <span className="text-[10px] text-[var(--muted-foreground)]">2.4 MB</span>
                </div>
                <h3 className="text-lg font-bold text-[var(--foreground)] truncate uppercase">Itinerario Europa {doc}</h3>
@@ -56,7 +58,7 @@ export default function DocumentosPage() {
              <div className="pt-4 flex gap-2">
                <button className="flex-1 bg-[var(--muted)] hover:bg-blue-600 border border-[var(--border)] hover:border-blue-500 py-3 rounded-xl transition-all flex items-center justify-center gap-2">
                  <Download className="w-4 h-4" />
-                 <span className="text-xs font-black uppercase">Descargar</span>
+                 <span className="text-xs font-black uppercase">{t('download')}</span>
                </button>
                <button className="p-3 bg-[var(--muted)] hover:bg-[var(--muted)] rounded-xl border border-[var(--border)] transition-all">
                  <Eye className="w-4 h-4 text-[var(--muted-foreground)]" />
@@ -69,7 +71,7 @@ export default function DocumentosPage() {
       {documentos.length === 0 && !isLoading && (
          <div className="py-20 flex flex-col items-center justify-center text-[var(--muted-foreground)] gap-4 glass-card rounded-3xl">
            <Files className="w-12 h-12 opacity-10" />
-           <p className="italic font-medium">No hay documentos disponibles en este momento.</p>
+           <p className="italic font-medium">{t('empty')}</p>
          </div>
       )}
     </div>
