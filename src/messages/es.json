@@ -1,0 +1,832 @@
+{
+  "metadata": {
+    "title": "Quotix Travel - Panel de Agentes",
+    "description": "Plataforma de gestión de cotizaciones y ventas para agencias de viajes"
+  },
+  "common": {
+    "appName": "Quotix Travel",
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "create": "Crear",
+    "search": "Buscar",
+    "searchPlaceholder": "Buscar paquetes, ventas, clientes...",
+    "openMenu": "Abrir menú",
+    "close": "Cerrar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "yes": "Sí",
+    "no": "No",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "info": "Información"
+  },
+  "language": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "Inglés",
+    "pt": "Portugués",
+    "switchTo": "Cambiar idioma"
+  },
+  "theme": {
+    "toggle": "Cambiar a modo {mode}",
+    "light": "claro",
+    "dark": "oscuro"
+  },
+  "auth": {
+    "login": {
+      "title": "Iniciar sesión",
+      "subtitle": "Ingresa a tu cuenta de Quotix Travel",
+      "welcomeBack": "Bienvenido de vuelta",
+      "enterCredentials": "Ingresa tus credenciales para continuar",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "submit": "Ingresar",
+      "signIn": "Iniciar Sesión",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "noAccount": "¿No tienes cuenta?",
+      "register": "Registrarse",
+      "requestAccess": "Solicitar acceso",
+      "or": "o",
+      "platformForTravelAgencies": "Plataforma para agencias de viajes",
+      "invalidCredentials": "Credenciales inválidas",
+      "loginError": "Error de acceso",
+      "serverError": "Error al conectar con el servidor",
+      "error": "Error"
+    },
+    "forgotPassword": {
+      "title": "Recuperar contraseña",
+      "subtitle": "Ingresá tu email y te enviaremos un link para restablecerla.",
+      "email": "Correo electrónico",
+      "placeholder": "tu@email.com",
+      "submit": "Enviar link de recuperación",
+      "backToLogin": "Volver al login",
+      "instructionsSentTitle": "Instrucciones enviadas",
+      "instructionsSentBody": "Revisá tu bandeja de entrada",
+      "sentMessage": "Si el email existe en nuestro sistema, recibirás instrucciones en breve.",
+      "requestError": "Error al enviar solicitud",
+      "connectionError": "Error de conexión",
+      "connectionErrorBody": "No se pudo contactar al servidor"
+    },
+    "resetPassword": {
+      "title": "Nueva contraseña",
+      "subtitle": "Elegí una contraseña segura para tu cuenta.",
+      "password": "Nueva contraseña",
+      "repeatPassword": "Repetir contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "submit": "Guardar nueva contraseña",
+      "invalidToken": "El link es inválido o ha expirado.",
+      "requestNewLink": "Solicitar un nuevo link",
+      "successTitle": "Contraseña actualizada",
+      "successBody": "Ya podés iniciar sesión",
+      "successMessage": "Tu contraseña se actualizó correctamente.",
+      "goToLogin": "Ir al login",
+      "backToLogin": "Volver al login",
+      "tokenInvalidError": "Token inválido o expirado",
+      "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "resetError": "No se pudo restablecer la contraseña",
+      "connectionError": "Error de conexión",
+      "connectionErrorBody": "No se pudo contactar al servidor",
+      "loading": "Cargando..."
+    },
+    "profile": {
+      "title": "Perfil",
+      "personalInfo": "Información Personal",
+      "contact": "Contacto",
+      "systemInfo": "Información del Sistema",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "email": "Correo electrónico",
+      "phone": "Teléfono",
+      "role": "Rol",
+      "changePassword": "Cambiar contraseña",
+      "currentPassword": "Contraseña actual",
+      "newPassword": "Nueva contraseña",
+      "confirmNewPassword": "Confirmar nueva contraseña"
+    },
+    "roles": {
+      "admin": "Administrador",
+      "vendedor": "Vendedor"
+    }
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "cotizaciones": "Cotizaciones",
+    "ventas": "Ventas",
+    "misVentas": "Mis ventas",
+    "documentos": "Documentos",
+    "clientes": "Clientes",
+    "paquetes": "Paquetes",
+    "catalogo": "Catálogo",
+    "comisiones": "Comisiones",
+    "reportes": "Reportes",
+    "configuracion": "Configuración",
+    "miPlan": "Mi Plan",
+    "admin": "Admin",
+    "logout": "Cerrar sesión",
+    "expandirMenu": "Expandir menú",
+    "colapsarMenu": "Colapsar menú",
+    "expandir": "Expandir",
+    "colapsar": "Colapsar",
+    "cerrarMenu": "Cerrar menú"
+  },
+  "configuracion": {
+    "title": "Configuración",
+    "subtitle": "Gestiona tu información personal y preferencias",
+    "tabs": {
+      "perfil": "Perfil",
+      "seguridad": "Seguridad",
+      "pdf": "Personalizar PDF",
+      "usuarios": "Usuarios",
+      "modulos": "Módulos",
+      "metodologia": "Metodología",
+      "idioma": "Idioma"
+    },
+    "language": {
+      "title": "Idioma",
+      "description": "Selecciona el idioma en el que quieres usar la plataforma.",
+      "current": "Idioma actual"
+    },
+    "profile": {
+      "emailReadOnly": "El email no puede modificarse. Contactá a un administrador si necesitás cambiarlo.",
+      "phonePlaceholder": "+598 99 123 456",
+      "saveChanges": "Guardar cambios"
+    },
+    "security": {
+      "changePassword": "Cambiar contraseña"
+    },
+    "errors": {
+      "profileLoadError": "Error al cargar los datos del perfil",
+      "passwordMismatch": "Las nuevas contraseñas no coinciden",
+      "passwordMinLength": "La nueva contraseña debe tener al menos 6 caracteres",
+      "passwordUpdateError": "Error al cambiar la contraseña",
+      "profileUpdateError": "Error al guardar los cambios",
+      "colorsSaveError": "Error al guardar los colores"
+    },
+    "success": {
+      "profileUpdated": "Perfil actualizado correctamente",
+      "passwordUpdated": "Contraseña actualizada correctamente",
+      "colorsSaved": "Colores del PDF guardados correctamente"
+    },
+    "pdf": {
+      "colorsTitle": "Colores de tu cotización PDF",
+      "colorLabels": {
+        "primary": "Color principal",
+        "primaryDark": "Principal oscuro",
+        "primaryLight": "Principal claro",
+        "accent": "Acento",
+        "dark": "Textos destacados",
+        "text": "Texto principal",
+        "textLight": "Texto secundario",
+        "background": "Fondo de tarjetas"
+      },
+      "restoreDefault": "Restaurar colores por defecto",
+      "savePreferences": "Guardar preferencias",
+      "approximatePreview": "Vista previa aproximada",
+      "travelAgency": "Agencia de viajes",
+      "packageLabel": "PAQUETE",
+      "passengers": "Pasajeros",
+      "total": "Total",
+      "validity": "Validez de 24 horas desde la emisión."
+    },
+    "users": {
+      "inviteTitle": "Invitar usuario",
+      "firstNamePlaceholder": "Nombre",
+      "lastNamePlaceholder": "Apellido",
+      "emailPlaceholder": "Email",
+      "tempPasswordPlaceholder": "Contraseña temporal",
+      "createUser": "Crear usuario",
+      "usersListTitle": "Usuarios del tenant",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "permissions": "Permisos",
+      "loadError": "Error al cargar usuarios",
+      "createSuccess": "Usuario creado exitosamente",
+      "createError": "Error al crear usuario",
+      "permissionsUpdated": "Permisos actualizados",
+      "permissionsUpdateError": "Error al actualizar permisos",
+      "cannotDeactivateSelf": "No podés desactivar tu propio usuario",
+      "userActivated": "Usuario activado",
+      "userDeactivated": "Usuario desactivado",
+      "statusChangeError": "Error al cambiar estado",
+      "permissionLabels": {
+        "ver_todas_cotizaciones": "Ver todas las cotizaciones",
+        "ver_todas_ventas": "Ver todas las ventas",
+        "ver_reportes": "Ver reportes",
+        "gestionar_paquetes": "Gestionar paquetes",
+        "ver_comisiones_otros": "Ver comisiones de otros",
+        "editar_clientes_otros": "Editar clientes de otros"
+      }
+    },
+    "features": {
+      "availableModules": "Módulos disponibles",
+      "commissions": "Comisiones",
+      "proOnly": "Disponible en planes Pro",
+      "commissionsDescription": "Permite gestionar y pagar comisiones a los vendedores.",
+      "commissionsUpgrade": "Actualizá a un plan Pro Agencia o Pro Ilimitado para habilitar comisiones.",
+      "enabledSuccess": "Comisiones activadas correctamente",
+      "disabledSuccess": "Comisiones desactivadas correctamente",
+      "updateError": "Error al actualizar la configuración"
+    },
+    "workflow": {
+      "title": "Metodología de trabajo",
+      "description": "Define cómo fluyen las cotizaciones antes de convertirse en ventas.",
+      "simplePlanMessage": "Tu plan actual usa el modo <strong>Simple</strong>. Para habilitar los modos de aprobación, actualizá a un plan Pro Agencia o Pro Ilimitado.",
+      "active": "Activo",
+      "planPro": "Plan Pro",
+      "updatedSuccess": "Metodología de trabajo actualizada",
+      "updateError": "Error al actualizar la metodología de trabajo",
+      "modes": {
+        "admin_confirma": {
+          "label": "Admin confirma",
+          "description": "Cada cotización requiere aprobación explícita de un administrador antes de convertirse en venta."
+        },
+        "vendedor_autoconfirma": {
+          "label": "Vendedor autoconfirma",
+          "description": "Los vendedores pueden convertir sus cotizaciones en ventas sin esperar aprobación del administrador."
+        },
+        "simple": {
+          "label": "Simple",
+          "description": "Flujo directo sin etapas de aprobación. Ideal para operaciones pequeñas o planes iniciales."
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "defaultName": "Vendedor",
+    "greeting": "Hola, {name} 👋",
+    "pendingFollowUp": "¡Tienes {count, plural, one {# cotización} other {# cotizaciones}} esperando seguimiento!",
+    "noPendingFollowUp": "No tienes cotizaciones pendientes de seguimiento",
+    "viewCatalog": "Ver Catálogo",
+    "cards": {
+      "mySales": "Mis Ventas",
+      "quotes": "Cotizaciones",
+      "commissions": "Comisiones",
+      "conversionRate": "Tasa de Conversión",
+      "totalAverage": "{total} total · {average} promedio",
+      "pendingFollowUps": "{count, plural, one {# seguimiento pendiente} other {# seguimientos pendientes}}",
+      "pending": "{amount} pendientes",
+      "conversionSubtext": "de cotizaciones a ventas"
+    },
+    "commissions": {
+      "title": "Resumen de Comisiones",
+      "viewDetail": "Ver detalle",
+      "paid": "Pagado",
+      "pending": "Pendiente",
+      "noPayments": "No hay pagos de comisiones registrados aún."
+    },
+    "reminders": {
+      "title": "Mis Recordatorios",
+      "pending": "{count, plural, one {# pendiente} other {# pendientes}}",
+      "empty": "No tienes recordatorios pendientes",
+      "complete": "Completar"
+    }
+  },
+  "plan": {
+    "title": "Tu plan",
+    "subtitle": "Gestiona tu suscripción y conoce los límites de tu cuenta",
+    "currentPlan": "Plan actual",
+    "currentBadge": "Plan actual",
+    "renewal": "Próxima renovación",
+    "nextInvoice": "Próxima factura",
+    "manageSubscription": "Gestionar suscripción",
+    "cancelSubscription": "Cancelar suscripción",
+    "choosePlan": "Elegir plan",
+    "extraUsers": "Usuarios extra",
+    "paymentHistory": "Historial de pagos",
+    "free": "Free",
+    "freelance": "Freelance",
+    "proAgencia": "Pro Agencia",
+    "proIlimitado": "Pro Ilimitado",
+    "month": "mes",
+    "user": "usuario",
+    "perMonth": "/mes",
+    "restrictedTitle": "Acceso restringido",
+    "restrictedDescription": "La gestión de planes y pagos está disponible solo para administradores. Contactá al administrador de tu agencia si necesitás cambiar tu plan.",
+    "subscriptionUpdated": "¡Suscripción actualizada!",
+    "subscriptionUpdatedBody": "Tu pago fue procesado correctamente. En breve se reflejará en tu cuenta.",
+    "paymentCanceled": "Pago cancelado",
+    "paymentCanceledBody": "No se realizó ningún cargo. Podés intentarlo nuevamente cuando quieras.",
+    "trialTitle": "Estás en periodo de prueba gratuita de 7 días",
+    "trialDaysLeft": "Te quedan {days} días de prueba. Vence el {date}.",
+    "trialExpires": "Tu prueba vence el {date}.",
+    "trialBoxTitle": "Estás en tu prueba gratuita de 7 días",
+    "trialBoxDaysLeft": "Te quedan {days} días. La prueba vence el {date}.",
+    "trialBoxExpires": "Tu prueba vence el {date}.",
+    "trialBoxCTA": "Elegí un plan de abajo para mantener tu acceso cuando termine la prueba.",
+    "suspendedTitle": "Suscripción suspendida",
+    "suspendedBody": "Tu último pago no pudo procesarse. Actualizá tu medio de pago para seguir usando todas las funciones.",
+    "status": {
+      "trial": "Trial",
+      "active": "Activo",
+      "suspended": "Suspendido"
+    },
+    "renewalLabel": "Próxima renovación: {date}",
+    "nextInvoiceLabel": "Próxima factura: {amount}",
+    "extraUsersTitle": "Usuarios adicionales",
+    "extraUsersPrice": "{price} por usuario extra / mes",
+    "extraUsersNote": "Solo aplica a Pro Agencia y Pro Ilimitado",
+    "cancelConfirmation": "¿Estás seguro de que querés cancelar tu suscripción?",
+    "loadPlansError": "No se pudieron cargar los planes",
+    "totalLabel": "Total: {amount}/mes",
+    "extraUsersTotal": "+ {amount} por {count} {count, plural, one {usuario} other {usuarios}} extra",
+    "cta": {
+      "active": "Activo",
+      "free": "Gratis",
+      "choose": "Elegir plan"
+    },
+    "users": {
+      "unlimited": "Usuarios ilimitados",
+      "one": "1 usuario",
+      "included": "{count} usuarios incluidos"
+    },
+    "quotes": {
+      "unlimited": "Cotizaciones ilimitadas",
+      "perMonth": "{count} cotizaciones / mes"
+    },
+    "packages": {
+      "unlimited": "Paquetes ilimitados",
+      "count": "{count} paquetes"
+    },
+    "descriptions": {
+      "free": "Para empezar a cotizar",
+      "freelance": "Para agentes independientes",
+      "pro-agencia": "Para agencias en crecimiento",
+      "pro-ilimitado": "Para agencias que venden en serio",
+      "test": "Plan de prueba"
+    },
+    "features": {
+      "pdf_cotizaciones": "Cotizaciones en PDF en minutos",
+      "crm_agentes": "CRM para agentes de viajes",
+      "kanban_cotizaciones": "Kanban de cotizaciones",
+      "amadeus_pnr": "Importá reservas de Amadeus pegando el PNR",
+      "emails_automaticos": "Emails automáticos",
+      "dominio_propio": "Dominio propio incluido",
+      "soporte_prioritario": "Soporte prioritario",
+      "reportes": "Reportes",
+      "comisiones_avanzado": "Control de comisiones avanzado",
+      "vouchers_documentos": "Vouchers y documentos de viaje",
+      "usuarios_extra": "+{price} / mes por usuario extra"
+    },
+    "invoice": {
+      "date": "Fecha",
+      "description": "Descripción",
+      "period": "Período",
+      "amount": "Monto",
+      "status": "Estado",
+      "defaultDescription": "Suscripción",
+      "empty": "No hay pagos registrados todavía.",
+      "loadError": "Error al cargar pagos",
+      "statuses": {
+        "paid": "Pagado",
+        "refunded": "Reembolsado",
+        "void": "Anulado",
+        "pending": "Pendiente"
+      }
+    },
+    "trialBanner": {
+      "message": "Estás probando el plan {planName}.",
+      "endsToday": "Tu prueba gratuita vence hoy.",
+      "daysLeft": "Te quedan {days} {days, plural, one {día} other {días}} de prueba gratuita.",
+      "viewPlans": "Ver planes"
+    },
+    "upsell": {
+      "title": "Llevá tu agencia al siguiente nivel",
+      "upgradeTo": "Subí a {planName}",
+      "price": "Desde ${price}/mes",
+      "viewPlans": "Ver planes",
+      "users": {
+        "upTo": "Hasta {count} {count, plural, one {usuario} other {usuarios}}",
+        "unlimited": "Usuarios ilimitados"
+      },
+      "quotes": {
+        "perMonth": "{count} cotizaciones/mes",
+        "unlimited": "Cotizaciones ilimitadas"
+      },
+      "packages": {
+        "count": "{count} {count, plural, one {paquete} other {paquetes}}",
+        "unlimited": "Paquetes ilimitados"
+      },
+      "customDomain": "Dominio propio"
+    }
+  },
+  "documentos": {
+    "title": "Bandeja de Documentos",
+    "subtitle": "Accede a vouchers, itinerarios y boletos",
+    "uploadDocument": "Subir Documento",
+    "voucher": "VOUCHER",
+    "download": "Descargar",
+    "empty": "No hay documentos disponibles en este momento."
+  },
+  "paquetes": {
+    "title": "Catálogo de Destinos",
+    "subtitle": "Encuentra el viaje perfecto para tus clientes",
+    "searchPlaceholder": "Buscar destino...",
+    "from": "Desde",
+    "available": "Disponibles",
+    "defaultDescription": "Disfruta de una experiencia inolvidable en este destino seleccionado cuidadosamente para tus clientes. Incluye hotel, traslados y actividades principales.",
+    "cta": "Continuar a Cotizar"
+  },
+  "ventas": {
+    "title": "Mis Ventas",
+    "subtitle": "Historial de ventas confirmadas y comisiones",
+    "stats": {
+      "totalSales": "Total Ventas",
+      "confirmed": "Confirmadas",
+      "issued": "Emitidas",
+      "pendingCommission": "Comisión Pendiente"
+    },
+    "filters": {
+      "all": "Todas"
+    },
+    "status": {
+      "todos": "Todas",
+      "confirmada": "Confirmada",
+      "en_proceso": "En proceso",
+      "emitida": "Emitida",
+      "cancelada": "Cancelada",
+      "reembolsada": "Reembolsada"
+    },
+    "commissionStatus": {
+      "pendiente": "Pendiente",
+      "pagada": "Pagada"
+    },
+    "client": "Cliente",
+    "passengers": "Pasajeros",
+    "totalSale": "Total Venta",
+    "yourCommission": "Tu Comisión",
+    "viewDetail": "VER DETALLE",
+    "empty": "Aún no tienes ventas registradas.",
+    "goToCatalog": "Ir al catálogo para cotizar"
+  },
+  "admin": {
+    "title": "Panel de Administración",
+    "subtitle": "Resumen general del sistema Trip Conecta",
+    "stats": {
+      "totalSales": "Ventas Totales",
+      "sellers": "Vendedores",
+      "packages": "Paquetes",
+      "pendingCommissions": "Comisiones Pend."
+    },
+    "quickActions": "Acciones Rápidas",
+    "users": "Usuarios",
+    "packages": "Paquetes",
+    "commissions": "Comisiones",
+    "recentSales": "Ventas Recientes",
+    "noSales": "No hay ventas registradas",
+    "dateNotAvailable": "Fecha no disponible"
+  },
+  "reportes": {},
+  "cotizaciones": {
+    "title": "Mis Cotizaciones",
+    "subtitle": "Pipeline de ventas: Nueva → Enviada → Vendida/Perdida",
+    "newQuote": "Nueva Cotización",
+    "columns": {
+      "nueva": {
+        "label": "Nueva",
+        "description": "Creada, pendiente de enviar"
+      },
+      "enviada": {
+        "label": "Enviada",
+        "description": "Enviada al cliente"
+      },
+      "vendida": {
+        "label": "Vendida",
+        "description": "Convertida en venta"
+      },
+      "perdida": {
+        "label": "Perdida",
+        "description": "No se concretó"
+      }
+    },
+    "passengers": "pasajeros",
+    "overdue": "Vencida",
+    "daysRemaining": "{days}d rest.",
+    "created": "Creada:",
+    "sent": "Enviada:",
+    "actions": {
+      "markAsSent": "MARCAR COMO ENVIADA",
+      "closeSale": "CERRAR VENTA",
+      "lostSale": "VENTA PERDIDA",
+      "viewInSales": "VER EN MIS VENTAS",
+      "notCompleted": "VENTA NO CONCRETADA",
+      "delete": "ELIMINAR",
+      "viewDetail": "Ver detalle"
+    },
+    "emptyColumn": "Sin cotizaciones",
+    "lostSaleModal": {
+      "title": "Venta Perdida",
+      "client": "Cliente:",
+      "total": "Total:",
+      "reasonLabel": "¿Por qué se perdió esta venta?",
+      "reasonPlaceholder": "Ej: El cliente encontró precio más barato, no puede viajar en esas fechas, etc.",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar"
+    },
+    "deleteModal": {
+      "title": "¿Eliminar Cotización?",
+      "client": "Cliente:",
+      "total": "Total:",
+      "status": "Estado:",
+      "warningTitle": "⚠️ Advertencia de eliminación permanente",
+      "warningBody": "Si eliminas esta cotización, <strong>todos los datos serán permanentemente eliminados</strong> de la base de datos. Esta acción <strong>no se puede deshacer</strong>. Los datos del cliente, vuelos, hospedaje y cualquier información relacionada se perderán definitivamente.",
+      "confirmQuestion": "¿Estás seguro de que deseas continuar?",
+      "deleting": "Eliminando...",
+      "confirm": "Sí, Eliminar"
+    },
+    "errors": {
+      "markAsSent": "Error al marcar como enviada",
+      "markAsLost": "Error al marcar como perdida",
+      "delete": "Error al eliminar la cotización"
+    },
+    "manual": "MANUAL",
+    "flightsHotels": "{flights} vuelos, {hotels} hoteles",
+    "new": {
+      "title": "Nueva Cotización Manual",
+      "subtitle": "Crea una cotización personalizada paso a paso",
+      "steps": {
+        "cliente": "Cliente",
+        "vuelos": "Vuelos",
+        "servicios": "Servicios del viaje",
+        "itinerario": "Itinerario",
+        "precios": "Precios"
+      },
+      "quoteName": {
+        "title": "Nombre de la Cotización",
+        "label": "Nombre del viaje *",
+        "placeholder": "Ej: Viaje a Madrid - Semana Santa",
+        "hint": "Este nombre aparecerá en el PDF y en la lista de cotizaciones"
+      },
+      "client": {
+        "title": "Cliente (Titular)",
+        "frequentPassengers": "Pasajeros frecuentes",
+        "additionalPassengers": "Pasajeros Adicionales",
+        "addPassenger": "Agregar",
+        "noAdditional": "No hay pasajeros adicionales",
+        "passengerN": "Pasajero {number}",
+        "firstName": "Nombre *",
+        "lastName": "Apellido *",
+        "document": "Documento *",
+        "birthDate": "Fecha de nacimiento",
+        "nationality": "Nacionalidad"
+      },
+      "flights": {
+        "amadeusTab": "Pegar desde Amadeus",
+        "manualTab": "Ingresar Manual",
+        "amadeusTitle": "Código Amadeus",
+        "amadeusDescription": "Pega aquí el itinerario de Amadeus (formato RP/). El sistema detectará automáticamente los vuelos.",
+        "amadeusPlaceholder": "Ejemplo:\nRP/DZOUY2100/\n  1  UX 046 T 16MAY 6 MVDMAD DK1  1220 0510  17MAY  E  0 789 M\n     SEE RTSVC\n  2  UX 045 N 01JUN 1 MADMVD DK1  2355 0735  02JUN  E  0 789 M\n     SEE RTSVC",
+        "parseErrorEmpty": "Por favor ingresa el código de Amadeus",
+        "parseError": "No se pudieron parsear los vuelos. Verifica el formato.",
+        "detectFlights": "Detectar Vuelos Automáticamente",
+        "detectedFlights": "vuelo(s) detectado(s)",
+        "manualEntry": "Ingreso Manual",
+        "class": "Clase",
+        "departure": "Salida",
+        "arrival": "Llegada"
+      },
+      "itinerary": {
+        "detailedItinerary": "Itinerario Detallado",
+        "placeholder": "Describe el itinerario día por día...",
+        "includesTitle": "El paquete incluye",
+        "includesAdd": "Agregar",
+        "includesPlaceholder": "Ej: Aéreos ida y vuelta",
+        "notIncludesTitle": "El paquete NO incluye",
+        "notIncludesAdd": "Agregar",
+        "notIncludesPlaceholder": "Ej: Gastos personales",
+        "cancellationPolicies": "Políticas de Cancelación",
+        "cancellationPlaceholder": "Condiciones de cancelación y reembolso..."
+      },
+      "prices": {
+        "title": "Precios Desglosados",
+        "currency": "Moneda",
+        "usd": "USD (Dólares)",
+        "uyu": "$ (Pesos Uruguayos)",
+        "serviceBreakdown": "Desglose de Servicios",
+        "flights": "Vuelos",
+        "accommodation": "Hospedajes",
+        "transfers": "Transfers",
+        "insurance": "Seguros",
+        "extras": "Extras",
+        "subtotal": "Subtotal",
+        "taxes": "Impuestos",
+        "total": "TOTAL",
+        "serviceSummary": "Resumen de Servicios",
+        "passengers": "Pasajeros",
+        "segments": "segmentos",
+        "pricePlaceholder": "0.00"
+      },
+      "navigation": {
+        "previous": "Anterior",
+        "next": "Siguiente",
+        "stepOf": "Paso {current} de {total}",
+        "createQuote": "Crear Cotización",
+        "saving": "Guardando..."
+      },
+      "errors": {
+        "selectClient": "Debes seleccionar un cliente",
+        "clientRequired": "Cliente requerido",
+        "restPaymentDateRequired": "Debes indicar la fecha de pago del restante",
+        "dateRequired": "Fecha requerida",
+        "conversionError": "Error al convertir cotización",
+        "fileInvalid": "El archivo {name} no es válido. Solo se permiten imágenes (JPG, PNG, WebP) o PDFs.",
+        "fileTooLarge": "El archivo {name} excede el límite de 10MB."
+      },
+      "success": {
+        "created": "Cotización creada exitosamente",
+        "ready": "¡Listo!",
+        "updated": "Cotización actualizada",
+        "saved": "Guardado"
+      }
+    },
+    "detail": {
+      "notFound": "Cotización no encontrada",
+      "backToQuotes": "← Volver a cotizaciones",
+      "created": "Creada el {date}",
+      "expires": "Vence el {date}",
+      "customQuote": "Cotización Personalizada",
+      "package": "Paquete",
+      "quoteNotAvailable": "Cotización no disponible",
+      "details": {
+        "title": "Detalles de la Cotización",
+        "passengers": "Pasajeros",
+        "room": "Habitación",
+        "notSpecified": "No especificada",
+        "departureDate": "Fecha Salida",
+        "toBeDefined": "A definir",
+        "total": "Total"
+      },
+      "itinerary": "Itinerario",
+      "day": "Día {day}",
+      "flights": {
+        "title": "Vuelos",
+        "outbound": "Vuelo de Ida",
+        "return": "Vuelo de Vuelta",
+        "origin": "Origen",
+        "destination": "Destino",
+        "date": "Fecha",
+        "schedule": "Horario",
+        "airline": "Aerolínea",
+        "class": "Clase",
+        "manual": {
+          "title": "Vuelos ({count})",
+          "departure": "Salida",
+          "arrival": "Llegada"
+        }
+      },
+      "serviceDetails": "Detalles del Servicio",
+      "includes": "Incluye",
+      "notIncludes": "No incluye",
+      "accommodation": {
+        "title": "Hospedaje",
+        "viewHotel": "Ver Hotel",
+        "checkin": "Check-in",
+        "checkout": "Check-out",
+        "regimen": "Regimen",
+        "notAvailable": "N/A"
+      },
+      "actions": {
+        "edit": "Editar",
+        "convertToSale": "Convertir a Venta",
+        "paymentRestDate": "Fecha de pago del restante *",
+        "paymentRestDatePlaceholder": "Seleccioná la fecha...",
+        "paymentType": "Tipo de Pago *",
+        "paymentTotal": "Pago Total",
+        "paymentAdvance": "Adelanto / Seña",
+        "paymentPending": "Pendiente",
+        "paymentMethod": "Medio de Pago *",
+        "transfer": "transferencia",
+        "card": "tarjeta",
+        "cash": "efectivo",
+        "check": "cheque",
+        "other": "otro",
+        "amountPaid": "Monto pagado",
+        "amountPaidPlaceholder": "0.00",
+        "paymentMade": "¿Se realizó un pago?",
+        "passengerData": "Datos de pasajeros",
+        "passengerDataPlaceholder": "Nombre completo, DNI/Pasaporte, Fecha de nacimiento de cada pasajero...\n\nEjemplo:\n1. Juan Pérez, DNI 12345678, 15/03/1985\n2. María López, DNI 87654321, 20/07/1990",
+        "paymentObservations": "Observaciones / Dónde cobrar",
+        "receipts": "Comprobantes de pago",
+        "receiptsHint": "Subí fotos o PDFs de los comprobantes",
+        "selectFiles": "Seleccionar archivos",
+        "remove": "Quitar",
+        "converting": "Convirtiendo...",
+        "confirmSale": "Confirmar Venta",
+        "close": "Cerrar",
+        "paymentReceiptDescription": "Comprobante de {type} - {method}",
+        "downloadVoucher": "Descargar voucher",
+        "voucherError": "Error al descargar voucher",
+        "downloadFailed": "Descarga fallida",
+        "alreadyConverted": "Esta cotización ya fue convertida en venta",
+        "viewMySales": "Ver mis ventas →",
+        "registerPayment": "Registrar pago",
+        "editQuote": "Editar Cotización",
+        "clientName": "Nombre del Cliente",
+        "roomType": "Tipo Habitación",
+        "double": "Doble",
+        "triple": "Triple",
+        "quadruple": "Cuádruple",
+        "departureDate": "Fecha de Salida",
+        "saveChanges": "Guardar Cambios",
+        "closeSale": "Cerrar Venta",
+        "quoteLabel": "Cotización:",
+        "didReceivePayment": "¿El cliente ya realizó algún pago?",
+        "yesReceived": "✅ Sí, recibí pago",
+        "notYet": "⏳ No, aún no",
+        "paymentDetailsReceived": "Detalles del Pago Recibido",
+        "amountReceived": "Monto Recibido *",
+        "methods": {
+          "transferencia": "Transferencia Bancaria",
+          "efectivo": "Efectivo",
+          "tarjeta": "Tarjeta de Crédito/Débito",
+          "mercadopago": "Mercado Pago",
+          "paypal": "PayPal",
+          "otro": "Otro"
+        },
+        "remainingToCollect": "Resta cobrar:",
+        "paymentRestDateHint": "Indica cuándo el cliente pagará el saldo restante",
+        "paymentReceipt": "Comprobante de Pago (opcional)",
+        "uploadReceipt": "Click para subir comprobante",
+        "fileHint": "Imagen o PDF (máx. 10MB)",
+        "addReceipt": "+ Agregar otro comprobante",
+        "pendingPaymentInfo": "Información de Pago Pendiente",
+        "pendingPaymentHint": "Indica cuándo o cómo planeas recibir el pago. Esta información será útil para el administrador.",
+        "paymentDetails": "Detalles / Acuerdo de pago",
+        "paymentPlaceholder": "Ej: El cliente pagará el lunes por transferencia...",
+        "passengerDataTitle": "Datos de Pasajeros",
+        "passengerDataFull": "Datos completos de los {count} pasajero(s)",
+        "paymentObservationsPlaceholder": "Detalles adicionales, cuenta bancaria, dirección de cobro, etc.",
+        "observationsPlaceholder": "CBU para transferencia, dirección si hay que ir a cobrar, notas especiales...",
+        "totalTrip": "Total del viaje:",
+        "received": "Recibido:",
+        "remaining": "Restante:",
+        "noPayment": "Sin pago - se enviará a administrador",
+        "totalPayment": "PAGO TOTAL",
+        "partialPayment": "PAGO PARCIAL - Resta ${amount}",
+        "processing": "Procesando...",
+        "uploadingReceipts": "Subiendo comprobantes...",
+        "sendToAdmin": "Enviar a Administrador"
+      },
+      "saleModal": {
+        "title": "Convertir Cotización en Venta",
+        "quote": "Cotización",
+        "client": "Cliente",
+        "total": "Total",
+        "pending": "Pendiente",
+        "paid": "Pagado"
+      },
+      "vouchers": "Vouchers",
+      "noVouchers": "No hay vouchers disponibles",
+      "status": {
+        "nueva": "Nueva",
+        "enviada": "Enviada",
+        "vendida": "Vendida",
+        "perdida": "Perdida"
+      },
+      "quoteTitle": "Cotización {codigo}",
+      "client": {
+        "title": "Datos del Cliente",
+        "name": "Nombre",
+        "email": "Email",
+        "phone": "Teléfono",
+        "document": "Documento"
+      },
+      "passengersTitle": "Pasajeros ({count})",
+      "holder": "(Titular)",
+      "notes": "Notas",
+      "summary": {
+        "title": "Resumen",
+        "hotel": "Hotel",
+        "room": "Habitación",
+        "pricePerPerson": "Precio por persona",
+        "passengers": "Pasajeros",
+        "total": "Total",
+        "commission": "Tu comisión"
+      },
+      "vouchersTitle": "Vouchers de Viaje ({count})",
+      "voucherTypes": {
+        "vuelo": "✈️ Vuelo",
+        "hotel": "🏨 Hotel",
+        "seguro": "🛡️ Seguro",
+        "otro": "📄 Otro"
+      }
+    }
+  },
+  "pdf": {},
+  "billing": {
+    "status": {
+      "trial": "Trial",
+      "active": "Activo",
+      "suspended": "Suspendido",
+      "canceled": "Cancelado"
+    }
+  }
+}

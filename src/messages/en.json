@@ -1,0 +1,832 @@
+{
+  "metadata": {
+    "title": "Quotix Travel - Agent Panel",
+    "description": "Quote and sales management platform for travel agencies"
+  },
+  "common": {
+    "appName": "Quotix Travel",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "create": "Create",
+    "search": "Search",
+    "searchPlaceholder": "Search packages, sales, clients...",
+    "openMenu": "Open menu",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "yes": "Yes",
+    "no": "No",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information"
+  },
+  "language": {
+    "label": "Language",
+    "es": "Spanish",
+    "en": "English",
+    "pt": "Portuguese",
+    "switchTo": "Switch language"
+  },
+  "theme": {
+    "toggle": "Switch to {mode} mode",
+    "light": "light",
+    "dark": "dark"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Sign in to your Quotix Travel account",
+      "welcomeBack": "Welcome back",
+      "enterCredentials": "Enter your credentials to continue",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "signIn": "Sign in",
+      "forgotPassword": "Forgot your password?",
+      "noAccount": "Don't have an account?",
+      "register": "Register",
+      "requestAccess": "Request access",
+      "or": "or",
+      "platformForTravelAgencies": "Platform for travel agencies",
+      "invalidCredentials": "Invalid credentials",
+      "loginError": "Access error",
+      "serverError": "Error connecting to the server",
+      "error": "Error"
+    },
+    "forgotPassword": {
+      "title": "Recover password",
+      "subtitle": "Enter your email and we'll send you a link to reset it.",
+      "email": "Email",
+      "placeholder": "you@email.com",
+      "submit": "Send recovery link",
+      "backToLogin": "Back to sign in",
+      "instructionsSentTitle": "Instructions sent",
+      "instructionsSentBody": "Check your inbox",
+      "sentMessage": "If the email exists in our system, you will receive instructions shortly.",
+      "requestError": "Error sending request",
+      "connectionError": "Connection error",
+      "connectionErrorBody": "Could not contact the server"
+    },
+    "resetPassword": {
+      "title": "New password",
+      "subtitle": "Choose a secure password for your account.",
+      "password": "New password",
+      "repeatPassword": "Repeat password",
+      "confirmPassword": "Confirm password",
+      "submit": "Save new password",
+      "invalidToken": "The link is invalid or has expired.",
+      "requestNewLink": "Request a new link",
+      "successTitle": "Password updated",
+      "successBody": "You can now sign in",
+      "successMessage": "Your password has been updated successfully.",
+      "goToLogin": "Go to sign in",
+      "backToLogin": "Back to sign in",
+      "tokenInvalidError": "Invalid or expired token",
+      "passwordMinLength": "Password must be at least 6 characters long",
+      "passwordMismatch": "Passwords do not match",
+      "resetError": "Could not reset the password",
+      "connectionError": "Connection error",
+      "connectionErrorBody": "Could not contact the server",
+      "loading": "Loading..."
+    },
+    "profile": {
+      "title": "Profile",
+      "personalInfo": "Personal Information",
+      "contact": "Contact",
+      "systemInfo": "System Information",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "phone": "Phone",
+      "role": "Role",
+      "changePassword": "Change password",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmNewPassword": "Confirm new password"
+    },
+    "roles": {
+      "admin": "Administrator",
+      "vendedor": "Seller"
+    }
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "cotizaciones": "Quotes",
+    "ventas": "Sales",
+    "misVentas": "My sales",
+    "documentos": "Documents",
+    "clientes": "Clients",
+    "paquetes": "Packages",
+    "catalogo": "Catalog",
+    "comisiones": "Commissions",
+    "reportes": "Reports",
+    "configuracion": "Settings",
+    "miPlan": "My Plan",
+    "admin": "Admin",
+    "logout": "Log out",
+    "expandirMenu": "Expand menu",
+    "colapsarMenu": "Collapse menu",
+    "expandir": "Expand",
+    "colapsar": "Collapse",
+    "cerrarMenu": "Close menu"
+  },
+  "configuracion": {
+    "title": "Settings",
+    "subtitle": "Manage your personal information and preferences",
+    "tabs": {
+      "perfil": "Profile",
+      "seguridad": "Security",
+      "pdf": "Customize PDF",
+      "usuarios": "Users",
+      "modulos": "Modules",
+      "metodologia": "Methodology",
+      "idioma": "Language"
+    },
+    "language": {
+      "title": "Language",
+      "description": "Select the language you want to use for the platform.",
+      "current": "Current language"
+    },
+    "profile": {
+      "emailReadOnly": "Email cannot be changed. Contact an administrator if you need to change it.",
+      "phonePlaceholder": "+1 555 123 4567",
+      "saveChanges": "Save changes"
+    },
+    "security": {
+      "changePassword": "Change password"
+    },
+    "errors": {
+      "profileLoadError": "Error loading profile data",
+      "passwordMismatch": "The new passwords do not match",
+      "passwordMinLength": "The new password must be at least 6 characters long",
+      "passwordUpdateError": "Error changing password",
+      "profileUpdateError": "Error saving changes",
+      "colorsSaveError": "Error saving colors"
+    },
+    "success": {
+      "profileUpdated": "Profile updated successfully",
+      "passwordUpdated": "Password updated successfully",
+      "colorsSaved": "PDF colors saved successfully"
+    },
+    "pdf": {
+      "colorsTitle": "Your quote PDF colors",
+      "colorLabels": {
+        "primary": "Primary color",
+        "primaryDark": "Primary dark",
+        "primaryLight": "Primary light",
+        "accent": "Accent",
+        "dark": "Highlighted text",
+        "text": "Main text",
+        "textLight": "Secondary text",
+        "background": "Card background"
+      },
+      "restoreDefault": "Restore default colors",
+      "savePreferences": "Save preferences",
+      "approximatePreview": "Approximate preview",
+      "travelAgency": "Travel agency",
+      "packageLabel": "PACKAGE",
+      "passengers": "Passengers",
+      "total": "Total",
+      "validity": "Valid for 24 hours from issuance."
+    },
+    "users": {
+      "inviteTitle": "Invite user",
+      "firstNamePlaceholder": "First name",
+      "lastNamePlaceholder": "Last name",
+      "emailPlaceholder": "Email",
+      "tempPasswordPlaceholder": "Temporary password",
+      "createUser": "Create user",
+      "usersListTitle": "Tenant users",
+      "active": "Active",
+      "inactive": "Inactive",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "permissions": "Permissions",
+      "loadError": "Error loading users",
+      "createSuccess": "User created successfully",
+      "createError": "Error creating user",
+      "permissionsUpdated": "Permissions updated",
+      "permissionsUpdateError": "Error updating permissions",
+      "cannotDeactivateSelf": "You cannot deactivate your own user",
+      "userActivated": "User activated",
+      "userDeactivated": "User deactivated",
+      "statusChangeError": "Error changing status",
+      "permissionLabels": {
+        "ver_todas_cotizaciones": "View all quotes",
+        "ver_todas_ventas": "View all sales",
+        "ver_reportes": "View reports",
+        "gestionar_paquetes": "Manage packages",
+        "ver_comisiones_otros": "View commissions of others",
+        "editar_clientes_otros": "Edit clients of others"
+      }
+    },
+    "features": {
+      "availableModules": "Available modules",
+      "commissions": "Commissions",
+      "proOnly": "Available on Pro plans",
+      "commissionsDescription": "Allows managing and paying commissions to sellers.",
+      "commissionsUpgrade": "Upgrade to a Pro Agency or Pro Unlimited plan to enable commissions.",
+      "enabledSuccess": "Commissions enabled successfully",
+      "disabledSuccess": "Commissions disabled successfully",
+      "updateError": "Error updating configuration"
+    },
+    "workflow": {
+      "title": "Workflow methodology",
+      "description": "Define how quotes flow before becoming sales.",
+      "simplePlanMessage": "Your current plan uses <strong>Simple</strong> mode. To enable approval modes, upgrade to a Pro Agency or Pro Unlimited plan.",
+      "active": "Active",
+      "planPro": "Pro Plan",
+      "updatedSuccess": "Workflow methodology updated",
+      "updateError": "Error updating workflow methodology",
+      "modes": {
+        "admin_confirma": {
+          "label": "Admin confirms",
+          "description": "Each quote requires explicit administrator approval before becoming a sale."
+        },
+        "vendedor_autoconfirma": {
+          "label": "Seller auto-confirms",
+          "description": "Sellers can convert their quotes into sales without waiting for administrator approval."
+        },
+        "simple": {
+          "label": "Simple",
+          "description": "Direct flow without approval stages. Ideal for small operations or initial plans."
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "defaultName": "Seller",
+    "greeting": "Hello, {name} 👋",
+    "pendingFollowUp": "You have {count, plural, one {# quote} other {# quotes}} waiting for follow-up!",
+    "noPendingFollowUp": "You have no quotes pending follow-up",
+    "viewCatalog": "View Catalog",
+    "cards": {
+      "mySales": "My Sales",
+      "quotes": "Quotes",
+      "commissions": "Commissions",
+      "conversionRate": "Conversion Rate",
+      "totalAverage": "{total} total · {average} average",
+      "pendingFollowUps": "{count, plural, one {# pending follow-up} other {# pending follow-ups}}",
+      "pending": "{amount} pending",
+      "conversionSubtext": "from quotes to sales"
+    },
+    "commissions": {
+      "title": "Commission Summary",
+      "viewDetail": "View detail",
+      "paid": "Paid",
+      "pending": "Pending",
+      "noPayments": "No commission payments recorded yet."
+    },
+    "reminders": {
+      "title": "My Reminders",
+      "pending": "{count, plural, one {# pending} other {# pending}}",
+      "empty": "You have no pending reminders",
+      "complete": "Complete"
+    }
+  },
+  "plan": {
+    "title": "Your plan",
+    "subtitle": "Manage your subscription and learn your account limits",
+    "currentPlan": "Current plan",
+    "currentBadge": "Current plan",
+    "renewal": "Next renewal",
+    "nextInvoice": "Next invoice",
+    "manageSubscription": "Manage subscription",
+    "cancelSubscription": "Cancel subscription",
+    "choosePlan": "Choose plan",
+    "extraUsers": "Extra users",
+    "paymentHistory": "Payment history",
+    "free": "Free",
+    "freelance": "Freelance",
+    "proAgencia": "Pro Agency",
+    "proIlimitado": "Pro Unlimited",
+    "month": "month",
+    "user": "user",
+    "perMonth": "/month",
+    "restrictedTitle": "Access restricted",
+    "restrictedDescription": "Plan and payment management is only available to administrators. Contact your agency administrator if you need to change your plan.",
+    "subscriptionUpdated": "Subscription updated!",
+    "subscriptionUpdatedBody": "Your payment was processed successfully. It will be reflected in your account shortly.",
+    "paymentCanceled": "Payment canceled",
+    "paymentCanceledBody": "No charge was made. You can try again whenever you want.",
+    "trialTitle": "You are on a 7-day free trial",
+    "trialDaysLeft": "You have {days} days left in your trial. It ends on {date}.",
+    "trialExpires": "Your trial ends on {date}.",
+    "trialBoxTitle": "You are on your 7-day free trial",
+    "trialBoxDaysLeft": "You have {days} days left. Trial ends on {date}.",
+    "trialBoxExpires": "Your trial ends on {date}.",
+    "trialBoxCTA": "Choose a plan below to keep your access when the trial ends.",
+    "suspendedTitle": "Subscription suspended",
+    "suspendedBody": "Your last payment could not be processed. Update your payment method to keep using all features.",
+    "status": {
+      "trial": "Trial",
+      "active": "Active",
+      "suspended": "Suspended"
+    },
+    "renewalLabel": "Next renewal: {date}",
+    "nextInvoiceLabel": "Next invoice: {amount}",
+    "extraUsersTitle": "Additional users",
+    "extraUsersPrice": "{price} per extra user / month",
+    "extraUsersNote": "Only applies to Pro Agency and Pro Unlimited",
+    "cancelConfirmation": "Are you sure you want to cancel your subscription?",
+    "loadPlansError": "Could not load plans",
+    "totalLabel": "Total: {amount}/month",
+    "extraUsersTotal": "+ {amount} for {count} extra {count, plural, one {user} other {users}}",
+    "cta": {
+      "active": "Active",
+      "free": "Free",
+      "choose": "Choose plan"
+    },
+    "users": {
+      "unlimited": "Unlimited users",
+      "one": "1 user",
+      "included": "{count} users included"
+    },
+    "quotes": {
+      "unlimited": "Unlimited quotes",
+      "perMonth": "{count} quotes / month"
+    },
+    "packages": {
+      "unlimited": "Unlimited packages",
+      "count": "{count} packages"
+    },
+    "descriptions": {
+      "free": "To start quoting",
+      "freelance": "For independent agents",
+      "pro-agencia": "For growing agencies",
+      "pro-ilimitado": "For agencies that sell seriously",
+      "test": "Test plan"
+    },
+    "features": {
+      "pdf_cotizaciones": "PDF quotes in minutes",
+      "crm_agentes": "CRM for travel agents",
+      "kanban_cotizaciones": "Quote kanban board",
+      "amadeus_pnr": "Import Amadeus bookings by pasting the PNR",
+      "emails_automaticos": "Automatic emails",
+      "dominio_propio": "Custom domain included",
+      "soporte_prioritario": "Priority support",
+      "reportes": "Reports",
+      "comisiones_avanzado": "Advanced commission control",
+      "vouchers_documentos": "Vouchers and travel documents",
+      "usuarios_extra": "+{price} / month per extra user"
+    },
+    "invoice": {
+      "date": "Date",
+      "description": "Description",
+      "period": "Period",
+      "amount": "Amount",
+      "status": "Status",
+      "defaultDescription": "Subscription",
+      "empty": "No payments recorded yet.",
+      "loadError": "Error loading payments",
+      "statuses": {
+        "paid": "Paid",
+        "refunded": "Refunded",
+        "void": "Void",
+        "pending": "Pending"
+      }
+    },
+    "trialBanner": {
+      "message": "You are trying the {planName} plan.",
+      "endsToday": "Your free trial ends today.",
+      "daysLeft": "You have {days} free trial {days, plural, one {day} other {days}} left.",
+      "viewPlans": "View plans"
+    },
+    "upsell": {
+      "title": "Take your agency to the next level",
+      "upgradeTo": "Upgrade to {planName}",
+      "price": "From ${price}/month",
+      "viewPlans": "View plans",
+      "users": {
+        "upTo": "Up to {count} {count, plural, one {user} other {users}}",
+        "unlimited": "Unlimited users"
+      },
+      "quotes": {
+        "perMonth": "{count} quotes/month",
+        "unlimited": "Unlimited quotes"
+      },
+      "packages": {
+        "count": "{count} {count, plural, one {package} other {packages}}",
+        "unlimited": "Unlimited packages"
+      },
+      "customDomain": "Custom domain"
+    }
+  },
+  "documentos": {
+    "title": "Document Inbox",
+    "subtitle": "Access vouchers, itineraries and tickets",
+    "uploadDocument": "Upload Document",
+    "voucher": "VOUCHER",
+    "download": "Download",
+    "empty": "No documents available at this time."
+  },
+  "paquetes": {
+    "title": "Destination Catalog",
+    "subtitle": "Find the perfect trip for your clients",
+    "searchPlaceholder": "Search destination...",
+    "from": "From",
+    "available": "Available",
+    "defaultDescription": "Enjoy an unforgettable experience in this destination carefully selected for your clients. Includes hotel, transfers and main activities.",
+    "cta": "Continue to Quote"
+  },
+  "ventas": {
+    "title": "My Sales",
+    "subtitle": "History of confirmed sales and commissions",
+    "stats": {
+      "totalSales": "Total Sales",
+      "confirmed": "Confirmed",
+      "issued": "Issued",
+      "pendingCommission": "Pending Commission"
+    },
+    "filters": {
+      "all": "All"
+    },
+    "status": {
+      "todos": "All",
+      "confirmada": "Confirmed",
+      "en_proceso": "In process",
+      "emitida": "Issued",
+      "cancelada": "Canceled",
+      "reembolsada": "Refunded"
+    },
+    "commissionStatus": {
+      "pendiente": "Pending",
+      "pagada": "Paid"
+    },
+    "client": "Client",
+    "passengers": "Passengers",
+    "totalSale": "Total Sale",
+    "yourCommission": "Your Commission",
+    "viewDetail": "VIEW DETAIL",
+    "empty": "You don't have any sales registered yet.",
+    "goToCatalog": "Go to catalog to quote"
+  },
+  "admin": {
+    "title": "Administration Panel",
+    "subtitle": "General overview of the Trip Conecta system",
+    "stats": {
+      "totalSales": "Total Sales",
+      "sellers": "Sellers",
+      "packages": "Packages",
+      "pendingCommissions": "Pending Comm."
+    },
+    "quickActions": "Quick Actions",
+    "users": "Users",
+    "packages": "Packages",
+    "commissions": "Commissions",
+    "recentSales": "Recent Sales",
+    "noSales": "No sales registered",
+    "dateNotAvailable": "Date not available"
+  },
+  "reportes": {},
+  "cotizaciones": {
+    "title": "My Quotes",
+    "subtitle": "Sales pipeline: New → Sent → Sold/Lost",
+    "newQuote": "New Quote",
+    "columns": {
+      "nueva": {
+        "label": "New",
+        "description": "Created, pending to send"
+      },
+      "enviada": {
+        "label": "Sent",
+        "description": "Sent to client"
+      },
+      "vendida": {
+        "label": "Sold",
+        "description": "Converted to sale"
+      },
+      "perdida": {
+        "label": "Lost",
+        "description": "Not completed"
+      }
+    },
+    "passengers": "passengers",
+    "overdue": "Overdue",
+    "daysRemaining": "{days}d left",
+    "created": "Created:",
+    "sent": "Sent:",
+    "actions": {
+      "markAsSent": "MARK AS SENT",
+      "closeSale": "CLOSE SALE",
+      "lostSale": "LOST SALE",
+      "viewInSales": "VIEW IN MY SALES",
+      "notCompleted": "SALE NOT COMPLETED",
+      "delete": "DELETE",
+      "viewDetail": "View detail"
+    },
+    "emptyColumn": "No quotes",
+    "lostSaleModal": {
+      "title": "Lost Sale",
+      "client": "Client:",
+      "total": "Total:",
+      "reasonLabel": "Why was this sale lost?",
+      "reasonPlaceholder": "E.g.: The client found a cheaper price, cannot travel on those dates, etc.",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "deleteModal": {
+      "title": "Delete Quote?",
+      "client": "Client:",
+      "total": "Total:",
+      "status": "Status:",
+      "warningTitle": "⚠️ Permanent deletion warning",
+      "warningBody": "If you delete this quote, <strong>all data will be permanently deleted</strong> from the database. This action <strong>cannot be undone</strong>. Client data, flights, accommodation and any related information will be permanently lost.",
+      "confirmQuestion": "Are you sure you want to continue?",
+      "deleting": "Deleting...",
+      "confirm": "Yes, Delete"
+    },
+    "errors": {
+      "markAsSent": "Error marking as sent",
+      "markAsLost": "Error marking as lost",
+      "delete": "Error deleting quote"
+    },
+    "manual": "MANUAL",
+    "flightsHotels": "{flights} flights, {hotels} hotels",
+    "new": {
+      "title": "New Manual Quote",
+      "subtitle": "Create a custom quote step by step",
+      "steps": {
+        "cliente": "Client",
+        "vuelos": "Flights",
+        "servicios": "Trip Services",
+        "itinerario": "Itinerary",
+        "precios": "Prices"
+      },
+      "quoteName": {
+        "title": "Quote Name",
+        "label": "Trip name *",
+        "placeholder": "E.g.: Trip to Madrid - Holy Week",
+        "hint": "This name will appear in the PDF and in the quotes list"
+      },
+      "client": {
+        "title": "Client (Holder)",
+        "frequentPassengers": "Frequent passengers",
+        "additionalPassengers": "Additional Passengers",
+        "addPassenger": "Add",
+        "noAdditional": "No additional passengers",
+        "passengerN": "Passenger {number}",
+        "firstName": "First name *",
+        "lastName": "Last name *",
+        "document": "Document *",
+        "birthDate": "Birth date",
+        "nationality": "Nationality"
+      },
+      "flights": {
+        "amadeusTab": "Paste from Amadeus",
+        "manualTab": "Enter Manually",
+        "amadeusTitle": "Amadeus Code",
+        "amadeusDescription": "Paste the Amadeus itinerary here (RP/ format). The system will automatically detect flights.",
+        "amadeusPlaceholder": "Example:\nRP/DZOUY2100/\n  1  UX 046 T 16MAY 6 MVDMAD DK1  1220 0510  17MAY  E  0 789 M\n     SEE RTSVC\n  2  UX 045 N 01JUN 1 MADMVD DK1  2355 0735  02JUN  E  0 789 M\n     SEE RTSVC",
+        "parseErrorEmpty": "Please enter the Amadeus code",
+        "parseError": "Could not parse flights. Please check the format.",
+        "detectFlights": "Detect Flights Automatically",
+        "detectedFlights": "flight(s) detected",
+        "manualEntry": "Manual Entry",
+        "class": "Class",
+        "departure": "Departure",
+        "arrival": "Arrival"
+      },
+      "itinerary": {
+        "detailedItinerary": "Detailed Itinerary",
+        "placeholder": "Describe the itinerary day by day...",
+        "includesTitle": "The package includes",
+        "includesAdd": "Add",
+        "includesPlaceholder": "E.g.: Round-trip flights",
+        "notIncludesTitle": "The package does NOT include",
+        "notIncludesAdd": "Add",
+        "notIncludesPlaceholder": "E.g.: Personal expenses",
+        "cancellationPolicies": "Cancellation Policies",
+        "cancellationPlaceholder": "Cancellation and refund conditions..."
+      },
+      "prices": {
+        "title": "Itemized Prices",
+        "currency": "Currency",
+        "usd": "USD (Dollars)",
+        "uyu": "$ (Uruguayan Pesos)",
+        "serviceBreakdown": "Service Breakdown",
+        "flights": "Flights",
+        "accommodation": "Accommodation",
+        "transfers": "Transfers",
+        "insurance": "Insurance",
+        "extras": "Extras",
+        "subtotal": "Subtotal",
+        "taxes": "Taxes",
+        "total": "TOTAL",
+        "serviceSummary": "Service Summary",
+        "passengers": "Passengers",
+        "segments": "segments",
+        "pricePlaceholder": "0.00"
+      },
+      "navigation": {
+        "previous": "Previous",
+        "next": "Next",
+        "stepOf": "Step {current} of {total}",
+        "createQuote": "Create Quote",
+        "saving": "Saving..."
+      },
+      "errors": {
+        "selectClient": "You must select a client",
+        "clientRequired": "Client required",
+        "restPaymentDateRequired": "You must indicate the remaining payment date",
+        "dateRequired": "Date required",
+        "conversionError": "Error converting quote",
+        "fileInvalid": "The file {name} is not valid. Only images (JPG, PNG, WebP) or PDFs are allowed.",
+        "fileTooLarge": "The file {name} exceeds the 10MB limit."
+      },
+      "success": {
+        "created": "Quote created successfully",
+        "ready": "Ready!",
+        "updated": "Quote updated",
+        "saved": "Saved"
+      }
+    },
+    "detail": {
+      "notFound": "Quote not found",
+      "backToQuotes": "← Back to quotes",
+      "created": "Created on {date}",
+      "expires": "Expires on {date}",
+      "customQuote": "Custom Quote",
+      "package": "Package",
+      "quoteNotAvailable": "Quote not available",
+      "details": {
+        "title": "Quote Details",
+        "passengers": "Passengers",
+        "room": "Room",
+        "notSpecified": "Not specified",
+        "departureDate": "Departure Date",
+        "toBeDefined": "To be defined",
+        "total": "Total"
+      },
+      "itinerary": "Itinerary",
+      "day": "Day {day}",
+      "flights": {
+        "title": "Flights",
+        "outbound": "Outbound Flight",
+        "return": "Return Flight",
+        "origin": "Origin",
+        "destination": "Destination",
+        "date": "Date",
+        "schedule": "Schedule",
+        "airline": "Airline",
+        "class": "Class",
+        "manual": {
+          "title": "Flights ({count})",
+          "departure": "Departure",
+          "arrival": "Arrival"
+        }
+      },
+      "serviceDetails": "Service Details",
+      "includes": "Includes",
+      "notIncludes": "Does not include",
+      "accommodation": {
+        "title": "Accommodation",
+        "viewHotel": "View Hotel",
+        "checkin": "Check-in",
+        "checkout": "Check-out",
+        "regimen": "Regimen",
+        "notAvailable": "N/A"
+      },
+      "actions": {
+        "edit": "Edit",
+        "convertToSale": "Convert to Sale",
+        "paymentRestDate": "Remaining payment date *",
+        "paymentRestDatePlaceholder": "Select date...",
+        "paymentType": "Payment Type *",
+        "paymentTotal": "Total Payment",
+        "paymentAdvance": "Advance / Deposit",
+        "paymentPending": "Pending",
+        "paymentMethod": "Payment Method *",
+        "transfer": "transfer",
+        "card": "card",
+        "cash": "cash",
+        "check": "check",
+        "other": "other",
+        "amountPaid": "Amount paid",
+        "amountPaidPlaceholder": "0.00",
+        "paymentMade": "Was a payment made?",
+        "passengerData": "Passenger data",
+        "passengerDataPlaceholder": "Full name, ID/Passport, Date of birth for each passenger...\n\nExample:\n1. John Doe, ID 12345678, 03/15/1985\n2. Jane Smith, ID 87654321, 07/20/1990",
+        "paymentObservations": "Observations / Where to collect",
+        "receipts": "Payment receipts",
+        "receiptsHint": "Upload photos or PDFs of receipts",
+        "selectFiles": "Select files",
+        "remove": "Remove",
+        "converting": "Converting...",
+        "confirmSale": "Confirm Sale",
+        "close": "Close",
+        "paymentReceiptDescription": "Receipt for {type} - {method}",
+        "downloadVoucher": "Download voucher",
+        "voucherError": "Error downloading voucher",
+        "downloadFailed": "Download failed",
+        "alreadyConverted": "This quote has already been converted to a sale",
+        "viewMySales": "View my sales →",
+        "registerPayment": "Register payment",
+        "editQuote": "Edit Quote",
+        "clientName": "Client Name",
+        "roomType": "Room Type",
+        "double": "Double",
+        "triple": "Triple",
+        "quadruple": "Quadruple",
+        "departureDate": "Departure Date",
+        "saveChanges": "Save Changes",
+        "closeSale": "Close Sale",
+        "quoteLabel": "Quote:",
+        "didReceivePayment": "Has the client made any payment?",
+        "yesReceived": "✅ Yes, I received payment",
+        "notYet": "⏳ No, not yet",
+        "paymentDetailsReceived": "Payment Received Details",
+        "amountReceived": "Amount Received *",
+        "methods": {
+          "transferencia": "Bank Transfer",
+          "efectivo": "Cash",
+          "tarjeta": "Credit/Debit Card",
+          "mercadopago": "Mercado Pago",
+          "paypal": "PayPal",
+          "otro": "Other"
+        },
+        "remainingToCollect": "Remaining to collect:",
+        "paymentRestDateHint": "Indicate when the client will pay the remaining balance",
+        "paymentReceipt": "Payment Receipt (optional)",
+        "uploadReceipt": "Click to upload receipt",
+        "fileHint": "Image or PDF (max. 10MB)",
+        "addReceipt": "+ Add another receipt",
+        "pendingPaymentInfo": "Pending Payment Information",
+        "pendingPaymentHint": "Indicate when or how you plan to receive payment. This information will be useful for the administrator.",
+        "paymentDetails": "Details / Payment Agreement",
+        "paymentPlaceholder": "E.g.: The client will pay on Monday by bank transfer...",
+        "passengerDataTitle": "Passenger Data",
+        "passengerDataFull": "Complete data for the {count} passenger(s)",
+        "paymentObservationsPlaceholder": "Additional details, bank account, collection address, etc.",
+        "observationsPlaceholder": "CBU for transfer, address if you need to go collect, special notes...",
+        "totalTrip": "Total trip:",
+        "received": "Received:",
+        "remaining": "Remaining:",
+        "noPayment": "No payment - will be sent to administrator",
+        "totalPayment": "TOTAL PAYMENT",
+        "partialPayment": "PARTIAL PAYMENT - ${amount} remaining",
+        "processing": "Processing...",
+        "uploadingReceipts": "Uploading receipts...",
+        "sendToAdmin": "Send to Administrator"
+      },
+      "saleModal": {
+        "title": "Convert Quote to Sale",
+        "quote": "Quote",
+        "client": "Client",
+        "total": "Total",
+        "pending": "Pending",
+        "paid": "Paid"
+      },
+      "vouchers": "Vouchers",
+      "noVouchers": "No vouchers available",
+      "status": {
+        "nueva": "New",
+        "enviada": "Sent",
+        "vendida": "Sold",
+        "perdida": "Lost"
+      },
+      "quoteTitle": "Quote {codigo}",
+      "client": {
+        "title": "Client Details",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "document": "Document"
+      },
+      "passengersTitle": "Passengers ({count})",
+      "holder": "(Holder)",
+      "notes": "Notes",
+      "summary": {
+        "title": "Summary",
+        "hotel": "Hotel",
+        "room": "Room",
+        "pricePerPerson": "Price per person",
+        "passengers": "Passengers",
+        "total": "Total",
+        "commission": "Your commission"
+      },
+      "vouchersTitle": "Travel Vouchers ({count})",
+      "voucherTypes": {
+        "vuelo": "✈️ Flight",
+        "hotel": "🏨 Hotel",
+        "seguro": "🛡️ Insurance",
+        "otro": "📄 Other"
+      }
+    }
+  },
+  "pdf": {},
+  "billing": {
+    "status": {
+      "trial": "Trial",
+      "active": "Active",
+      "suspended": "Suspended",
+      "canceled": "Canceled"
+    }
+  }
+}
