@@ -91,7 +91,7 @@ export function useBilling() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_URL}/billing/subscription-status`, {
+      const res = await fetch(`${API_URL}/billing/subscription`, {
         method: "GET",
         headers: getAuthHeaders(),
       });
