@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
-import { useTranslations } from "next-intl";
 import {
   User,
   Mail,
@@ -19,12 +18,10 @@ import {
   Users,
   Puzzle,
   Settings,
-  Globe,
 } from "lucide-react";
 import UsersTab from "./_components/UsersTab";
 import FeaturesTab from "./_components/FeaturesTab";
 import WorkflowTab from "./_components/WorkflowTab";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const DEFAULT_PDF_COLORS = {
   primary: "#0d9488",
@@ -37,12 +34,20 @@ const DEFAULT_PDF_COLORS = {
   background: "#f0fdfa",
 };
 
+const COLOR_LABELS: Record<string, string> = {
+  primary: "Color principal",
+  primaryDark: "Principal oscuro",
+  primaryLight: "Principal claro",
+  accent: "Acento",
+  dark: "Textos destacados",
+  text: "Texto principal",
+  textLight: "Texto secundario",
+  background: "Fondo de tarjetas",
+};
+
 export default function ConfiguracionPage() {
-  const t = useTranslations("configuracion");
-  const tAuth = useTranslations("auth");
-  const tNav = useTranslations("navigation");
   const { user, login } = useAuth();
-  const [activeTab, setActiveTab] = useState<"perfil" | "seguridad" | "pdf" | "usuarios" | "modulos" | "metodologia" | "idioma">("perfil");
+  const [activeTab, setActiveTab] = useState<"perfil" | "seguridad" | "pdf" | "usuarios" | "modulos" | "metodologia">("perfil");
   const [isLoading, setIsLoading] = useState(false);
 
   // Perfil
@@ -69,17 +74,6 @@ export default function ConfiguracionPage() {
   const [isSavingPdf, setIsSavingPdf] = useState(false);
   const [pdfMessage, setPdfMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const colorLabels: Record<string, string> = {
-    primary: t("pdf.colorLabels.primary"),
-    primaryDark: t("pdf.colorLabels.primaryDark"),
-    primaryLight: t("pdf.colorLabels.primaryLight"),
-    accent: t("pdf.colorLabels.accent"),
-    dark: t("pdf.colorLabels.dark"),
-    text: t("pdf.colorLabels.text"),
-    textLight: t("pdf.colorLabels.textLight"),
-    background: t("pdf.colorLabels.background"),
-  };
-
   // Cargar datos del usuario
   useEffect(() => {
     const fetchProfile = async () => {
@@ -98,14 +92,14 @@ export default function ConfiguracionPage() {
         }
       } catch (error) {
         console.error("Error cargando perfil:", error);
-        setMessage({ type: "error", text: t("errors.profileLoadError") });
+        setMessage({ type: "error", text: "Error al cargar los datos del perfil" });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProfile();
-  }, [t]);
+  }, []);
 
   const handleChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -117,11 +111,11 @@ export default function ConfiguracionPage() {
     setPasswordMessage(null);
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordMessage({ type: "error", text: t("errors.passwordMismatch") });
+      setPasswordMessage({ type: "error", text: "Las nuevas contraseñas no coinciden" });
       return;
     }
     if (passwordData.newPassword.length < 6) {
-      setPasswordMessage({ type: "error", text: t("errors.passwordMinLength") });
+      setPasswordMessage({ type: "error", text: "La nueva contraseña debe tener al menos 6 caracteres" });
       return;
     }
 
@@ -131,13 +125,13 @@ export default function ConfiguracionPage() {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
       });
-      setPasswordMessage({ type: "success", text: t("success.passwordUpdated") });
+      setPasswordMessage({ type: "success", text: "Contraseña actualizada correctamente" });
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (error: any) {
       console.error("Error cambiando contraseña:", error);
       setPasswordMessage({
         type: "error",
-        text: error.response?.data?.error || t("errors.passwordUpdateError"),
+        text: error.response?.data?.error || "Error al cambiar la contraseña",
       });
     } finally {
       setIsChangingPassword(false);
@@ -156,7 +150,7 @@ export default function ConfiguracionPage() {
         telefono: formData.telefono,
       });
 
-      setMessage({ type: "success", text: t("success.profileUpdated") });
+      setMessage({ type: "success", text: "Perfil actualizado correctamente" });
 
       // Actualizar localStorage/user context
       if (user) {
@@ -166,7 +160,7 @@ export default function ConfiguracionPage() {
       console.error("Error guardando perfil:", error);
       setMessage({
         type: "error",
-        text: error.response?.data?.error || t("errors.profileUpdateError"),
+        text: error.response?.data?.error || "Error al guardar los cambios",
       });
     } finally {
       setIsSaving(false);
@@ -180,7 +174,7 @@ export default function ConfiguracionPage() {
       const res = await api.put("/auth/profile", {
         preferencias: { pdf_colors: pdfColors },
       });
-      setPdfMessage({ type: "success", text: t("success.colorsSaved") });
+      setPdfMessage({ type: "success", text: "Colores del PDF guardados correctamente" });
       if (user) {
         login(localStorage.getItem("token") || "", { ...user, ...res.data });
       }
@@ -188,7 +182,7 @@ export default function ConfiguracionPage() {
       console.error("Error guardando colores:", error);
       setPdfMessage({
         type: "error",
-        text: error.response?.data?.error || t("errors.colorsSaveError"),
+        text: error.response?.data?.error || "Error al guardar los colores",
       });
     } finally {
       setIsSavingPdf(false);
@@ -207,8 +201,8 @@ export default function ConfiguracionPage() {
     <div className="space-y-6 animate-in fade-in duration-700 max-w-3xl mx-auto">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-black text-[var(--foreground)]">{t("title")}</h2>
-        <p className="text-[var(--muted-foreground)]">{t("subtitle")}</p>
+        <h2 className="text-2xl font-black text-[var(--foreground)]">Configuración</h2>
+        <p className="text-[var(--muted-foreground)]">Gestiona tu información personal y preferencias</p>
       </div>
 
       {/* Tabs */}
@@ -222,7 +216,7 @@ export default function ConfiguracionPage() {
           }`}
         >
           <span className="flex items-center gap-2">
-            <User className="w-4 h-4" /> {t("tabs.perfil")}
+            <User className="w-4 h-4" /> Perfil
           </span>
         </button>
         <button
@@ -234,7 +228,7 @@ export default function ConfiguracionPage() {
           }`}
         >
           <span className="flex items-center gap-2">
-            <Lock className="w-4 h-4" /> {t("tabs.seguridad")}
+            <Lock className="w-4 h-4" /> Seguridad
           </span>
         </button>
         <button
@@ -246,7 +240,7 @@ export default function ConfiguracionPage() {
           }`}
         >
           <span className="flex items-center gap-2">
-            <FileText className="w-4 h-4" /> {t("tabs.pdf")}
+            <FileText className="w-4 h-4" /> Personalizar PDF
           </span>
         </button>
         {user?.rol === 'admin' && (
@@ -259,7 +253,7 @@ export default function ConfiguracionPage() {
             }`}
           >
             <span className="flex items-center gap-2">
-              <Users className="w-4 h-4" /> {t("tabs.usuarios")}
+              <Users className="w-4 h-4" /> Usuarios
             </span>
           </button>
         )}
@@ -273,7 +267,7 @@ export default function ConfiguracionPage() {
             }`}
           >
             <span className="flex items-center gap-2">
-              <Puzzle className="w-4 h-4" /> {t("tabs.modulos")}
+              <Puzzle className="w-4 h-4" /> Módulos
             </span>
           </button>
         )}
@@ -287,22 +281,10 @@ export default function ConfiguracionPage() {
             }`}
           >
             <span className="flex items-center gap-2">
-              <Settings className="w-4 h-4" /> {t("tabs.metodologia")}
+              <Settings className="w-4 h-4" /> Metodología
             </span>
           </button>
         )}
-        <button
-          onClick={() => setActiveTab("idioma")}
-          className={`px-4 py-2 rounded-t-xl text-sm font-medium transition-colors ${
-            activeTab === "idioma"
-              ? "bg-[var(--muted)] text-[var(--foreground)] border-t border-x border-[var(--border)]"
-              : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-          }`}
-        >
-          <span className="flex items-center gap-2">
-            <Globe className="w-4 h-4" /> {t("tabs.idioma")}
-          </span>
-        </button>
       </div>
 
       {/* Tab Perfil */}
@@ -324,11 +306,11 @@ export default function ConfiguracionPage() {
           <div className="glass-card rounded-2xl p-6">
             <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <User className="w-5 h-5 text-blue-400" />
-              {t("profile.personalInfo")}
+              Información Personal
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-[var(--muted-foreground)] mb-1">{tAuth("profile.firstName")}</label>
+                <label className="block text-sm text-[var(--muted-foreground)] mb-1">Nombre</label>
                 <input
                   type="text"
                   value={formData.nombre}
@@ -338,7 +320,7 @@ export default function ConfiguracionPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-[var(--muted-foreground)] mb-1">{tAuth("profile.lastName")}</label>
+                <label className="block text-sm text-[var(--muted-foreground)] mb-1">Apellido</label>
                 <input
                   type="text"
                   value={formData.apellido}
@@ -353,11 +335,11 @@ export default function ConfiguracionPage() {
           <div className="glass-card rounded-2xl p-6">
             <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <Mail className="w-5 h-5 text-blue-400" />
-              {tAuth("profile.contact")}
+              Contacto
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-[var(--muted-foreground)] mb-1">{tAuth("profile.email")}</label>
+                <label className="block text-sm text-[var(--muted-foreground)] mb-1">Email</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]" />
                   <input
@@ -368,11 +350,11 @@ export default function ConfiguracionPage() {
                   />
                 </div>
                 <p className="text-xs text-[var(--muted-foreground)] mt-1">
-                  {t("profile.emailReadOnly")}
+                  El email no puede modificarse. Contacta a un administrador si necesitas cambiarlo.
                 </p>
               </div>
               <div>
-                <label className="block text-sm text-[var(--muted-foreground)] mb-1">{tAuth("profile.phone")}</label>
+                <label className="block text-sm text-[var(--muted-foreground)] mb-1">Teléfono</label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]" />
                   <input
@@ -380,7 +362,7 @@ export default function ConfiguracionPage() {
                     value={formData.telefono}
                     onChange={(e) => handleChange("telefono", e.target.value)}
                     className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
-                    placeholder={t("profile.phonePlaceholder")}
+                    placeholder="+598 99 123 456"
                   />
                 </div>
               </div>
@@ -388,11 +370,11 @@ export default function ConfiguracionPage() {
           </div>
 
           <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">{tAuth("profile.systemInfo")}</h3>
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Información del Sistema</h3>
             <div className="space-y-3">
               <div className="flex justify-between py-2 border-b border-[var(--border)]">
-                <span className="text-[var(--muted-foreground)]">{tAuth("profile.role")}</span>
-                <span className="font-medium text-[var(--foreground)] capitalize">{user?.rol ? tAuth(`roles.${user.rol}`) : tAuth("roles.vendedor")}</span>
+                <span className="text-[var(--muted-foreground)]">Rol</span>
+                <span className="font-medium text-[var(--foreground)] capitalize">{user?.rol || "Vendedor"}</span>
               </div>
             </div>
           </div>
@@ -404,7 +386,7 @@ export default function ConfiguracionPage() {
               className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white rounded-xl font-medium transition-colors"
             >
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              {t("profile.saveChanges")}
+              Guardar cambios
             </button>
           </div>
         </form>
@@ -415,7 +397,7 @@ export default function ConfiguracionPage() {
         <form onSubmit={handleChangePassword} className="glass-card rounded-2xl p-6 space-y-4">
           <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
             <Lock className="w-5 h-5 text-blue-400" />
-            {t("tabs.seguridad")}
+            Seguridad
           </h3>
 
           {passwordMessage && (
@@ -432,7 +414,7 @@ export default function ConfiguracionPage() {
           )}
 
           <div>
-            <label className="block text-sm text-[var(--muted-foreground)] mb-1">{tAuth("profile.currentPassword")}</label>
+            <label className="block text-sm text-[var(--muted-foreground)] mb-1">Contraseña actual</label>
             <input
               type="password"
               value={passwordData.currentPassword}
@@ -442,7 +424,7 @@ export default function ConfiguracionPage() {
             />
           </div>
           <div>
-            <label className="block text-sm text-[var(--muted-foreground)] mb-1">{tAuth("profile.newPassword")}</label>
+            <label className="block text-sm text-[var(--muted-foreground)] mb-1">Nueva contraseña</label>
             <input
               type="password"
               value={passwordData.newPassword}
@@ -453,7 +435,7 @@ export default function ConfiguracionPage() {
             />
           </div>
           <div>
-            <label className="block text-sm text-[var(--muted-foreground)] mb-1">{tAuth("profile.confirmNewPassword")}</label>
+            <label className="block text-sm text-[var(--muted-foreground)] mb-1">Confirmar nueva contraseña</label>
             <input
               type="password"
               value={passwordData.confirmPassword}
@@ -470,12 +452,13 @@ export default function ConfiguracionPage() {
               className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white rounded-xl font-medium transition-colors"
             >
               {isChangingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
-              {t("security.changePassword")}
+              Cambiar contraseña
             </button>
           </div>
         </form>
       )}
 
+      {/* Tab Personalizar PDF */}
       {/* Tab Usuarios */}
       {activeTab === "usuarios" && (
         <UsersTab />
@@ -487,21 +470,6 @@ export default function ConfiguracionPage() {
 
       {activeTab === "metodologia" && (
         <WorkflowTab />
-      )}
-
-      {activeTab === "idioma" && (
-        <div className="glass-card rounded-2xl p-6 space-y-4">
-          <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-blue-400" />
-            {t("language.title")}
-          </h3>
-          <p className="text-[var(--muted-foreground)]">
-            {t("language.description")}
-          </p>
-          <div className="flex items-center gap-4">
-            <LanguageSwitcher />
-          </div>
-        </div>
       )}
 
       {activeTab === "pdf" && (
@@ -522,7 +490,7 @@ export default function ConfiguracionPage() {
           <div className="glass-card rounded-2xl p-6">
             <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
               <Palette className="w-5 h-5 text-purple-400" />
-              {t("pdf.colorsTitle")}
+              Colores de tu cotización PDF
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -535,7 +503,7 @@ export default function ConfiguracionPage() {
                       onChange={(e) => setPdfColors((prev) => ({ ...prev, [key]: e.target.value }))}
                       className="w-10 h-10 rounded-lg border-0 p-0 cursor-pointer bg-transparent"
                     />
-                    <span className="text-sm text-[var(--foreground)]">{colorLabels[key]}</span>
+                    <span className="text-sm text-[var(--foreground)]">{COLOR_LABELS[key]}</span>
                   </div>
                   <span className="text-xs font-mono text-[var(--muted-foreground)] uppercase">{value}</span>
                 </div>
@@ -549,7 +517,7 @@ export default function ConfiguracionPage() {
                 className="flex items-center gap-2 px-4 py-2.5 bg-[var(--muted)] hover:bg-[var(--border)] text-[var(--foreground)] rounded-xl font-medium transition-colors"
               >
                 <RotateCcw className="w-4 h-4" />
-                {t("pdf.restoreDefault")}
+                Restaurar colores por defecto
               </button>
               <button
                 type="button"
@@ -558,14 +526,14 @@ export default function ConfiguracionPage() {
                 className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/50 text-white rounded-xl font-medium transition-colors"
               >
                 {isSavingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {t("pdf.savePreferences")}
+                Guardar preferencias
               </button>
             </div>
           </div>
 
           {/* Preview visual del PDF */}
           <div className="glass-card rounded-2xl p-6">
-            <h3 className="text-sm font-bold text-[var(--foreground)] mb-4">{t("pdf.approximatePreview")}</h3>
+            <h3 className="text-sm font-bold text-[var(--foreground)] mb-4">Vista previa aproximada</h3>
             <div
               className="rounded-xl border overflow-hidden"
               style={{ borderColor: pdfColors.primary }}
@@ -587,7 +555,7 @@ export default function ConfiguracionPage() {
                       Trip Conecta
                     </div>
                     <div className="text-[10px]" style={{ color: pdfColors.textLight }}>
-                      {t("pdf.travelAgency")}
+                      Agencia de viajes
                     </div>
                   </div>
                 </div>
@@ -608,7 +576,7 @@ export default function ConfiguracionPage() {
                   style={{ backgroundColor: pdfColors.background, borderLeft: `4px solid ${pdfColors.primary}` }}
                 >
                   <div className="text-xs font-bold mb-1" style={{ color: pdfColors.primary }}>
-                    {t("pdf.packageLabel")}
+                    PAQUETE
                   </div>
                   <div className="text-sm font-bold" style={{ color: pdfColors.dark }}>
                     Europa Express 2024
@@ -624,7 +592,7 @@ export default function ConfiguracionPage() {
                     style={{ backgroundColor: pdfColors.background }}
                   >
                     <div className="text-[10px]" style={{ color: pdfColors.textLight }}>
-                      {t("pdf.passengers")}
+                      Pasajeros
                     </div>
                     <div className="text-sm font-bold" style={{ color: pdfColors.text }}>
                       2
@@ -635,7 +603,7 @@ export default function ConfiguracionPage() {
                     style={{ backgroundColor: pdfColors.background }}
                   >
                     <div className="text-[10px]" style={{ color: pdfColors.textLight }}>
-                      {t("pdf.total")}
+                      Total
                     </div>
                     <div className="text-sm font-bold" style={{ color: pdfColors.primary }}>
                       $2.500
@@ -648,7 +616,7 @@ export default function ConfiguracionPage() {
                   style={{ backgroundColor: pdfColors.background, border: `1px solid ${pdfColors.primaryLight}` }}
                 >
                   <span style={{ color: pdfColors.dark }}>
-                    {t("pdf.validity")}
+                    Validez de 24 horas desde la emisión.
                   </span>
                 </div>
               </div>

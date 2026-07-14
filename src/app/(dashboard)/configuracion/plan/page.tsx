@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { useTenant, type PlanConfig } from "@/context/TenantContext";
 import { useAuth } from "@/context/AuthContext";
 import { useBilling, type SubscriptionStatus } from "@/hooks/useBilling";
-import { useTranslations, useLocale } from "next-intl";
 import PlanCard from "@/components/billing/PlanCard";
 import InvoiceHistory from "@/components/billing/InvoiceHistory";
 import {
@@ -34,8 +33,7 @@ export default function PlanPage() {
   const { user } = useAuth();
   const { tenant, isLoading: isTenantLoading } = useTenant();
   const { createCheckout, createPortal, getSubscriptionStatus, cancelSubscription, isLoading: isBillingLoading, error: billingError } = useBilling();
-  const t = useTranslations("plan");
-  const locale = useLocale();
+  const locale = "es-ES";
 
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true);
@@ -70,7 +68,7 @@ export default function PlanPage() {
     const fetchPlans = async () => {
       try {
         const res = await fetch(`${API_URL}/config/plans`);
-        if (!res.ok) throw new Error(t("loadPlansError"));
+        if (!res.ok) throw new Error("Error al cargar los planes");
         const data = await res.json();
         setPlans(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -80,7 +78,7 @@ export default function PlanPage() {
       }
     };
     fetchPlans();
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     const fetchSubscriptionStatus = async () => {
@@ -125,7 +123,7 @@ export default function PlanPage() {
   };
 
   const handleCancel = async () => {
-    if (!confirm(t("cancelConfirmation"))) return;
+    if (!confirm("¿Estás seguro de que querés cancelar la suscripción?")) return;
     const ok = await cancelSubscription();
     if (ok) {
       window.location.reload();
@@ -155,9 +153,9 @@ export default function PlanPage() {
         <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4">
           <AlertCircle className="w-8 h-8 text-red-400" />
         </div>
-        <h2 className="text-2xl font-black text-[var(--foreground)] mb-2">{t("restrictedTitle")}</h2>
+        <h2 className="text-2xl font-black text-[var(--foreground)] mb-2">{"Acceso restringido"}</h2>
         <p className="text-[var(--muted-foreground)] max-w-md">
-          {t("restrictedDescription")}
+          {"Solo los administradores pueden acceder a esta sección."}
         </p>
       </div>
     );
@@ -169,10 +167,10 @@ export default function PlanPage() {
       <div>
         <h2 className="text-2xl font-black text-[var(--foreground)] flex items-center gap-2">
           <CreditCard className="w-6 h-6 text-emerald-500" />
-          {t("title")}
+          {"Plan y facturación"}
         </h2>
         <p className="text-[var(--muted-foreground)]">
-          {t("subtitle")}
+          {"Gestioná tu plan y pagos"}
         </p>
       </div>
 
@@ -181,9 +179,9 @@ export default function PlanPage() {
         <div className="rounded-2xl p-4 border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 flex items-start gap-3">
           <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium">{t("subscriptionUpdated")}</p>
+            <p className="font-medium">{"Suscripción actualizada"}</p>
             <p className="text-sm opacity-90">
-              {t("subscriptionUpdatedBody")}
+              {"Tu suscripción se actualizó correctamente."}
             </p>
           </div>
         </div>
@@ -192,9 +190,9 @@ export default function PlanPage() {
         <div className="rounded-2xl p-4 border border-amber-500/20 bg-amber-500/10 text-amber-400 flex items-start gap-3">
           <X className="w-5 h-5 shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium">{t("paymentCanceled")}</p>
+            <p className="font-medium">{"Pago cancelado"}</p>
             <p className="text-sm opacity-90">
-              {t("paymentCanceledBody")}
+              {"El proceso de pago fue cancelado."}
             </p>
           </div>
         </div>
@@ -211,11 +209,11 @@ export default function PlanPage() {
         >
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium">{t("trialTitle")}</p>
+            <p className="font-medium">{"Estás en periodo de prueba"}</p>
             <p className="text-sm opacity-90">
               {daysLeft !== null && daysLeft > 0
-                ? t("trialDaysLeft", { days: daysLeft, date: formatDate(tenant.trial_ends_at) })
-                : t("trialExpires", { date: formatDate(tenant.trial_ends_at) })}
+                ? `Te quedan ${daysLeft} días de prueba. Vence el ${formatDate(tenant.trial_ends_at)}.`
+                : `Tu prueba vence el ${formatDate(tenant.trial_ends_at)}.`}
             </p>
           </div>
         </div>
@@ -225,9 +223,9 @@ export default function PlanPage() {
         <div className="rounded-2xl p-4 border border-red-500/20 bg-red-500/10 text-red-400 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium">{t("suspendedTitle")}</p>
+            <p className="font-medium">{"Suscripción suspendida"}</p>
             <p className="text-sm opacity-90">
-              {t("suspendedBody")}
+              {"Tu suscripción está suspendida. Renovala para seguir usando el panel."}
             </p>
           </div>
         </div>
@@ -239,21 +237,21 @@ export default function PlanPage() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-sm font-bold uppercase tracking-wider text-emerald-500">
-                {t("currentPlan")}
+                {"Plan actual"}
               </span>
               {isTrial && (
                 <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                  {t("status.trial")}
+                  {"Prueba"}
                 </span>
               )}
               {isActive && (
                 <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                  {t("status.active")}
+                  {"Activo"}
                 </span>
               )}
               {isSuspended && (
                 <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
-                  {t("status.suspended")}
+                  {"Suspendido"}
                 </span>
               )}
             </div>
@@ -261,16 +259,16 @@ export default function PlanPage() {
               {tenant.plan?.nombre || "Free"}
             </h3>
             <p className="text-[var(--muted-foreground)] mt-1">
-              {formatCurrency(tenant.plan?.precio_mensual_usd || 0, locale)} / {t("month")}
+              {formatCurrency(tenant.plan?.precio_mensual_usd || 0, locale)} / {"mes"}
             </p>
             {(isActive || isTrial) && subscriptionStatus?.subscription_renewal_date && (
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
                 <span className="text-[var(--muted-foreground)]">
-                  {t("renewalLabel", { date: formatDate(subscriptionStatus.subscription_renewal_date) })}
+                  {`Próxima renovación: ${formatDate(subscriptionStatus.subscription_renewal_date)}`}
                 </span>
                 {subscriptionStatus.next_invoice_amount_usd != null && subscriptionStatus.next_invoice_amount_usd > 0 && (
                   <span className="text-[var(--muted-foreground)]">
-                    {t("nextInvoiceLabel", { amount: formatCurrency(subscriptionStatus.next_invoice_amount_usd, locale) })}
+                    {`Próximo pago: ${formatCurrency(subscriptionStatus.next_invoice_amount_usd, locale)}`}
                   </span>
                 )}
               </div>
@@ -287,13 +285,13 @@ export default function PlanPage() {
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-bold">{t("trialBoxTitle")}</p>
+                    <p className="font-bold">{"Periodo de prueba"}</p>
                     <p className="text-sm opacity-90">
                       {daysLeft !== null && daysLeft > 0
-                        ? t("trialBoxDaysLeft", { days: daysLeft, date: formatDate(tenant.trial_ends_at) })
-                        : t("trialBoxExpires", { date: formatDate(tenant.trial_ends_at) })}
+                        ? `Te quedan ${daysLeft} días de prueba. Vence el ${formatDate(tenant.trial_ends_at)}.`
+                        : `Tu prueba vence el ${formatDate(tenant.trial_ends_at)}.`}
                     </p>
-                    <p className="text-sm mt-2 opacity-80">{t("trialBoxCTA")}</p>
+                    <p className="text-sm mt-2 opacity-80">{"Elegí un plan para continuar."}</p>
                   </div>
                 </div>
               </div>
@@ -307,7 +305,7 @@ export default function PlanPage() {
                 className="px-6 py-2.5 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
               >
                 {isBillingLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {t("manageSubscription")}
+                {"Gestionar suscripción"}
                 <ExternalLink className="w-4 h-4" />
               </button>
               {(isActive || isTrial) && (
@@ -316,7 +314,7 @@ export default function PlanPage() {
                   disabled={isBillingLoading}
                   className="px-6 py-2.5 border border-red-500/30 text-red-400 rounded-xl font-medium hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2"
                 >
-                  {t("cancelSubscription")}
+                  {"Cancelar suscripción"}
                 </button>
               )}
             </div>
@@ -332,12 +330,12 @@ export default function PlanPage() {
               <Users className="w-5 h-5 text-emerald-500" />
             </div>
             <div>
-              <h3 className="font-bold text-[var(--foreground)]">{t("extraUsersTitle")}</h3>
+              <h3 className="font-bold text-[var(--foreground)]">{"Usuarios extra"}</h3>
               <p className="text-sm text-[var(--muted-foreground)]">
-                {t("extraUsersPrice", { price: formatCurrency(10, locale) })}
+                {`${formatCurrency(10, locale)} por usuario adicional`}
               </p>
               <p className="text-xs text-emerald-500 mt-1">
-                {t("extraUsersNote")}
+                {"Solo para planes Pro"}
               </p>
             </div>
           </div>
@@ -385,7 +383,7 @@ export default function PlanPage() {
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
           <Calendar className="w-5 h-5 text-blue-400" />
-          {t("paymentHistory")}
+          {"Historial de pagos"}
         </h3>
         <InvoiceHistory />
       </div>

@@ -5,11 +5,8 @@ import { motion } from "framer-motion";
 import { useToast } from "@/context/ToastContext";
 import { Mail, ArrowLeft, Send } from "lucide-react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
 
 export default function ForgotPasswordPage() {
-  const t = useTranslations("auth.forgotPassword");
-  const tCommon = useTranslations("common");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -30,12 +27,12 @@ export default function ForgotPasswordPage() {
 
       if (res.ok) {
         setSent(true);
-        toastSuccess(t("instructionsSentTitle"), t("instructionsSentBody"));
+        toastSuccess("Instrucciones enviadas", "Revisá tu bandeja de entrada");
       } else {
-        toastError(data.error || t("requestError"), tCommon("error"));
+        toastError(data.error || "Error al enviar solicitud", "Error");
       }
     } catch (err) {
-      toastError(t("connectionError"), t("connectionErrorBody"));
+      toastError("Error de conexión", "No se pudo contactar al servidor");
     } finally {
       setIsLoading(false);
     }
@@ -54,10 +51,10 @@ export default function ForgotPasswordPage() {
         >
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-[var(--foreground)] mb-2">
-              {t("title")}
+              Recuperar contraseña
             </h2>
             <p className="text-[var(--muted-foreground)] text-sm">
-              {t("subtitle")}
+              Ingresá tu email y te enviaremos un link para restablecerla.
             </p>
           </div>
 
@@ -67,21 +64,21 @@ export default function ForgotPasswordPage() {
                 <Send className="w-8 h-8 text-green-400" />
               </div>
               <p className="text-[var(--foreground)]">
-                {t("sentMessage")}
+                Si el email existe en nuestro sistema, recibirás instrucciones en breve.
               </p>
               <Link
                 href="/login"
                 className="inline-flex items-center gap-2 text-[var(--primary)] hover:underline"
               >
                 <ArrowLeft className="w-4 h-4" />
-                {t("backToLogin")}
+                Volver al login
               </Link>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-[var(--foreground)] ml-1">
-                  {t("email")}
+                  Correo electrónico
                 </label>
                 <div className="relative group">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] group-focus-within:text-[var(--primary)] transition-colors" />
@@ -89,7 +86,7 @@ export default function ForgotPasswordPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={t("placeholder")}
+                    placeholder="tu@email.com"
                     className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl pl-12 pr-4 py-3.5 
                              text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] 
                              focus:outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 
@@ -107,7 +104,7 @@ export default function ForgotPasswordPage() {
                 {isLoading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
                 ) : (
-                  <span>{t("submit")}</span>
+                  <span>Enviar link de recuperación</span>
                 )}
               </button>
 
@@ -117,7 +114,7 @@ export default function ForgotPasswordPage() {
                   className="inline-flex items-center gap-2 text-sm text-[var(--primary)] hover:underline"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  {t("backToLogin")}
+                  Volver al login
                 </Link>
               </div>
             </form>

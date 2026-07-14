@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslations, useLocale } from 'next-intl';
 import { 
   User, 
   Plane, 
@@ -51,8 +50,6 @@ interface Pasajero {
 // ============================================
 export default function NuevaCotizacionManual() {
   const router = useRouter();
-  const t = useTranslations('cotizaciones');
-  const locale = useLocale();
   const { success: toastSuccess, error: toastError } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -106,11 +103,11 @@ export default function NuevaCotizacionManual() {
   // PASOS DEL WIZARD
   // ============================================
   const steps = [
-    { id: 1, label: t('new.steps.cliente'), icon: User },
-    { id: 2, label: t('new.steps.vuelos'), icon: Plane },
-    { id: 3, label: t('new.steps.servicios'), icon: Briefcase },
-    { id: 4, label: t('new.steps.itinerario'), icon: FileText },
-    { id: 5, label: t('new.steps.precios'), icon: DollarSign },
+    { id: 1, label: 'Cliente', icon: User },
+    { id: 2, label: 'Vuelos', icon: Plane },
+    { id: 3, label: 'Servicios del viaje', icon: Briefcase },
+    { id: 4, label: 'Itinerario', icon: FileText },
+    { id: 5, label: 'Precios', icon: DollarSign },
   ];
 
   // ============================================
@@ -120,7 +117,7 @@ export default function NuevaCotizacionManual() {
     setParseError('');
     
     if (!amadeusText.trim()) {
-      setParseError(t('new.flights.parseErrorEmpty'));
+      setParseError('Por favor ingresa el código de Amadeus');
       return;
     }
 
@@ -129,7 +126,7 @@ export default function NuevaCotizacionManual() {
     if (result.success && result.flights.length > 0) {
       setParsedFlights(result.flights);
     } else {
-      setParseError(result.errors[0] || t('new.flights.parseError'));
+      setParseError(result.errors[0] || 'No se pudieron parsear los vuelos. Verifica el formato.');
       setParsedFlights([]);
     }
   };
@@ -207,7 +204,7 @@ export default function NuevaCotizacionManual() {
 
   const handleSubmit = async () => {
     if (!clienteSeleccionado) {
-      toastError(t('new.errors.selectClient'), t('new.errors.clientRequired'));
+      toastError('Debes seleccionar un cliente', 'Cliente requerido');
       return;
     }
 
@@ -252,12 +249,12 @@ export default function NuevaCotizacionManual() {
       };
 
       const response = await api.post('/cotizaciones/manual', cotizacionData);
-      toastSuccess(t('new.success.created'), t('new.success.ready'));
+      toastSuccess('Cotización creada exitosamente', '¡Listo!');
       router.push('/cotizaciones');
     } catch (error: any) {
       console.error('Error al crear cotización:', error.response?.data || error.message);
       const errorMsg = error.response?.data?.details || error.response?.data?.error || error.message || 'Error desconocido';
-      toastError(errorMsg, t('new.errors.conversionError'));
+      toastError(errorMsg, 'Error al crear cotización');
     } finally {
       setIsSubmitting(false);
     }
@@ -272,21 +269,21 @@ export default function NuevaCotizacionManual() {
       <div className="glass-card rounded-2xl p-6 border border-blue-500/30">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-blue-400" />
-          {t('new.quoteName.title')}
+          Nombre de la Cotización
         </h3>
         <div>
           <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">
-            {t('new.quoteName.label')}
+            Nombre del viaje *
           </label>
           <input
             type="text"
             value={nombreCotizacion}
             onChange={(e) => setNombreCotizacion(e.target.value)}
             className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-            placeholder={t('new.quoteName.placeholder')}
+            placeholder="Ej: Viaje a Madrid - Semana Santa"
           />
           <p className="text-xs text-[var(--muted-foreground)] mt-1">
-            {t('new.quoteName.hint')}
+            Este nombre aparecerá en el PDF y en la lista de cotizaciones
           </p>
         </div>
       </div>
@@ -295,7 +292,7 @@ export default function NuevaCotizacionManual() {
       <div className="glass-card rounded-2xl p-6 relative z-20">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
           <User className="w-5 h-5 text-blue-400" />
-          {t('new.client.title')}
+          Cliente (Titular)
         </h3>
         <BuscarCliente
           onSelect={setClienteSeleccionado}
@@ -309,7 +306,7 @@ export default function NuevaCotizacionManual() {
         <div className="glass-card rounded-2xl p-6">
           <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
             <User className="w-5 h-5 text-blue-400" />
-            {t('new.client.frequentPassengers')}
+            Pasajeros frecuentes
           </h3>
           <div className="space-y-2">
             {pasajerosFrecuentes.map((p: any) => (
@@ -341,25 +338,25 @@ export default function NuevaCotizacionManual() {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-[var(--foreground)] flex items-center gap-2">
             <User className="w-5 h-5 text-blue-400" />
-            {t('new.client.additionalPassengers')}
+            Pasajeros Adicionales
           </h3>
           <button
             onClick={handleAddPasajero}
             className="flex items-center gap-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-xl transition-colors text-sm font-bold"
           >
             <Plus className="w-4 h-4" />
-            {t('new.client.addPassenger')}
+            Agregar
           </button>
         </div>
 
         {pasajeros.length === 0 ? (
-          <p className="text-[var(--muted-foreground)] text-center py-4">{t('new.client.noAdditional')}</p>
+          <p className="text-[var(--muted-foreground)] text-center py-4">No hay pasajeros adicionales</p>
         ) : (
           <div className="space-y-4">
             {pasajeros.map((pasajero, index) => (
               <div key={pasajero.id} className="bg-[var(--muted)] rounded-xl p-4 border border-[var(--border)]">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-bold text-[var(--foreground)]">{t('new.client.passengerN', { number: index + 2 })}</span>
+                  <span className="text-sm font-bold text-[var(--foreground)]">Pasajero {index + 2}</span>
                   <button
                     onClick={() => handleRemovePasajero(pasajero.id)}
                     className="p-1 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
@@ -377,7 +374,7 @@ export default function NuevaCotizacionManual() {
                       setPasajeros(updated);
                     }}
                     className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-sm outline-none focus:border-blue-500"
-                    placeholder={t('new.client.firstName')}
+                    placeholder="Nombre *"
                   />
                   <input
                     type="text"
@@ -388,7 +385,7 @@ export default function NuevaCotizacionManual() {
                       setPasajeros(updated);
                     }}
                     className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-sm outline-none focus:border-blue-500"
-                    placeholder={t('new.client.lastName')}
+                    placeholder="Apellido *"
                   />
                   <input
                     type="text"
@@ -399,7 +396,7 @@ export default function NuevaCotizacionManual() {
                       setPasajeros(updated);
                     }}
                     className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-sm outline-none focus:border-blue-500"
-                    placeholder={t('new.client.document')}
+                    placeholder="Documento *"
                   />
                   <input
                     type="date"
@@ -452,7 +449,7 @@ export default function NuevaCotizacionManual() {
               : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
           }`}
         >
-          {t('new.flights.amadeusTab')}
+          Pegar desde Amadeus
         </button>
         <button
           onClick={() => setUseAmadeus(false)}
@@ -462,7 +459,7 @@ export default function NuevaCotizacionManual() {
               : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
           }`}
         >
-          {t('new.flights.manualTab')}
+          Ingresar Manual
         </button>
       </div>
 
@@ -471,16 +468,21 @@ export default function NuevaCotizacionManual() {
         <div className="glass-card rounded-2xl p-6">
           <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-teal-400" />
-            {t('new.flights.amadeusTitle')}
+            Código Amadeus
           </h3>
           <p className="text-[var(--muted-foreground)] text-sm mb-4">
-            {t('new.flights.amadeusDescription')}
+            Pega aquí el itinerario de Amadeus (formato RP/). El sistema detectará automáticamente los vuelos.
           </p>
           
           <textarea
             value={amadeusText}
             onChange={(e) => setAmadeusText(e.target.value)}
-            placeholder={t('new.flights.amadeusPlaceholder')}
+            placeholder={`Ejemplo:
+RP/DZOUY2100/
+  1  UX 046 T 16MAY 6 MVDMAD DK1  1220 0510  17MAY  E  0 789 M
+     SEE RTSVC
+  2  UX 045 N 01JUN 1 MADMVD DK1  2355 0735  02JUN  E  0 789 M
+     SEE RTSVC`}
             className="w-full h-48 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] text-sm font-mono outline-none focus:border-teal-500 resize-none"
           />
           
@@ -497,14 +499,14 @@ export default function NuevaCotizacionManual() {
             className="mt-4 w-full py-3 bg-teal-500/20 hover:bg-teal-500/30 disabled:opacity-50 disabled:cursor-not-allowed text-teal-400 font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             <Sparkles className="w-4 h-4" />
-            {t('new.flights.detectFlights')}
+            Detectar Vuelos Automáticamente
           </button>
 
           {/* Resultados parseados */}
           {parsedFlights.length > 0 && (
             <div className="mt-6 space-y-3">
               <h4 className="text-sm font-bold text-[var(--foreground)]">
-                ✓ {parsedFlights.length} {t('new.flights.detectedFlights')}
+                ✓ {parsedFlights.length} vuelo(s) detectado(s)
               </h4>
               {parsedFlights.map((flight, idx) => (
                 <div key={idx} className="bg-teal-500/10 border border-teal-500/30 rounded-xl p-4">
@@ -515,7 +517,7 @@ export default function NuevaCotizacionManual() {
                         {flight.aerolinea_codigo} {flight.numero_vuelo}
                       </span>
                     </div>
-                    <span className="text-xs text-[var(--muted-foreground)]">{t('new.flights.class')} {flight.clase_codigo}</span>
+                    <span className="text-xs text-[var(--muted-foreground)]">Clase {flight.clase_codigo}</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
                     <div className="text-center">
@@ -531,7 +533,7 @@ export default function NuevaCotizacionManual() {
                     </div>
                   </div>
                   <p className="text-xs text-[var(--muted-foreground)] mt-2">
-                    {new Date(flight.fecha_salida).toLocaleDateString(locale, { 
+                    {new Date(flight.fecha_salida).toLocaleDateString('es-ES', { 
                       weekday: 'short', 
                       day: 'numeric', 
                       month: 'short' 
@@ -545,7 +547,7 @@ export default function NuevaCotizacionManual() {
       ) : (
         /* MANUAL ENTRY */
         <div className="glass-card rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">{t('new.flights.manualEntry')}</h3>
+          <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Ingreso Manual</h3>
           <ManualFlightForm flights={vuelosManuales} onChange={setVuelosManuales} />
         </div>
       )}
@@ -561,9 +563,9 @@ export default function NuevaCotizacionManual() {
           seguros={seguros}
           extras={extras}
           moneda={precios.moneda}
-          onChange={({ alojamientos: a, transfers: tr, seguros: s, extras: e }) => {
+          onChange={({ alojamientos: a, transfers: t, seguros: s, extras: e }) => {
             setAlojamientos(a);
-            setTransfers(tr);
+            setTransfers(t);
             setSeguros(s);
             setExtras(e);
           }}
@@ -578,12 +580,12 @@ export default function NuevaCotizacionManual() {
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
           <FileText className="w-5 h-5 text-amber-400" />
-          {t('new.itinerary.detailedItinerary')}
+          Itinerario Detallado
         </h3>
         <textarea
           value={itinerario}
           onChange={(e) => setItinerario(e.target.value)}
-          placeholder={t('new.itinerary.placeholder')}
+          placeholder="Describe el itinerario día por día..."
           className="w-full h-40 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] text-sm outline-none focus:border-amber-500 resize-none"
         />
       </div>
@@ -591,13 +593,13 @@ export default function NuevaCotizacionManual() {
       {/* Incluye */}
       <div className="glass-card rounded-2xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-[var(--foreground)] text-green-400">{t('new.itinerary.includesTitle')}</h3>
+          <h3 className="text-lg font-bold text-[var(--foreground)] text-green-400">El paquete incluye</h3>
           <button
             onClick={handleAddIncluye}
             className="flex items-center gap-1 px-3 py-1 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg transition-colors text-sm"
           >
             <Plus className="w-4 h-4" />
-            {t('new.itinerary.includesAdd')}
+            Agregar
           </button>
         </div>
         <div className="space-y-2">
@@ -613,7 +615,7 @@ export default function NuevaCotizacionManual() {
                   setIncluye(updated);
                 }}
                 className="flex-1 bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-sm outline-none focus:border-green-500"
-                placeholder={t('new.itinerary.includesPlaceholder')}
+                placeholder="Ej: Aéreos ida y vuelta"
               />
               <button
                 onClick={() => handleRemoveIncluye(index)}
@@ -629,13 +631,13 @@ export default function NuevaCotizacionManual() {
       {/* No Incluye */}
       <div className="glass-card rounded-2xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-[var(--foreground)] text-red-400">{t('new.itinerary.notIncludesTitle')}</h3>
+          <h3 className="text-lg font-bold text-[var(--foreground)] text-red-400">El paquete NO incluye</h3>
           <button
             onClick={handleAddNoIncluye}
             className="flex items-center gap-1 px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors text-sm"
           >
             <Plus className="w-4 h-4" />
-            {t('new.itinerary.notIncludesAdd')}
+            Agregar
           </button>
         </div>
         <div className="space-y-2">
@@ -651,7 +653,7 @@ export default function NuevaCotizacionManual() {
                   setNoIncluye(updated);
                 }}
                 className="flex-1 bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--foreground)] text-sm outline-none focus:border-red-500"
-                placeholder={t('new.itinerary.notIncludesPlaceholder')}
+                placeholder="Ej: Gastos personales"
               />
               <button
                 onClick={() => handleRemoveNoIncluye(index)}
@@ -666,11 +668,11 @@ export default function NuevaCotizacionManual() {
 
       {/* Políticas de Cancelación */}
       <div className="glass-card rounded-2xl p-6">
-        <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">{t('new.itinerary.cancellationPolicies')}</h3>
+        <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Políticas de Cancelación</h3>
         <textarea
           value={politicasCancelacion}
           onChange={(e) => setPoliticasCancelacion(e.target.value)}
-          placeholder={t('new.itinerary.cancellationPlaceholder')}
+          placeholder="Condiciones de cancelación y reembolso..."
           className="w-full h-24 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] text-sm outline-none focus:border-blue-500 resize-none"
         />
       </div>
@@ -682,12 +684,12 @@ export default function NuevaCotizacionManual() {
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
           <DollarSign className="w-5 h-5 text-green-400" />
-          {t('new.prices.title')}
+          Precios Desglosados
         </h3>
 
         {/* Moneda */}
         <div className="mb-6">
-          <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">{t('new.prices.currency')}</label>
+          <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Moneda</label>
           <div className="flex gap-2">
             <button
               onClick={() => setPrecios({ ...precios, moneda: 'USD' })}
@@ -697,7 +699,7 @@ export default function NuevaCotizacionManual() {
                   : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
               }`}
             >
-              {t('new.prices.usd')}
+              USD (Dólares)
             </button>
             <button
               onClick={() => setPrecios({ ...precios, moneda: 'UYU' })}
@@ -707,26 +709,26 @@ export default function NuevaCotizacionManual() {
                   : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
               }`}
             >
-              {t('new.prices.uyu')}
+              $ (Pesos Uruguayos)
             </button>
           </div>
         </div>
 
         {/* Desglose de Precios */}
         <div className="space-y-4 mb-6">
-          <h4 className="text-sm font-bold text-[var(--foreground)]">{t('new.prices.serviceBreakdown')}</h4>
+          <h4 className="text-sm font-bold text-[var(--foreground)]">Desglose de Servicios</h4>
           
           {/* Vuelos */}
           <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
             <Plane className="w-5 h-5 text-blue-400" />
             <div className="flex-1">
-              <label className="block text-xs text-[var(--muted-foreground)]">{t('new.prices.flights')}</label>
+              <label className="block text-xs text-[var(--muted-foreground)]">Vuelos</label>
               <input
                 type="number"
                 value={precios.vuelos}
                 onChange={(e) => setPrecios({ ...precios, vuelos: e.target.value })}
                 className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-blue-500"
-                placeholder={t('new.prices.pricePlaceholder')}
+                placeholder="0.00"
               />
             </div>
             <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
@@ -736,13 +738,13 @@ export default function NuevaCotizacionManual() {
           <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
             <BedDouble className="w-5 h-5 text-purple-400" />
             <div className="flex-1">
-              <label className="block text-xs text-[var(--muted-foreground)]">{t('new.prices.accommodation')}</label>
+              <label className="block text-xs text-[var(--muted-foreground)]">Hospedajes</label>
               <input
                 type="number"
                 value={precios.hospedajes}
                 onChange={(e) => setPrecios({ ...precios, hospedajes: e.target.value })}
                 className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-purple-500"
-                placeholder={t('new.prices.pricePlaceholder')}
+                placeholder="0.00"
               />
             </div>
             <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
@@ -752,13 +754,13 @@ export default function NuevaCotizacionManual() {
           <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
             <Bus className="w-5 h-5 text-cyan-400" />
             <div className="flex-1">
-              <label className="block text-xs text-[var(--muted-foreground)]">{t('new.prices.transfers')}</label>
+              <label className="block text-xs text-[var(--muted-foreground)]">Transfers</label>
               <input
                 type="number"
                 value={precios.traslados}
                 onChange={(e) => setPrecios({ ...precios, traslados: e.target.value })}
                 className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-cyan-500"
-                placeholder={t('new.prices.pricePlaceholder')}
+                placeholder="0.00"
               />
             </div>
             <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
@@ -768,13 +770,13 @@ export default function NuevaCotizacionManual() {
           <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
             <Shield className="w-5 h-5 text-rose-400" />
             <div className="flex-1">
-              <label className="block text-xs text-[var(--muted-foreground)]">{t('new.prices.insurance')}</label>
+              <label className="block text-xs text-[var(--muted-foreground)]">Seguros</label>
               <input
                 type="number"
                 value={precios.seguros}
                 onChange={(e) => setPrecios({ ...precios, seguros: e.target.value })}
                 className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-rose-500"
-                placeholder={t('new.prices.pricePlaceholder')}
+                placeholder="0.00"
               />
             </div>
             <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
@@ -784,13 +786,13 @@ export default function NuevaCotizacionManual() {
           <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
             <Ticket className="w-5 h-5 text-orange-400" />
             <div className="flex-1">
-              <label className="block text-xs text-[var(--muted-foreground)]">{t('new.prices.extras')}</label>
+              <label className="block text-xs text-[var(--muted-foreground)]">Extras</label>
               <input
                 type="number"
                 value={precios.extras}
                 onChange={(e) => setPrecios({ ...precios, extras: e.target.value })}
                 className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-orange-500"
-                placeholder={t('new.prices.pricePlaceholder')}
+                placeholder="0.00"
               />
             </div>
             <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
@@ -799,7 +801,7 @@ export default function NuevaCotizacionManual() {
 
         {/* Subtotal (auto-calculado) */}
         <div className="flex justify-between items-center p-3 border-t border-[var(--border)]">
-          <span className="text-[var(--muted-foreground)]">{t('new.prices.subtotal')}</span>
+          <span className="text-[var(--muted-foreground)]">Subtotal</span>
           <span className="text-[var(--foreground)] font-medium">
             {precios.moneda === 'USD' ? '$' : '$U'} {precios.subtotal || '0.00'}
           </span>
@@ -807,20 +809,20 @@ export default function NuevaCotizacionManual() {
 
         {/* Impuestos */}
         <div className="flex flex-wrap items-center gap-4 p-3 border-t border-[var(--border)]">
-          <span className="text-[var(--muted-foreground)] flex-1">{t('new.prices.taxes')}</span>
+          <span className="text-[var(--muted-foreground)] flex-1">Impuestos</span>
           <input
             type="number"
             value={precios.impuestos}
             onChange={(e) => setPrecios({ ...precios, impuestos: e.target.value })}
             className="w-32 bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-1 text-right text-[var(--foreground)] outline-none focus:border-green-500"
-            placeholder={t('new.prices.pricePlaceholder')}
+            placeholder="0.00"
           />
           <span className="text-[var(--muted-foreground)] w-8">{precios.moneda === 'USD' ? '$' : '$U'}</span>
         </div>
 
         {/* Total */}
         <div className="flex justify-between items-center p-4 bg-green-500/10 border border-green-500/30 rounded-xl mt-4">
-          <span className="text-[var(--foreground)] font-bold text-lg">{t('new.prices.total')}</span>
+          <span className="text-[var(--foreground)] font-bold text-lg">TOTAL</span>
           <span className="text-green-400 font-black text-2xl">
             {precios.moneda === 'USD' ? '$' : '$U'} {precios.total || '0.00'}
           </span>
@@ -828,32 +830,32 @@ export default function NuevaCotizacionManual() {
 
         {/* Resumen de servicios */}
         <div className="mt-6 p-4 bg-[var(--muted)] rounded-xl">
-          <h4 className="text-sm font-bold text-[var(--foreground)] mb-3">{t('new.prices.serviceSummary')}</h4>
+          <h4 className="text-sm font-bold text-[var(--foreground)] mb-3">Resumen de Servicios</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-[var(--muted-foreground)]">{t('new.prices.passengers')}:</span>
+              <span className="text-[var(--muted-foreground)]">Pasajeros:</span>
               <span className="text-[var(--foreground)]">{totalPasajeros}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[var(--muted-foreground)]">{t('new.prices.flights')}:</span>
+              <span className="text-[var(--muted-foreground)]">Vuelos:</span>
               <span className="text-[var(--foreground)]">
-                {useAmadeus ? parsedFlights.length : vuelosManuales.length} {t('new.prices.segments')}
+                {useAmadeus ? parsedFlights.length : vuelosManuales.length} segmentos
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[var(--muted-foreground)]">{t('new.prices.accommodation')}:</span>
+              <span className="text-[var(--muted-foreground)]">Alojamientos:</span>
               <span className="text-[var(--foreground)]">{alojamientos.length}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[var(--muted-foreground)]">{t('new.prices.transfers')}:</span>
+              <span className="text-[var(--muted-foreground)]">Transfers:</span>
               <span className="text-[var(--foreground)]">{transfers.length}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[var(--muted-foreground)]">{t('new.prices.insurance')}:</span>
+              <span className="text-[var(--muted-foreground)]">Seguros:</span>
               <span className="text-[var(--foreground)]">{seguros.length}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[var(--muted-foreground)]">{t('new.prices.extras')}:</span>
+              <span className="text-[var(--muted-foreground)]">Extras:</span>
               <span className="text-[var(--foreground)]">{extras.length}</span>
             </div>
           </div>
@@ -869,8 +871,8 @@ export default function NuevaCotizacionManual() {
     <div className="min-h-screen pb-20">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-black text-[var(--foreground)] mb-2">{t('new.title')}</h1>
-        <p className="text-[var(--muted-foreground)]">{t('new.subtitle')}</p>
+        <h1 className="text-2xl md:text-3xl font-black text-[var(--foreground)] mb-2">Nueva Cotización Manual</h1>
+        <p className="text-[var(--muted-foreground)]">Crea una cotización personalizada paso a paso</p>
       </div>
 
       {/* Progress Steps */}
@@ -938,11 +940,11 @@ export default function NuevaCotizacionManual() {
             className="flex items-center gap-2 px-6 py-3 bg-[var(--muted)] hover:bg-[var(--muted)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--foreground)] font-bold rounded-xl transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
-            {t('new.navigation.previous')}
+            Anterior
           </button>
 
           <div className="text-[var(--muted-foreground)] text-sm">
-            {t('new.navigation.stepOf', { current: currentStep, total: steps.length })}
+            Paso {currentStep} de {steps.length}
           </div>
 
           {currentStep < steps.length ? (
@@ -950,7 +952,7 @@ export default function NuevaCotizacionManual() {
               onClick={() => setCurrentStep(currentStep + 1)}
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] font-bold rounded-xl transition-colors"
             >
-              {t('new.navigation.next')}
+              Siguiente
               <ChevronRight className="w-5 h-5" />
             </button>
           ) : (
@@ -962,12 +964,12 @@ export default function NuevaCotizacionManual() {
               {isSubmitting ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  {t('new.navigation.saving')}
+                  Guardando...
                 </>
               ) : (
                 <>
                   <Check className="w-5 h-5" />
-                  {t('new.navigation.createQuote')}
+                  Crear Cotización
                 </>
               )}
             </button>

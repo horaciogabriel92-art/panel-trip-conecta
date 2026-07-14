@@ -7,7 +7,6 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { useTenant } from "@/context/TenantContext";
 import dynamic from "next/dynamic";
-import { useTranslations } from "next-intl";
 import { 
   Eye, 
   EyeOff, 
@@ -23,13 +22,7 @@ const ThemeToggle = dynamic(() => import("@/components/ThemeToggle").then(mod =>
   loading: () => <div className="w-14 h-14 rounded-full bg-gray-200 animate-pulse" />
 });
 
-const LanguageSwitcher = dynamic(() => import("@/components/LanguageSwitcher").then(mod => mod.LanguageSwitcher), {
-  ssr: false,
-  loading: () => <div className="w-14 h-14 rounded-full bg-gray-200 animate-pulse" />
-});
-
 export default function LoginPage() {
-  const t = useTranslations("auth.login");
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,11 +50,11 @@ export default function LoginPage() {
       if (response.ok) {
         login(data.token, data.user);
       } else {
-        toastError(data.error || t("invalidCredentials"), t("loginError"));
+        toastError(data.error || "Credenciales inválidas", "Error de acceso");
       }
     } catch (error) {
       console.error("Error de login:", error);
-      toastError(t("serverError"), t("error"));
+      toastError("Error al conectar con el servidor", "Error");
     } finally {
       setIsLoading(false);
     }
@@ -75,9 +68,8 @@ export default function LoginPage() {
       {/* Elementos decorativos flotantes */}
       <FloatingElements />
 
-      {/* Theme Toggle y Language Switcher - Cargados dinámicamente sin SSR */}
-      <div className="absolute top-6 right-6 z-50 flex items-center gap-3">
-        <LanguageSwitcher />
+      {/* Theme Toggle - Cargado dinámicamente sin SSR */}
+      <div className="absolute top-6 right-6 z-50">
         <ThemeToggle />
       </div>
 
@@ -122,10 +114,10 @@ export default function LoginPage() {
           
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-[var(--foreground)] mb-2">
-              {t("welcomeBack")}
+              Bienvenido de vuelta
             </h2>
             <p className="text-[var(--muted-foreground)] text-sm">
-              {t("enterCredentials")}
+              Ingresa tus credenciales para continuar
             </p>
           </div>
 
@@ -133,7 +125,7 @@ export default function LoginPage() {
             {/* Email */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-[var(--foreground)] ml-1">
-                {t("email")}
+                Correo electrónico
               </label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] group-focus-within:text-[var(--primary)] transition-colors" />
@@ -154,7 +146,7 @@ export default function LoginPage() {
             {/* Contraseña */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-[var(--foreground)] ml-1">
-                {t("password")}
+                Contraseña
               </label>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)] group-focus-within:text-[var(--primary)] transition-colors" />
@@ -189,7 +181,7 @@ export default function LoginPage() {
                 href="/login/forgot-password" 
                 className="text-sm text-[var(--primary)] hover:text-[var(--accent)] transition-colors"
               >
-                {t("forgotPassword")}
+                ¿Olvidaste tu contraseña?
               </a>
             </div>
 
@@ -203,7 +195,7 @@ export default function LoginPage() {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>{t("signIn")}</span>
+                  <span>Iniciar Sesión</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
@@ -213,15 +205,15 @@ export default function LoginPage() {
           {/* Separador */}
           <div className="flex items-center gap-4 my-6">
             <div className="flex-1 h-px bg-[var(--border)]" />
-            <span className="text-xs text-[var(--muted-foreground)] uppercase tracking-wider">{t("or")}</span>
+            <span className="text-xs text-[var(--muted-foreground)] uppercase tracking-wider">o</span>
             <div className="flex-1 h-px bg-[var(--border)]" />
           </div>
 
           {/* Registro */}
           <p className="text-center text-sm text-[var(--muted-foreground)]">
-            {t("noAccount")}{" "}
+            ¿No tienes cuenta?{" "}
             <a href="#" className="text-[var(--primary)] hover:text-[var(--accent)] font-medium transition-colors">
-              {t("requestAccess")}
+              Solicitar acceso
             </a>
           </p>
         </motion.div>
@@ -233,7 +225,7 @@ export default function LoginPage() {
           transition={{ delay: 0.8 }}
           className="text-center text-xs text-[var(--muted-foreground)] mt-8"
         >
-          {tenant?.nombre || 'Quotix Travel'} • {t("platformForTravelAgencies")}
+          {tenant?.nombre || 'Quotix Travel'} • Plataforma para agencias de viajes
         </motion.p>
       </div>
     </div>

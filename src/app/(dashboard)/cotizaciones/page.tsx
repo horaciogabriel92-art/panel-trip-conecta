@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
-import { useTranslations, useLocale } from 'next-intl';
 import { 
   FileText, 
   Plus, 
@@ -38,10 +37,39 @@ interface Cotizacion {
   hospedaje?: any[];
 }
 
+// Estados reales de la DB: nueva, enviada, vendida, perdida
+const COLUMNAS = [
+  { 
+    id: 'nueva', 
+    label: 'Nueva', 
+    description: 'Creada, pendiente de enviar',
+    color: 'bg-slate-500/10 border-slate-500/20',
+    icon: FileText
+  },
+  { 
+    id: 'enviada', 
+    label: 'Enviada', 
+    description: 'Enviada al cliente',
+    color: 'bg-blue-500/10 border-blue-500/20',
+    icon: Send
+  },
+  { 
+    id: 'vendida', 
+    label: 'Vendida', 
+    description: 'Convertida en venta',
+    color: 'bg-green-500/10 border-green-500/20',
+    icon: DollarSign
+  },
+  { 
+    id: 'perdida', 
+    label: 'Perdida', 
+    description: 'No se concretó',
+    color: 'bg-red-500/10 border-red-500/20',
+    icon: XCircle
+  }
+];
+
 export default function CotizacionesCRM() {
-  const t = useTranslations('cotizaciones');
-  const tCommon = useTranslations('common');
-  const locale = useLocale();
   const { error: toastError } = useToast();
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,13 +81,6 @@ export default function CotizacionesCRM() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [cotizacionToDelete, setCotizacionToDelete] = useState<Cotizacion | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const columnas = [
-    { id: 'nueva', color: 'bg-slate-500/10 border-slate-500/20', icon: FileText },
-    { id: 'enviada', color: 'bg-blue-500/10 border-blue-500/20', icon: Send },
-    { id: 'vendida', color: 'bg-green-500/10 border-green-500/20', icon: DollarSign },
-    { id: 'perdida', color: 'bg-red-500/10 border-red-500/20', icon: XCircle }
-  ];
 
   useEffect(() => {
     fetchCotizaciones();
@@ -85,7 +106,7 @@ export default function CotizacionesCRM() {
       fetchCotizaciones();
     } catch (err: any) {
       console.error('Error al marcar como enviada:', err);
-      toastError(t('errors.markAsSent') + ': ' + (err.response?.data?.error || err.message), tCommon('error'));
+      toastError('Error al marcar como enviada: ' + (err.response?.data?.error || err.message), 'Error');
     }
   };
 
@@ -108,7 +129,7 @@ export default function CotizacionesCRM() {
       setMotivoPerdida('');
       fetchCotizaciones();
     } catch (err) {
-      toastError(t('errors.markAsLost'), tCommon('error'));
+      toastError('Error al marcar como perdida', 'Error');
     }
   };
 
@@ -128,8 +149,8 @@ export default function CotizacionesCRM() {
       setCotizacionToDelete(null);
       fetchCotizaciones();
     } catch (err: any) {
-      const errorMsg = err.response?.data?.error || err.response?.data?.message || t('errors.delete');
-      toastError(errorMsg, tCommon('error'));
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Error al eliminar la cotización';
+      toastError(errorMsg, 'Error');
     } finally {
       setIsDeleting(false);
     }
@@ -141,11 +162,6 @@ export default function CotizacionesCRM() {
     if (!fechaVencimiento) return null;
     const dias = Math.ceil((new Date(fechaVencimiento).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     return dias;
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString(locale);
   };
 
   if (isLoading) {
@@ -167,21 +183,21 @@ export default function CotizacionesCRM() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
         <div>
-          <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">{t('title')}</h2>
-          <p className="text-[var(--muted-foreground)]">{t('subtitle')}</p>
+          <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">Mis Cotizaciones</h2>
+          <p className="text-[var(--muted-foreground)]">Pipeline de ventas: Nueva → Enviada → Vendida/Perdida</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
           className="bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] font-bold px-6 py-3 rounded-2xl transition-all flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
-          {t('newQuote')}
+          Nueva Cotización
         </button>
       </div>
 
       {/* Kanban Board - 4 columnas */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-0">
-        {columnas.map((columna) => {
+        {COLUMNAS.map((columna) => {
           const cotizacionesColumna = cotizaciones.filter(
             c => getColumnaCotizacion(c) === columna.id
           );
@@ -199,12 +215,12 @@ export default function CotizacionesCRM() {
               <div className="p-3 border-b border-[var(--border)]">
                 <div className="flex items-center gap-2 mb-1 min-w-0">
                   <Icon className="w-4 h-4 text-[var(--foreground)] shrink-0" />
-                  <h3 className="font-bold text-[var(--foreground)] text-sm truncate">{t(`columns.${columna.id}.label`)}</h3>
+                  <h3 className="font-bold text-[var(--foreground)] text-sm truncate">{columna.label}</h3>
                   <span className="ml-auto px-2 py-0.5 bg-[var(--muted)] rounded text-xs font-bold text-[var(--foreground)]">
                     {cotizacionesColumna.length}
                   </span>
                 </div>
-                <p className="text-[10px] text-[var(--muted-foreground)]">{t(`columns.${columna.id}.description`)}</p>
+                <p className="text-[10px] text-[var(--muted-foreground)]">{columna.description}</p>
               </div>
 
               {/* Cards */}
@@ -233,13 +249,13 @@ export default function CotizacionesCRM() {
                           <h4 className="font-bold text-[var(--foreground)] text-sm truncate">{c.cliente_nombre}</h4>
                           {c.tipo_cotizacion === 'manual' && (
                             <span className="px-1.5 py-0.5 bg-teal-500/20 text-teal-400 text-[9px] font-bold rounded">
-                              {t('manual')}
+                              MANUAL
                             </span>
                           )}
                         </div>
                         <p className="text-xs text-[var(--muted-foreground)] truncate">
                           {c.tipo_cotizacion === 'manual' 
-                            ? t('flightsHotels', { flights: c.vuelos?.length || 0, hotels: c.hospedaje?.length || 0 })
+                            ? `${c.vuelos?.length || 0} vuelos, ${c.hospedaje?.length || 0} hoteles`
                             : c.paquete_nombre
                           }
                         </p>
@@ -247,19 +263,19 @@ export default function CotizacionesCRM() {
 
                       {/* Metadata */}
                       <div className="flex items-center justify-between text-[10px] text-[var(--muted-foreground)]">
-                        <span>{c.num_pasajeros} {t('passengers')}</span>
+                        <span>{c.num_pasajeros} pasajeros</span>
                         {diasRestantes !== null && (
                           <span className={diasRestantes < 0 ? 'text-red-400' : diasRestantes <= 2 ? 'text-orange-400' : 'text-green-400'}>
-                            {diasRestantes < 0 ? t('overdue') : t('daysRemaining', { days: diasRestantes })}
+                            {diasRestantes < 0 ? 'Vencida' : `${diasRestantes}d rest.`}
                           </span>
                         )}
                       </div>
 
                       {/* Fechas */}
                       <div className="text-[10px] text-[var(--muted-foreground)] space-y-0.5">
-                        <div>{t('created')} {formatDate(c.fecha_creacion)}</div>
+                        <div>Creada: {new Date(c.fecha_creacion).toLocaleDateString()}</div>
                         {c.fecha_envio && (
-                          <div>{t('sent')} {formatDate(c.fecha_envio)}</div>
+                          <div>Enviada: {new Date(c.fecha_envio).toLocaleDateString()}</div>
                         )}
                       </div>
 
@@ -272,7 +288,7 @@ export default function CotizacionesCRM() {
                             className="w-full py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
                           >
                             <Send className="w-3.5 h-3.5" />
-                            {t('actions.markAsSent')}
+                            MARCAR COMO ENVIADA
                           </button>
                         )}
                         
@@ -284,14 +300,14 @@ export default function CotizacionesCRM() {
                               className="w-full py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
                             >
                               <DollarSign className="w-3.5 h-3.5" />
-                              {t('actions.closeSale')}
+                              CERRAR VENTA
                             </Link>
                             <button
                               onClick={() => abrirModalPerdida(c)}
                               className="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
                             >
                               <AlertTriangle className="w-3.5 h-3.5" />
-                              {t('actions.lostSale')}
+                              VENTA PERDIDA
                             </button>
                           </>
                         )}
@@ -303,14 +319,14 @@ export default function CotizacionesCRM() {
                             className="w-full py-2 bg-green-600/30 hover:bg-green-600/50 text-green-300 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
                           >
                             <CheckCircle className="w-3.5 h-3.5" />
-                            {t('actions.viewInSales')}
+                            VER EN MIS VENTAS
                           </Link>
                         )}
 
                         {/* COLUMNA PERDIDA: Info */}
                         {columna.id === 'perdida' && (
                           <div className="w-full py-2 bg-red-500/10 text-red-500 rounded-lg text-xs font-bold text-center">
-                            {t('actions.notCompleted')}
+                            VENTA NO CONCRETADA
                           </div>
                         )}
 
@@ -321,7 +337,7 @@ export default function CotizacionesCRM() {
                             className="w-full py-2 bg-[var(--muted)] hover:bg-red-500/10 text-[var(--muted-foreground)] hover:text-red-500 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
-                            {t('actions.delete')}
+                            ELIMINAR
                           </button>
                         )}
 
@@ -331,7 +347,7 @@ export default function CotizacionesCRM() {
                           className="w-full py-1.5 bg-[var(--muted)] hover:bg-[var(--border)] text-[var(--foreground)] rounded-lg text-xs transition-all flex items-center justify-center gap-1"
                         >
                           <ArrowRight className="w-3 h-3" />
-                          {t('actions.viewDetail')}
+                          Ver detalle
                         </Link>
                       </div>
                     </div>
@@ -341,7 +357,7 @@ export default function CotizacionesCRM() {
                 {cotizacionesColumna.length === 0 && (
                   <div className="text-center py-6 text-[var(--muted-foreground)]">
                     <Icon className="w-6 h-6 mx-auto mb-1 opacity-20" />
-                    <p className="text-xs">{t('emptyColumn')}</p>
+                    <p className="text-xs">Sin cotizaciones</p>
                   </div>
                 )}
               </div>
@@ -359,30 +375,30 @@ export default function CotizacionesCRM() {
                 <AlertTriangle className="w-5 h-5 text-red-400" />
               </div>
               <div>
-                <h3 className="text-xl font-black text-[var(--foreground)]">{t('lostSaleModal.title')}</h3>
+                <h3 className="text-xl font-black text-[var(--foreground)]">Venta Perdida</h3>
                 <p className="text-sm text-[var(--muted-foreground)]">{cotizacionPerdida.codigo}</p>
               </div>
             </div>
 
             <div className="mb-4 p-3 bg-[var(--muted)] rounded-lg">
               <p className="text-sm text-[var(--foreground)]">
-                <strong>{t('lostSaleModal.client')}</strong> {cotizacionPerdida.cliente_nombre}
+                <strong>Cliente:</strong> {cotizacionPerdida.cliente_nombre}
               </p>
               <p className="text-sm text-[var(--foreground)]">
-                <strong>{t('lostSaleModal.total')}</strong> ${formatCurrency(cotizacionPerdida.precio_total)}
+                <strong>Total:</strong> ${formatCurrency(cotizacionPerdida.precio_total)}
               </p>
             </div>
 
             <div className="space-y-3">
               <label className="text-sm text-[var(--muted-foreground)] block">
-                {t('lostSaleModal.reasonLabel')}
+                ¿Por qué se perdió esta venta?
               </label>
               <textarea
                 rows={3}
                 value={motivoPerdida}
                 onChange={(e) => setMotivoPerdida(e.target.value)}
                 className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] text-sm outline-none focus:border-red-500 resize-none"
-                placeholder={t('lostSaleModal.reasonPlaceholder')}
+                placeholder="Ej: El cliente encontró precio más barato, no puede viajar en esas fechas, etc."
               />
             </div>
 
@@ -391,14 +407,14 @@ export default function CotizacionesCRM() {
                 onClick={() => setShowPerdidaModal(false)}
                 className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] text-[var(--foreground)] font-medium transition-all"
               >
-                {t('lostSaleModal.cancel')}
+                Cancelar
               </button>
               <button
                 onClick={marcarComoPerdida}
                 disabled={!motivoPerdida.trim()}
                 className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-slate-600 text-[var(--foreground)] font-bold transition-all"
               >
-                {t('lostSaleModal.confirm')}
+                Confirmar
               </button>
             </div>
           </div>
@@ -414,33 +430,37 @@ export default function CotizacionesCRM() {
                 <Trash2 className="w-5 h-5 text-red-400" />
               </div>
               <div>
-                <h3 className="text-xl font-black text-[var(--foreground)]">{t('deleteModal.title')}</h3>
+                <h3 className="text-xl font-black text-[var(--foreground)]">¿Eliminar Cotización?</h3>
                 <p className="text-sm text-[var(--muted-foreground)]">{cotizacionToDelete.codigo}</p>
               </div>
             </div>
 
             <div className="mb-4 p-3 bg-[var(--muted)] rounded-lg">
               <p className="text-sm text-[var(--foreground)]">
-                <strong>{t('deleteModal.client')}</strong> {cotizacionToDelete.cliente_nombre}
+                <strong>Cliente:</strong> {cotizacionToDelete.cliente_nombre}
               </p>
               <p className="text-sm text-[var(--foreground)]">
-                <strong>{t('deleteModal.total')}</strong> ${formatCurrency(cotizacionToDelete.precio_total)}
+                <strong>Total:</strong> ${formatCurrency(cotizacionToDelete.precio_total)}
               </p>
               <p className="text-sm text-[var(--foreground)]">
-                <strong>{t('deleteModal.status')}</strong> {cotizacionToDelete.estado}
+                <strong>Estado:</strong> {cotizacionToDelete.estado}
               </p>
             </div>
 
             <div className="space-y-3">
               <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
                 <p className="text-sm text-red-300 font-medium mb-2">
-                  {t('deleteModal.warningTitle')}
+                  ⚠️ Advertencia de eliminación permanente
                 </p>
-                <p className="text-xs text-[var(--muted-foreground)] leading-relaxed" dangerouslySetInnerHTML={{ __html: t('deleteModal.warningBody') }} />
+                <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                  Si eliminas esta cotización, <strong>todos los datos serán permanentemente eliminados</strong> de la base de datos. 
+                  Esta acción <strong>no se puede deshacer</strong>. Los datos del cliente, vuelos, hospedaje y 
+                  cualquier información relacionada se perderán definitivamente.
+                </p>
               </div>
               
               <p className="text-xs text-[var(--muted-foreground)] text-center">
-                {t('deleteModal.confirmQuestion')}
+                ¿Estás seguro de que deseas continuar?
               </p>
             </div>
 
@@ -453,7 +473,7 @@ export default function CotizacionesCRM() {
                 disabled={isDeleting}
                 className="flex-1 py-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)] disabled:opacity-50 text-[var(--foreground)] font-medium transition-all"
               >
-                {t('lostSaleModal.cancel')}
+                Cancelar
               </button>
               <button
                 onClick={eliminarCotizacion}
@@ -463,12 +483,12 @@ export default function CotizacionesCRM() {
                 {isDeleting ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    {t('deleteModal.deleting')}
+                    Eliminando...
                   </>
                 ) : (
                   <>
                     <Trash2 className="w-4 h-4" />
-                    {t('deleteModal.confirm')}
+                    Sí, Eliminar
                   </>
                 )}
               </button>

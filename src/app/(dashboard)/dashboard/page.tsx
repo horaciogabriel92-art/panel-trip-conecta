@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import api, { recordatoriosAPI, Recordatorio } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { useFeature } from '@/hooks/useFeature';
-import { useTranslations, useLocale } from 'next-intl';
 import { ShoppingCart, FileText, Package, Wallet, ArrowUpRight, TrendingUp, Calendar, Target, Bell, CheckCircle2, Clock, Trash2 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
@@ -30,8 +29,6 @@ interface ComisionMensual {
 export default function VendedorDashboard() {
   const { user } = useAuth();
   const { enabled: comisionesEnabled } = useFeature('comisiones');
-  const t = useTranslations('dashboard');
-  const locale = useLocale();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [comisionesMensual, setComisionesMensual] = useState<ComisionMensual[]>([]);
   const [recordatorios, setRecordatorios] = useState<Recordatorio[]>([]);
@@ -55,7 +52,7 @@ export default function VendedorDashboard() {
 
           // Transformar pagos reales al formato necesario
           const mensual: ComisionMensual[] = pagos.slice(0, 5).map((pago: any) => ({
-            mes: new Date(pago.fecha_pago).toLocaleDateString(locale, { month: 'long', year: 'numeric' }),
+            mes: new Date(pago.fecha_pago).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
             monto: pago.monto,
             estado: pago.estado || 'pagado'
           }));
@@ -82,37 +79,37 @@ export default function VendedorDashboard() {
     }
   };
 
-  const nombre = user?.nombre || t('defaultName');
+  const nombre = user?.nombre || 'Vendedor';
 
   const cards = [
     { 
-      title: t('cards.mySales'), 
+      title: 'Mis Ventas', 
       value: stats?.cantidad_ventas || 0, 
-      subtext: stats ? t('cards.totalAverage', { total: `$${formatCurrency(stats.total_ventas)}`, average: `$${formatCurrency(stats.ticket_promedio || 0)}` }) : '$0',
+      subtext: stats ? `$${formatCurrency(stats.total_ventas)} total · $${formatCurrency(stats.ticket_promedio || 0)} promedio` : '$0',
       icon: ShoppingCart, 
       color: 'text-blue-400', 
       bg: 'bg-blue-500/10' 
     },
     { 
-      title: t('cards.quotes'), 
+      title: 'Cotizaciones', 
       value: stats?.cotizaciones_mes || 0, 
-      subtext: t('cards.pendingFollowUps', { count: stats?.cotizaciones_enviadas || 0 }),
+      subtext: `${stats?.cotizaciones_enviadas || 0} seguimientos pendientes`,
       icon: FileText, 
       color: 'text-purple-400', 
       bg: 'bg-purple-500/10' 
     },
     ...(comisionesEnabled ? [{
-      title: t('cards.commissions'),
+      title: 'Comisiones' as const,
       value: stats ? `$${formatCurrency(stats.total_comisiones)}` : '$0',
-      subtext: t('cards.pending', { amount: stats?.comisiones_pendientes ? '$' + formatCurrency(stats.comisiones_pendientes) : '$0' }),
+      subtext: `${stats?.comisiones_pendientes ? '$' + formatCurrency(stats.comisiones_pendientes) : '$0'} pendientes`,
       icon: Wallet,
       color: 'text-green-400',
       bg: 'bg-green-500/10'
     }] : []),
     {
-      title: t('cards.conversionRate'), 
+      title: 'Tasa de Conversión', 
       value: `${stats?.tasa_conversion || 0}%`, 
-      subtext: t('cards.conversionSubtext'),
+      subtext: 'de cotizaciones a ventas',
       icon: Target, 
       color: 'text-yellow-400', 
       bg: 'bg-yellow-500/10' 
@@ -123,16 +120,16 @@ export default function VendedorDashboard() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">{t('greeting', { name: nombre })}</h2>
+          <h2 className="text-2xl md:text-3xl font-black text-[var(--foreground)]">Hola, {nombre} 👋</h2>
           <p className="text-[var(--muted-foreground)]">
             {stats && stats.cotizaciones_enviadas > 0 
-              ? t('pendingFollowUp', { count: stats.cotizaciones_enviadas }) 
-              : t('noPendingFollowUp')}
+              ? `¡Tienes ${stats.cotizaciones_enviadas} cotización${stats.cotizaciones_enviadas === 1 ? '' : 'es'} esperando seguimiento!` 
+              : 'No tienes cotizaciones pendientes de seguimiento'}
           </p>
         </div>
         <Link href="/paquetes" className="bg-blue-600 hover:bg-blue-700 text-[var(--foreground)] font-bold px-6 py-3 rounded-2xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 w-fit">
           <Package className="w-5 h-5" />
-          {t('viewCatalog')}
+          Ver Catálogo
         </Link>
       </div>
 
@@ -163,9 +160,9 @@ export default function VendedorDashboard() {
         {comisionesEnabled && (
           <div className="glass-card p-6 md:p-8 rounded-3xl">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-bold">{t('commissions.title')}</h3>
+              <h3 className="text-xl font-bold">Resumen de Comisiones</h3>
               <Link href="/mis-ventas" className="text-blue-400 text-sm font-bold hover:underline flex items-center gap-1">
-                {t('commissions.viewDetail')} <ArrowUpRight className="w-4 h-4" />
+                Ver detalle <ArrowUpRight className="w-4 h-4" />
               </Link>
             </div>
             {isLoading ? (
@@ -198,14 +195,14 @@ export default function VendedorDashboard() {
                           ? "bg-green-500/10 text-green-400"
                           : "bg-orange-500/10 text-orange-400"
                       )}>
-                        {item.estado === 'pagado' ? t('commissions.paid') : t('commissions.pending')}
+                        {item.estado}
                       </span>
                     </div>
                   </div>
                 ))}
                 {comisionesMensual.length === 0 && (
                   <p className="text-sm text-[var(--muted-foreground)] text-center py-4">
-                    {t('commissions.noPayments')}
+                    No hay pagos de comisiones registrados aún.
                   </p>
                 )}
               </div>
@@ -217,11 +214,11 @@ export default function VendedorDashboard() {
            <div className="flex items-center justify-between mb-4">
              <h3 className="text-xl font-bold flex items-center gap-2">
                <Bell className="w-5 h-5 text-blue-400" />
-               {t('reminders.title')}
+               Mis Recordatorios
              </h3>
              {recordatorios.length > 0 && (
                <span className="px-2 py-0.5 bg-orange-500/10 text-orange-400 rounded-full text-xs font-bold">
-                 {t('reminders.pending', { count: recordatorios.length })}
+                 {recordatorios.length} pendiente{recordatorios.length === 1 ? '' : 's'}
                </span>
              )}
            </div>
@@ -234,7 +231,7 @@ export default function VendedorDashboard() {
            ) : recordatorios.length === 0 ? (
              <div className="text-center py-6">
                <Bell className="w-10 h-10 mx-auto mb-2 opacity-30" />
-               <p className="text-sm text-[var(--muted-foreground)]">{t('reminders.empty')}</p>
+               <p className="text-sm text-[var(--muted-foreground)]">No tienes recordatorios pendientes</p>
              </div>
            ) : (
              <div className="space-y-3">
@@ -245,7 +242,7 @@ export default function VendedorDashboard() {
                        <p className="text-sm font-medium text-[var(--foreground)] truncate">{rec.titulo}</p>
                        <p className="text-xs text-[var(--muted-foreground)] flex items-center gap-1 mt-0.5">
                          <Clock className="w-3 h-3" />
-                         {new Date(rec.fecha_recordatorio).toLocaleDateString(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                         {new Date(rec.fecha_recordatorio).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                        </p>
                        {rec.cliente && (
                          <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
@@ -264,7 +261,7 @@ export default function VendedorDashboard() {
                            }
                          }}
                          className="p-1.5 text-green-400 hover:bg-green-500/10 rounded-lg transition-colors"
-                         title={t('reminders.complete')}
+                         title="Completar"
                        >
                          <CheckCircle2 className="w-4 h-4" />
                        </button>

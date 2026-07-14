@@ -2,7 +2,6 @@
 
 import { Check, X, Loader2 } from "lucide-react";
 import type { PlanConfig } from "@/context/TenantContext";
-import { useTranslations } from "next-intl";
 
 interface PlanCardProps {
   plan: PlanConfig;
@@ -24,7 +23,46 @@ function formatCurrency(amount: number) {
 
 interface FeatureItem {
   key: string;
+  label: string;
   dynamic?: (plan: PlanConfig) => string | null;
+}
+
+const DESCRIPTION_BY_SLUG: Record<string, string> = {
+  free: "Para empezar a cotizar",
+  freelance: "Para agentes independientes",
+  "pro-agencia": "Para agencias en crecimiento",
+  "pro-ilimitado": "Para agencias que venden en serio",
+  test: "Plan de prueba",
+};
+
+const FEATURES: FeatureItem[] = [
+  { key: "pdf_cotizaciones", label: "Cotizaciones en PDF en minutos" },
+  { key: "crm_agentes", label: "CRM para agentes de viajes" },
+  { key: "kanban_cotizaciones", label: "Kanban de cotizaciones" },
+  { key: "amadeus_pnr", label: "Importá reservas de Amadeus pegando el PNR" },
+  { key: "emails_automaticos", label: "Emails automáticos" },
+  { key: "dominio_propio", label: "Dominio propio incluido" },
+  { key: "soporte_prioritario", label: "Soporte prioritario" },
+  { key: "reportes", label: "Reportes" },
+  { key: "comisiones_avanzado", label: "Control de comisiones avanzado" },
+  { key: "vouchers_documentos", label: "Vouchers y documentos de viaje" },
+  { key: "usuarios_extra", label: "+$10 / mes por usuario extra", dynamic: () => null },
+];
+
+function getUsersText(plan: PlanConfig): string | null {
+  if (plan.max_users == null) return "Usuarios ilimitados";
+  if (plan.max_users === 1) return "1 usuario";
+  return `${plan.max_users} usuarios incluidos`;
+}
+
+function getQuotesText(plan: PlanConfig): string | null {
+  if (plan.max_cotizaciones_por_mes == null) return "Cotizaciones ilimitadas";
+  return `${plan.max_cotizaciones_por_mes} cotizaciones / mes`;
+}
+
+function getPackagesText(plan: PlanConfig): string | null {
+  if (plan.max_paquetes == null) return "Paquetes ilimitados";
+  return `${plan.max_paquetes} paquetes`;
 }
 
 export default function PlanCard({
@@ -35,48 +73,9 @@ export default function PlanCard({
   extraUsers = 0,
   onSelect,
 }: PlanCardProps) {
-  const t = useTranslations("plan");
   const isFree = plan.precio_mensual_usd === 0;
   const extraTotal = extraUsers * (plan.precio_usuario_extra_usd || 0);
   const total = plan.precio_mensual_usd + extraTotal;
-
-  const descriptions: Record<string, string> = {
-    free: t("descriptions.free"),
-    freelance: t("descriptions.freelance"),
-    "pro-agencia": t("descriptions.pro-agencia"),
-    "pro-ilimitado": t("descriptions.pro-ilimitado"),
-    test: t("descriptions.test"),
-  };
-
-  const features: FeatureItem[] = [
-    { key: "pdf_cotizaciones" },
-    { key: "crm_agentes" },
-    { key: "kanban_cotizaciones" },
-    { key: "amadeus_pnr" },
-    { key: "emails_automaticos" },
-    { key: "dominio_propio" },
-    { key: "soporte_prioritario" },
-    { key: "reportes" },
-    { key: "comisiones_avanzado" },
-    { key: "vouchers_documentos" },
-    { key: "usuarios_extra", dynamic: () => null },
-  ];
-
-  const getUsersText = (plan: PlanConfig): string | null => {
-    if (plan.max_users == null) return t("users.unlimited");
-    if (plan.max_users === 1) return t("users.one");
-    return t("users.included", { count: plan.max_users });
-  };
-
-  const getQuotesText = (plan: PlanConfig): string | null => {
-    if (plan.max_cotizaciones_por_mes == null) return t("quotes.unlimited");
-    return t("quotes.perMonth", { count: plan.max_cotizaciones_por_mes });
-  };
-
-  const getPackagesText = (plan: PlanConfig): string | null => {
-    if (plan.max_paquetes == null) return t("packages.unlimited");
-    return t("packages.count", { count: plan.max_paquetes });
-  };
 
   const hasFeature = (key: string): boolean => {
     if (key === "usuarios_extra") {
@@ -96,30 +95,30 @@ export default function PlanCard({
       {isCurrent && (
         <div className="absolute -top-3 left-6">
           <span className="px-3 py-1 rounded-full bg-emerald-500 text-white text-xs font-bold">
-            {t("currentBadge")}
+            Plan actual
           </span>
         </div>
       )}
 
       <div className="mb-4">
         <h3 className="text-xl font-black text-[var(--foreground)]">{plan.nombre}</h3>
-        {(plan.description || descriptions[plan.slug]) && (
+        {(plan.description || DESCRIPTION_BY_SLUG[plan.slug]) && (
           <p className="text-sm text-[var(--muted-foreground)] mt-1">
-            {plan.description || descriptions[plan.slug]}
+            {plan.description || DESCRIPTION_BY_SLUG[plan.slug]}
           </p>
         )}
         <p className="text-3xl font-black text-[var(--foreground)] mt-3">
           {formatCurrency(plan.precio_mensual_usd)}
-          <span className="text-sm font-medium text-[var(--muted-foreground)]">{t("perMonth")}</span>
+          <span className="text-sm font-medium text-[var(--muted-foreground)]">/mes</span>
         </p>
         {!isFree && extraUsers > 0 && hasFeature("usuarios_extra") && (
           <p className="text-sm text-[var(--muted-foreground)] mt-1">
-            {t("extraUsersTotal", { amount: formatCurrency(extraTotal), count: extraUsers })}
+            + {formatCurrency(extraTotal)} por {extraUsers} usuario{extraUsers > 1 ? "s" : ""} extra
           </p>
         )}
         {!isFree && total > plan.precio_mensual_usd && hasFeature("usuarios_extra") && (
           <p className="text-lg font-bold text-emerald-500 mt-2">
-            {t("totalLabel", { amount: formatCurrency(total) })}
+            Total: {formatCurrency(total)}/mes
           </p>
         )}
       </div>
@@ -137,15 +136,12 @@ export default function PlanCard({
           <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
           {getPackagesText(plan)}
         </li>
-        {features.map((feature) => {
+        {FEATURES.map((feature) => {
           const enabled = hasFeature(feature.key);
           if (feature.dynamic) {
             const dynamicText = feature.dynamic(plan);
             if (!dynamicText) return null;
           }
-          const label = feature.key === "usuarios_extra"
-            ? t("features.usuarios_extra", { price: plan.precio_usuario_extra_usd || 10 })
-            : t(`features.${feature.key}`);
           return (
             <li
               key={feature.key}
@@ -158,7 +154,7 @@ export default function PlanCard({
               ) : (
                 <X className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
               )}
-              {label}
+              {feature.label}
             </li>
           );
         })}
@@ -176,7 +172,7 @@ export default function PlanCard({
         }`}
       >
         {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-        {isCurrent ? t("cta.active") : isFree ? t("cta.free") : t("cta.choose")}
+        {isCurrent ? "Activo" : isFree ? "Gratis" : "Elegir plan"}
       </button>
     </div>
   );
