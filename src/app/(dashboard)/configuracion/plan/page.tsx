@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTenant, type PlanConfig } from "@/context/TenantContext";
 import { useAuth } from "@/context/AuthContext";
-import { useBilling } from "@/hooks/useBilling";
+import { useBilling, type SubscriptionStatus } from "@/hooks/useBilling";
 import PlanCard from "@/components/billing/PlanCard";
 import InvoiceHistory from "@/components/billing/InvoiceHistory";
 import {
@@ -49,7 +49,10 @@ function getDaysLeft(dateString: string | null) {
 export default function PlanPage() {
   const { user } = useAuth();
   const { tenant, isLoading: isTenantLoading } = useTenant();
-  const { createCheckout, createPortal, cancelSubscription, isLoading: isBillingLoading, error: billingError } = useBilling();
+  const { createCheckout, createPortal, getSubscriptionStatus, cancelSubscription, isLoading: isBillingLoading, error: billingError } = useBilling();
+
+  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
+  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(true);
   const searchParams = useSearchParams();
 
   const [plans, setPlans] = useState<PlanConfig[]>([]);
@@ -75,6 +78,24 @@ export default function PlanPage() {
     };
     fetchPlans();
   }, []);
+
+  useEffect(() => {
+    const fetchSubscriptionStatus = async () => {
+      try {
+        const status = await getSubscriptionStatus();
+        if (status) {
+          setSubscriptionStatus(status);
+        }
+      } catch (err) {
+        console.error("[PlanPage] Error fetching subscription status:", err);
+      } finally {
+        setIsSubscriptionLoading(false);
+      }
+    };
+    if (user?.rol === "admin") {
+      fetchSubscriptionStatus();
+    }
+  }, [getSubscriptionStatus, user?.rol]);
 
   const currentPlanSlug = tenant.plan?.slug || "free";
   const isTrial = tenant.estado_suscripcion === "trial";
@@ -117,7 +138,7 @@ export default function PlanPage() {
 
   const canHaveExtraUsers = currentPlanSlug === "pro-agencia" || currentPlanSlug === "pro-ilimitado";
 
-  if (isTenantLoading || isPlansLoading) {
+  if (isTenantLoading || isPlansLoading || isSubscriptionLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
@@ -240,14 +261,14 @@ export default function PlanPage() {
             <p className="text-[var(--muted-foreground)] mt-1">
               {formatCurrency(tenant.plan?.precio_mensual_usd || 0)} / mes
             </p>
-            {(isActive || isTrial) && tenant.subscription_renewal_date && (
+            {(isActive || isTrial) && subscriptionStatus?.subscription_renewal_date && (
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
                 <span className="text-[var(--muted-foreground)]">
-                  Próxima renovación: <span className="text-[var(--foreground)] font-medium">{formatDate(tenant.subscription_renewal_date)}</span>
+                  Próxima renovación: <span className="text-[var(--foreground)] font-medium">{formatDate(subscriptionStatus.subscription_renewal_date)}</span>
                 </span>
-                {tenant.next_invoice_amount_usd != null && tenant.next_invoice_amount_usd > 0 && (
+                {subscriptionStatus.next_invoice_amount_usd != null && subscriptionStatus.next_invoice_amount_usd > 0 && (
                   <span className="text-[var(--muted-foreground)]">
-                    Próxima factura: <span className="text-emerald-500 font-medium">{formatCurrency(tenant.next_invoice_amount_usd)}</span>
+                    Próxima factura: <span className="text-emerald-500 font-medium">{formatCurrency(subscriptionStatus.next_invoice_amount_usd)}</span>
                   </span>
                 )}
               </div>

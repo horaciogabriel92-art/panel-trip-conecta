@@ -13,6 +13,21 @@ interface BillingUrlResponse {
   url: string;
 }
 
+export interface SubscriptionStatus {
+  trial_ends_at: string | null;
+  estado_suscripcion: string | null;
+  plan_started_at: string | null;
+  extra_users_billed: number;
+  subscription_renewal_date: string | null;
+  next_invoice_amount_usd: number | null;
+  plan: {
+    slug: string;
+    nombre: string;
+    precio_mensual_usd: number;
+    precio_usuario_extra_usd: number;
+  } | null;
+}
+
 export function useBilling() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,6 +87,29 @@ export function useBilling() {
     }
   }, []);
 
+  const getSubscriptionStatus = useCallback(async (): Promise<SubscriptionStatus | null> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/billing/subscription-status`, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Error al obtener estado de suscripción");
+      }
+
+      return data as SubscriptionStatus;
+    } catch (err: any) {
+      setError(err.message);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const cancelSubscription = useCallback(async (): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
@@ -100,6 +138,7 @@ export function useBilling() {
     error,
     createCheckout,
     createPortal,
+    getSubscriptionStatus,
     cancelSubscription,
   };
 }
