@@ -20,6 +20,27 @@ export function formatNumber(value: number | undefined | null): string {
   return value.toLocaleString('es-AR');
 }
 
+// Monedas soportadas
+export const MONEDAS: { codigo: string; nombre: string; simbolo: string; locale: string }[] = [
+  { codigo: 'USD', nombre: 'USD (Dólares)', simbolo: '$', locale: 'en-US' },
+  { codigo: 'UYU', nombre: '$ (Pesos Uruguayos)', simbolo: '$U', locale: 'es-UY' },
+  { codigo: 'ARS', nombre: 'ARS (Pesos Argentinos)', simbolo: '$', locale: 'es-AR' },
+  { codigo: 'BRL', nombre: 'BRL (Reales Brasileños)', simbolo: 'R$', locale: 'pt-BR' },
+  { codigo: 'CLP', nombre: 'CLP (Pesos Chilenos)', simbolo: '$', locale: 'es-CL' },
+  { codigo: 'COP', nombre: 'COP (Pesos Colombianos)', simbolo: '$', locale: 'es-CO' },
+  { codigo: 'PEN', nombre: 'PEN (Soles Peruanos)', simbolo: 'S/', locale: 'es-PE' },
+  { codigo: 'MXN', nombre: 'MXN (Pesos Mexicanos)', simbolo: '$', locale: 'es-MX' },
+  { codigo: 'EUR', nombre: 'EUR (Euros)', simbolo: '€', locale: 'es-ES' },
+];
+
+export function getSimboloMoneda(codigo?: string): string {
+  return MONEDAS.find((m) => m.codigo === codigo)?.simbolo || '$';
+}
+
+export function getNombreMoneda(codigo?: string): string {
+  return MONEDAS.find((m) => m.codigo === codigo)?.nombre || codigo || 'USD';
+}
+
 // Debounce function for search inputs
 export function debounce<T extends (...args: any[]) => any>(
   func: T,

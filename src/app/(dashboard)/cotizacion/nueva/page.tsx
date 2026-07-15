@@ -30,8 +30,11 @@ import BuscarCliente from '@/components/cotizaciones/BuscarCliente';
 import CrearClienteModal from '@/components/cotizaciones/CrearClienteModal';
 import ManualFlightForm from '@/components/cotizaciones/ManualFlightForm';
 import ServiciosStep from '@/components/cotizaciones/servicios/ServiciosStep';
+import CurrencySelector from '@/components/CurrencySelector';
+import { useCotizacionPricing } from '@/components/cotizaciones/hooks/useCotizacionPricing';
 import { Cliente, clientesAPI } from '@/lib/api-clientes';
-import type { AlojamientoCotizacion, TransferCotizacion, SeguroCotizacion, ExtraCotizacion } from '@/types/cotizacion';
+import { getSimboloMoneda } from '@/lib/utils';
+import type { AlojamientoCotizacion, TransferCotizacion, SeguroCotizacion, ExtraCotizacion, MonedaCotizacion } from '@/types/cotizacion';
 
 // ============================================
 // TIPOS
@@ -83,10 +86,18 @@ export default function NuevaCotizacionManual() {
   const [incluye, setIncluye] = useState<string[]>(['Traslados aeropuerto-hotel-aeropuerto']);
   const [noIncluye, setNoIncluye] = useState<string[]>(['Gastos personales', 'Propinas']);
   const [politicasCancelacion, setPoliticasCancelacion] = useState('');
+  const [mostrarDesglosePdf, setMostrarDesglosePdf] = useState(true);
+
+  // Datos internos: margen y comisión
+  const [costoNeto, setCostoNeto] = useState<string>('');
+  const [margenAgenciaPorcentaje, setMargenAgenciaPorcentaje] = useState<string>('');
+  const [margenAgenciaMonto, setMargenAgenciaMonto] = useState<string>('');
+  const [comisionVendedorPorcentaje, setComisionVendedorPorcentaje] = useState<string>('');
+  const [comisionVendedorMonto, setComisionVendedorMonto] = useState<string>('');
 
   // Precios - Desglosado
   const [precios, setPrecios] = useState({
-    moneda: 'USD' as 'USD' | 'UYU',
+    moneda: 'USD' as MonedaCotizacion,
     vuelos: '',
     hospedajes: '',
     traslados: '',
@@ -108,6 +119,7 @@ export default function NuevaCotizacionManual() {
     { id: 3, label: 'Servicios del viaje', icon: Briefcase },
     { id: 4, label: 'Itinerario', icon: FileText },
     { id: 5, label: 'Precios', icon: DollarSign },
+    { id: 6, label: 'Revisión', icon: Check },
   ];
 
   // ============================================
@@ -163,24 +175,50 @@ export default function NuevaCotizacionManual() {
     setNoIncluye(noIncluye.filter((_, i) => i !== index));
   };
 
-  // Calcular subtotal y total automáticamente
+  // Cálculo automático de precios desde servicios
+  const { finalValues, setField } = useCotizacionPricing({
+    vuelos: useAmadeus ? parsedFlights : vuelosManuales,
+    alojamientos,
+    transfers,
+    seguros,
+    extras,
+    numPasajeros: totalPasajeros,
+    pricing: precios,
+    onChange: setPrecios,
+  });
+
+  // Sincronizar subtotal y total calculados con el estado
   useEffect(() => {
-    const vuelos = parseFloat(precios.vuelos) || 0;
-    const hospedajes = parseFloat(precios.hospedajes) || 0;
-    const traslados = parseFloat(precios.traslados) || 0;
-    const seguros = parseFloat(precios.seguros) || 0;
-    const extras = parseFloat(precios.extras) || 0;
-    const impuestos = parseFloat(precios.impuestos) || 0;
-    
-    const subtotal = vuelos + hospedajes + traslados + seguros + extras;
-    const total = subtotal + impuestos;
-    
-    setPrecios(prev => ({
-      ...prev,
-      subtotal: subtotal.toFixed(2),
-      total: total.toFixed(2),
-    }));
-  }, [precios.vuelos, precios.hospedajes, precios.traslados, precios.seguros, precios.extras, precios.impuestos]);
+    const newSubtotal = finalValues.subtotal.toFixed(2);
+    const newTotal = finalValues.total.toFixed(2);
+    if (precios.subtotal !== newSubtotal || precios.total !== newTotal) {
+      setPrecios(prev => ({
+        ...prev,
+        subtotal: newSubtotal,
+        total: newTotal,
+      }));
+    }
+  }, [finalValues.subtotal, finalValues.total]);
+
+  // Calcular margen de agencia
+  useEffect(() => {
+    const total = finalValues.total;
+    const costo = parseFloat(costoNeto) || 0;
+    const margenMonto = Math.max(0, total - costo);
+    const margenPct = costo > 0 ? (margenMonto / costo) * 100 : 0;
+    setMargenAgenciaMonto(margenMonto.toFixed(2));
+    if (document.activeElement?.id !== 'margen-pct') {
+      setMargenAgenciaPorcentaje(margenPct.toFixed(2));
+    }
+  }, [finalValues.total, costoNeto]);
+
+  // Calcular comisión de vendedor
+  useEffect(() => {
+    const total = finalValues.total;
+    const pct = parseFloat(comisionVendedorPorcentaje) || 0;
+    const monto = total * (pct / 100);
+    setComisionVendedorMonto(monto.toFixed(2));
+  }, [finalValues.total, comisionVendedorPorcentaje]);
 
   // Cargar pasajeros frecuentes del cliente seleccionado
   useEffect(() => {
@@ -246,6 +284,12 @@ export default function NuevaCotizacionManual() {
         },
         origen_datos: useAmadeus && amadeusText ? 'amadeus_pnr' : 'manual',
         amadeus_pnr_raw: useAmadeus ? amadeusText : null,
+        mostrar_desglose_pdf: mostrarDesglosePdf,
+        costo_neto: parseFloat(costoNeto) || 0,
+        margen_agencia_porcentaje: parseFloat(margenAgenciaPorcentaje) || 0,
+        margen_agencia_monto: parseFloat(margenAgenciaMonto) || 0,
+        comision_vendedor_porcentaje: parseFloat(comisionVendedorPorcentaje) || 0,
+        comision_vendedor_monto_estimado: parseFloat(comisionVendedorMonto) || 0,
       };
 
       const response = await api.post('/cotizaciones/manual', cotizacionData);
@@ -689,29 +733,10 @@ RP/DZOUY2100/
 
         {/* Moneda */}
         <div className="mb-6">
-          <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">Moneda</label>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setPrecios({ ...precios, moneda: 'USD' })}
-              className={`px-4 py-2 rounded-lg font-bold transition-colors ${
-                precios.moneda === 'USD'
-                  ? 'bg-blue-500 text-[var(--foreground)]'
-                  : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-              }`}
-            >
-              USD (Dólares)
-            </button>
-            <button
-              onClick={() => setPrecios({ ...precios, moneda: 'UYU' })}
-              className={`px-4 py-2 rounded-lg font-bold transition-colors ${
-                precios.moneda === 'UYU'
-                  ? 'bg-blue-500 text-[var(--foreground)]'
-                  : 'bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-              }`}
-            >
-              $ (Pesos Uruguayos)
-            </button>
-          </div>
+          <CurrencySelector
+            value={precios.moneda}
+            onChange={(moneda) => setPrecios({ ...precios, moneda })}
+          />
         </div>
 
         {/* Desglose de Precios */}
@@ -726,12 +751,12 @@ RP/DZOUY2100/
               <input
                 type="number"
                 value={precios.vuelos}
-                onChange={(e) => setPrecios({ ...precios, vuelos: e.target.value })}
+                onChange={(e) => setField('vuelos', e.target.value)}
                 className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-blue-500"
                 placeholder="0.00"
               />
             </div>
-            <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
+            <span className="text-[var(--muted-foreground)]">{getSimboloMoneda(precios.moneda)}</span>
           </div>
 
           {/* Hospedajes */}
@@ -742,12 +767,12 @@ RP/DZOUY2100/
               <input
                 type="number"
                 value={precios.hospedajes}
-                onChange={(e) => setPrecios({ ...precios, hospedajes: e.target.value })}
+                onChange={(e) => setField('hospedajes', e.target.value)}
                 className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-purple-500"
                 placeholder="0.00"
               />
             </div>
-            <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
+            <span className="text-[var(--muted-foreground)]">{getSimboloMoneda(precios.moneda)}</span>
           </div>
 
           {/* Traslados */}
@@ -758,12 +783,12 @@ RP/DZOUY2100/
               <input
                 type="number"
                 value={precios.traslados}
-                onChange={(e) => setPrecios({ ...precios, traslados: e.target.value })}
+                onChange={(e) => setField('traslados', e.target.value)}
                 className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-cyan-500"
                 placeholder="0.00"
               />
             </div>
-            <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
+            <span className="text-[var(--muted-foreground)]">{getSimboloMoneda(precios.moneda)}</span>
           </div>
 
           {/* Seguros */}
@@ -774,12 +799,12 @@ RP/DZOUY2100/
               <input
                 type="number"
                 value={precios.seguros}
-                onChange={(e) => setPrecios({ ...precios, seguros: e.target.value })}
+                onChange={(e) => setField('seguros', e.target.value)}
                 className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-rose-500"
                 placeholder="0.00"
               />
             </div>
-            <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
+            <span className="text-[var(--muted-foreground)]">{getSimboloMoneda(precios.moneda)}</span>
           </div>
 
           {/* Extras */}
@@ -790,12 +815,12 @@ RP/DZOUY2100/
               <input
                 type="number"
                 value={precios.extras}
-                onChange={(e) => setPrecios({ ...precios, extras: e.target.value })}
+                onChange={(e) => setField('extras', e.target.value)}
                 className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-orange-500"
                 placeholder="0.00"
               />
             </div>
-            <span className="text-[var(--muted-foreground)]">{precios.moneda === 'USD' ? '$' : '$U'}</span>
+            <span className="text-[var(--muted-foreground)]">{getSimboloMoneda(precios.moneda)}</span>
           </div>
         </div>
 
@@ -803,7 +828,7 @@ RP/DZOUY2100/
         <div className="flex justify-between items-center p-3 border-t border-[var(--border)]">
           <span className="text-[var(--muted-foreground)]">Subtotal</span>
           <span className="text-[var(--foreground)] font-medium">
-            {precios.moneda === 'USD' ? '$' : '$U'} {precios.subtotal || '0.00'}
+            {getSimboloMoneda(precios.moneda)} {finalValues.subtotal.toFixed(2)}
           </span>
         </div>
 
@@ -817,14 +842,14 @@ RP/DZOUY2100/
             className="w-32 bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-1 text-right text-[var(--foreground)] outline-none focus:border-green-500"
             placeholder="0.00"
           />
-          <span className="text-[var(--muted-foreground)] w-8">{precios.moneda === 'USD' ? '$' : '$U'}</span>
+          <span className="text-[var(--muted-foreground)] w-8">{getSimboloMoneda(precios.moneda)}</span>
         </div>
 
         {/* Total */}
         <div className="flex justify-between items-center p-4 bg-green-500/10 border border-green-500/30 rounded-xl mt-4">
           <span className="text-[var(--foreground)] font-bold text-lg">TOTAL</span>
           <span className="text-green-400 font-black text-2xl">
-            {precios.moneda === 'USD' ? '$' : '$U'} {precios.total || '0.00'}
+            {getSimboloMoneda(precios.moneda)} {finalValues.total.toFixed(2)}
           </span>
         </div>
 
@@ -864,11 +889,181 @@ RP/DZOUY2100/
     </div>
   );
 
+  const renderStep6 = () => (
+    <div className="space-y-6">
+      <div className="glass-card rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+          <Check className="w-5 h-5 text-green-400" />
+          Revisión Final
+        </h3>
+        <p className="text-sm text-[var(--muted-foreground)] mb-6">
+          Revisá los datos antes de crear la cotización. Podés elegir qué información de precios verá el cliente en el PDF.
+        </p>
+
+        <div className="space-y-4 mb-6">
+          <div className="bg-[var(--muted)] rounded-xl p-4 border border-[var(--border)]">
+            <h4 className="text-sm font-bold text-[var(--foreground)] mb-3">Resumen</h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-[var(--muted-foreground)]">Cliente:</span>
+                <span className="text-[var(--foreground)]">
+                  {clienteSeleccionado
+                    ? `${clienteSeleccionado.nombre} ${clienteSeleccionado.apellido}`
+                    : 'No seleccionado'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--muted-foreground)]">Pasajeros:</span>
+                <span className="text-[var(--foreground)]">{totalPasajeros}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--muted-foreground)]">Vuelos:</span>
+                <span className="text-[var(--foreground)]">
+                  {useAmadeus ? parsedFlights.length : vuelosManuales.length} segmentos
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--muted-foreground)]">Alojamientos:</span>
+                <span className="text-[var(--foreground)]">{alojamientos.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--muted-foreground)]">Transfers:</span>
+                <span className="text-[var(--foreground)]">{transfers.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--muted-foreground)]">Seguros:</span>
+                <span className="text-[var(--foreground)]">{seguros.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--muted-foreground)]">Extras:</span>
+                <span className="text-[var(--foreground)]">{extras.length}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-[var(--muted)] rounded-xl p-4 border border-[var(--border)] space-y-4">
+          <h4 className="text-sm font-bold text-[var(--foreground)]">Opciones del PDF</h4>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={mostrarDesglosePdf}
+              onChange={(e) => setMostrarDesglosePdf(e.target.checked)}
+              className="w-5 h-5 rounded border-[var(--border)] text-blue-500 focus:ring-blue-500"
+            />
+            <div>
+              <p className="text-sm font-medium text-[var(--foreground)]">Mostrar desglose de precios</p>
+              <p className="text-xs text-[var(--muted-foreground)]">
+                Si está activado, el cliente verá vuelos, hospedajes, transfers, seguros y extras por separado.
+              </p>
+            </div>
+          </label>
+        </div>
+
+        {/* Datos internos */}
+        <div className="mt-6 p-4 bg-[var(--muted)] rounded-xl border border-[var(--border)] space-y-4">
+          <h4 className="text-sm font-bold text-[var(--foreground)] flex items-center gap-2">
+            <DollarSign className="w-4 h-4 text-[var(--muted-foreground)]" />
+            Datos internos (no visibles para el cliente)
+          </h4>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-[var(--muted-foreground)] mb-1">Costo neto</label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[var(--muted-foreground)]">{getSimboloMoneda(precios.moneda)}</span>
+                <input
+                  type="number"
+                  value={costoNeto}
+                  onChange={(e) => setCostoNeto(e.target.value)}
+                  placeholder="0.00"
+                  className="flex-1 bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs text-[var(--muted-foreground)] mb-1">Margen de agencia %</label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="margen-pct"
+                  type="number"
+                  value={margenAgenciaPorcentaje}
+                  onChange={(e) => {
+                    const pct = parseFloat(e.target.value) || 0;
+                    setMargenAgenciaPorcentaje(e.target.value);
+                    const costo = finalValues.total / (1 + pct / 100);
+                    setCostoNeto(costo.toFixed(2));
+                  }}
+                  placeholder="0"
+                  className="flex-1 bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-blue-500"
+                />
+                <span className="text-sm text-[var(--muted-foreground)]">%</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs text-[var(--muted-foreground)] mb-1">Margen de agencia monto</label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[var(--muted-foreground)]">{getSimboloMoneda(precios.moneda)}</span>
+                <input
+                  type="number"
+                  value={margenAgenciaMonto}
+                  readOnly
+                  className="flex-1 bg-[var(--background)]/50 border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--muted-foreground)] outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs text-[var(--muted-foreground)] mb-1">Comisión vendedor %</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={comisionVendedorPorcentaje}
+                  onChange={(e) => setComisionVendedorPorcentaje(e.target.value)}
+                  placeholder="0"
+                  className="flex-1 bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-blue-500"
+                />
+                <span className="text-sm text-[var(--muted-foreground)]">%</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs text-[var(--muted-foreground)] mb-1">Comisión vendedor estimada</label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[var(--muted-foreground)]">{getSimboloMoneda(precios.moneda)}</span>
+                <input
+                  type="number"
+                  value={comisionVendedorMonto}
+                  readOnly
+                  className="flex-1 bg-[var(--background)]/50 border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--muted-foreground)] outline-none"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+          <div className="flex justify-between items-center">
+            <span className="text-[var(--foreground)] font-bold text-lg">TOTAL FINAL</span>
+            <span className="text-green-400 font-black text-2xl">
+              {getSimboloMoneda(precios.moneda)} {finalValues.total.toFixed(2)}
+            </span>
+          </div>
+          <p className="text-xs text-[var(--muted-foreground)] text-right mt-1">
+            {getSimboloMoneda(precios.moneda)} {(finalValues.total / totalPasajeros).toFixed(2)} por persona
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
   // ============================================
   // RENDER PRINCIPAL
   // ============================================
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-28">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl md:text-3xl font-black text-[var(--foreground)] mb-2">Nueva Cotización Manual</h1>
@@ -920,6 +1115,7 @@ RP/DZOUY2100/
         {currentStep === 3 && renderStep3()}
         {currentStep === 4 && renderStep4()}
         {currentStep === 5 && renderStep5()}
+        {currentStep === 6 && renderStep6()}
       </div>
 
       {/* Modal Crear Cliente */}
@@ -932,7 +1128,7 @@ RP/DZOUY2100/
       />
 
       {/* Navigation Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-[var(--background)]/95 backdrop-blur border-t border-[var(--border)]">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-[var(--background)]/95 backdrop-blur border-t border-[var(--border)] z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <button
             onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}

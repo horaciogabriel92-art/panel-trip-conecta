@@ -35,7 +35,7 @@ import {
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useWorkflowMode } from '@/hooks/useWorkflowMode';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getSimboloMoneda } from '@/lib/utils';
 
 interface Cliente {
   id: string;
@@ -117,6 +117,12 @@ interface Cotizacion {
   precio_subtotal?: number;
   precio_impuestos?: number;
   comision_vendedor?: number;
+  mostrar_desglose_pdf?: boolean;
+  costo_neto?: number;
+  margen_agencia_monto?: number;
+  margen_agencia_porcentaje?: number;
+  comision_vendedor_porcentaje?: number;
+  comision_vendedor_monto_estimado?: number;
   estado: 'nueva' | 'enviada' | 'vendida' | 'perdida';
   notas?: string;
   fecha_creacion: string;
@@ -534,7 +540,10 @@ export default function CotizacionDetalle() {
           </p>
         </div>
         <div className="flex gap-2">
-          <PDFDownloadButton 
+          <PDFDownloadButton
+            mostrarDesglose={cotizacion.mostrar_desglose_pdf !== false}
+            cotizacionId={cotizacion.id}
+            clienteEmail={cotizacion.cliente?.email || cotizacion.cliente_email || ''}
             data={{
               id: cotizacion.id,
               codigo: cotizacion.codigo,
@@ -725,6 +734,42 @@ export default function CotizacionDetalle() {
               </div>
             </div>
           </div>
+
+          {/* Datos internos */}
+          {(cotizacion.costo_neto !== undefined || cotizacion.margen_agencia_monto !== undefined || cotizacion.comision_vendedor_monto_estimado !== undefined) && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-green-400" />
+                Datos internos
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 bg-[var(--muted)] rounded-xl">
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Costo neto</p>
+                  <p className="text-xl font-black text-[var(--foreground)]">
+                    {getSimboloMoneda(cotizacion.precio_moneda)}{formatCurrency(cotizacion.costo_neto)}
+                  </p>
+                </div>
+                <div className="p-4 bg-[var(--muted)] rounded-xl">
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Margen agencia</p>
+                  <p className="text-xl font-black text-[var(--foreground)]">
+                    {getSimboloMoneda(cotizacion.precio_moneda)}{formatCurrency(cotizacion.margen_agencia_monto)}
+                  </p>
+                  {cotizacion.margen_agencia_porcentaje ? (
+                    <p className="text-xs text-[var(--muted-foreground)]">{cotizacion.margen_agencia_porcentaje}%</p>
+                  ) : null}
+                </div>
+                <div className="p-4 bg-[var(--muted)] rounded-xl">
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Comisión vendedor</p>
+                  <p className="text-xl font-black text-[var(--foreground)]">
+                    {getSimboloMoneda(cotizacion.precio_moneda)}{formatCurrency(cotizacion.comision_vendedor_monto_estimado)}
+                  </p>
+                  {cotizacion.comision_vendedor_porcentaje ? (
+                    <p className="text-xs text-[var(--muted-foreground)]">{cotizacion.comision_vendedor_porcentaje}%</p>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Itinerario - Prioridad: paquete_data > paquete > notas parseadas */}
           {(() => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus, Trash2 } from "lucide-react";
+import { getSimboloMoneda } from "@/lib/utils";
 import type { ExtraCotizacion, MonedaCotizacion } from "@/types/cotizacion";
 
 interface Props {
@@ -75,7 +76,7 @@ export default function ExtraForm({ extras, moneda = "USD", onChange }: Props) {
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--muted-foreground)]">Precio por persona</label>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-[var(--muted-foreground)]">{moneda === "USD" ? "$" : "$U"}</span>
+                <span className="text-sm text-[var(--muted-foreground)]">{getSimboloMoneda(moneda)}</span>
                 <input
                   type="number"
                   value={e.precio_por_persona ?? ""}

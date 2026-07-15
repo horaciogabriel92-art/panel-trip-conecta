@@ -112,6 +112,7 @@ interface Cotizacion {
   fecha_salida?: string;
   precio_total: number;
   comision_vendedor?: number;
+  mostrar_desglose_pdf?: boolean;
   estado: 'nueva' | 'enviada' | 'vendida' | 'perdida';
   notas?: string;
   fecha_creacion: string;
@@ -707,7 +708,10 @@ export default function AdminCotizacionDetalle() {
           </p>
         </div>
         <div className="flex gap-2">
-          <PDFDownloadButton data={pdfData} />
+          <PDFDownloadButton
+            mostrarDesglose={cotizacion.mostrar_desglose_pdf !== false}
+            data={pdfData}
+          />
           {puedeEditar && (
             <Link 
               href={`/admin/cotizaciones/${cotizacion.id}/editar`}

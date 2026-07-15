@@ -1,4 +1,13 @@
-export type MonedaCotizacion = 'USD' | 'UYU';
+export type MonedaCotizacion =
+  | 'USD'   // Dólares estadounidenses
+  | 'UYU'   // Pesos uruguayos
+  | 'ARS'   // Pesos argentinos
+  | 'BRL'   // Reales brasileños
+  | 'CLP'   // Pesos chilenos
+  | 'COP'   // Pesos colombianos
+  | 'PEN'   // Soles peruanos
+  | 'MXN'   // Pesos mexicanos
+  | 'EUR';  // Euros
 
 export type TipoAlojamiento =
   | 'Hotel'

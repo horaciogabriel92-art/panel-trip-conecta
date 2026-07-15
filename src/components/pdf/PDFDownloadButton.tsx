@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
+import { PDFDownloadLink, PDFViewer, pdf } from '@react-pdf/renderer';
 import { CotizacionPDFDocument } from './CotizacionPDF';
-import { FileText, Download, Eye, X } from 'lucide-react';
+import { FileText, Download, Eye, X, Send, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import api from '@/lib/api';
+import { useToast } from '@/context/ToastContext';
 
 interface CotizacionData {
   id: string;
@@ -77,7 +79,10 @@ interface CotizacionData {
 
 interface PDFDownloadButtonProps {
   data: CotizacionData;
+  mostrarDesglose?: boolean;
   className?: string;
+  cotizacionId?: string;
+  clienteEmail?: string;
 }
 
 async function fetchLogoAsBase64(iataCode: string): Promise<string | null> {
@@ -95,12 +100,20 @@ async function fetchLogoAsBase64(iataCode: string): Promise<string | null> {
   }
 }
 
-export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonProps) {
+export function PDFDownloadButton({ data, mostrarDesglose = true, className = '', cotizacionId, clienteEmail = '' }: PDFDownloadButtonProps) {
   const { user } = useAuth();
+  const { success: toastSuccess, error: toastError } = useToast();
   const [showPreview, setShowPreview] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailTo, setEmailTo] = useState(clienteEmail);
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [vuelosWithLogos, setVuelosWithLogos] = useState<any[]>(data.vuelos || []);
   const [loadingLogos, setLoadingLogos] = useState(false);
   const pdfColors = user?.preferencias?.pdf_colors;
+
+  useEffect(() => {
+    setEmailTo(clienteEmail || '');
+  }, [clienteEmail]);
 
   useEffect(() => {
     async function loadLogos() {
@@ -206,12 +219,57 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
 
   const filename = `COT-${data.codigo}.pdf`;
 
+  const handleSendEmail = async () => {
+    if (!cotizacionId) {
+      toastError('Falta el ID de cotización', 'Error');
+      return;
+    }
+    if (!emailTo || !emailTo.includes('@')) {
+      toastError('Ingresá un email válido', 'Error');
+      return;
+    }
+
+    setSendingEmail(true);
+    try {
+      const doc = (
+        <CotizacionPDFDocument
+          data={pdfData}
+          colors={pdfColors}
+          mostrarDesglose={mostrarDesglose}
+        />
+      );
+      const blob = await pdf(doc).toBlob();
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+
+      await api.post(`/cotizaciones/${cotizacionId}/enviar-pdf`, {
+        to: emailTo,
+        pdfBase64: base64,
+        filename
+      });
+
+      toastSuccess('Cotización enviada por email', '¡Listo!');
+      setShowEmailModal(false);
+    } catch (error: any) {
+      console.error('Error enviando PDF:', error);
+      toastError(
+        error.response?.data?.error || error.message || 'Error al enviar el email',
+        'Error'
+      );
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       <div className="flex gap-2">
         {/* Botón Descargar PDF */}
         <PDFDownloadLink
-          document={<CotizacionPDFDocument data={pdfData} colors={pdfColors} />}
+          document={<CotizacionPDFDocument data={pdfData} colors={pdfColors} mostrarDesglose={mostrarDesglose} />}
           fileName={filename}
         >
           {({ loading }) => (
@@ -242,6 +300,17 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
           <Eye className="w-4 h-4" />
           Vista Previa
         </button>
+
+        {/* Botón Enviar por Email */}
+        {cotizacionId && (
+          <button
+            onClick={() => setShowEmailModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+          >
+            <Send className="w-4 h-4" />
+            Enviar
+          </button>
+        )}
       </div>
 
       {/* Modal de Vista Previa */}
@@ -253,7 +322,7 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
               <h3 className="font-bold">Vista Previa: {filename}</h3>
               <div className="flex items-center gap-2">
                 <PDFDownloadLink
-                  document={<CotizacionPDFDocument data={pdfData} colors={pdfColors} />}
+                  document={<CotizacionPDFDocument data={pdfData} colors={pdfColors} mostrarDesglose={mostrarDesglose} />}
                   fileName={filename}
                 >
                   {({ loading }) => (
@@ -280,6 +349,68 @@ export function PDFDownloadButton({ data, className = '' }: PDFDownloadButtonPro
               <PDFViewer width="100%" height="100%" className="border-0">
                 <CotizacionPDFDocument data={pdfData} colors={pdfColors} />
               </PDFViewer>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Enviar por Email */}
+      {showEmailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="w-full max-w-md bg-[var(--background)] border border-[var(--border)] rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-[var(--foreground)]">Enviar cotización por email</h3>
+              <button
+                onClick={() => setShowEmailModal(false)}
+                className="p-2 hover:bg-[var(--muted)] rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-[var(--muted-foreground)]" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">
+                  Email del cliente
+                </label>
+                <input
+                  type="email"
+                  value={emailTo}
+                  onChange={(e) => setEmailTo(e.target.value)}
+                  placeholder="cliente@email.com"
+                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="p-3 bg-[var(--muted)] rounded-xl text-sm text-[var(--muted-foreground)]">
+                Se adjuntará el PDF <span className="text-[var(--foreground)] font-medium">{filename}</span>.
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setShowEmailModal(false)}
+                  className="flex-1 px-4 py-2 bg-[var(--muted)] hover:bg-[var(--muted)]/80 text-[var(--foreground)] rounded-xl font-medium transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSendEmail}
+                  disabled={sendingEmail || !emailTo}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors"
+                >
+                  {sendingEmail ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Enviar
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

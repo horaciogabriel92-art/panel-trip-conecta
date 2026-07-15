@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Documentación del proyecto (vive fuera de este repo, no subir a GitHub)
+docs/
+archive/
+business_plan/

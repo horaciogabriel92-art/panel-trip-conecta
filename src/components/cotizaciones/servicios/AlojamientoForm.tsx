@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, Trash2, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getSimboloMoneda } from "@/lib/utils";
 import type { AlojamientoCotizacion, MonedaCotizacion, TipoAlojamiento } from "@/types/cotizacion";
 
 interface Props {
@@ -229,7 +229,7 @@ export default function AlojamientoForm({ alojamientos, moneda = "USD", onChange
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--muted-foreground)]">Precio por persona</label>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-[var(--muted-foreground)]">{moneda === "USD" ? "$" : "$U"}</span>
+                <span className="text-sm text-[var(--muted-foreground)]">{getSimboloMoneda(moneda)}</span>
                 <input
                   type="number"
                   value={a.precio_por_persona ?? ""}

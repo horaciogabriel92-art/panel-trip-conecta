@@ -611,6 +611,7 @@ function createStyles(COLORS: typeof DEFAULT_COLORS) {
 // INTERFACES
 // ============================================
 interface CotizacionPDFProps {
+  mostrarDesglose?: boolean;
   data: {
     cotizacion: {
       id: string;
@@ -712,10 +713,11 @@ function formatPrice(value: string | number): string {
 // ============================================
 // COMPONENTE PDF
 // ============================================
-export function CotizacionPDFDocument({ data, colors }: CotizacionPDFProps) {
+export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDesgloseProp }: CotizacionPDFProps) {
   const COLORS = { ...DEFAULT_COLORS, ...colors };
   const styles = createStyles(COLORS);
   const { cotizacion, cliente, paquete, pasajeros, hospedaje, traslados, seguros, extras, vuelos, precios, vendedor } = data;
+  const mostrarDesglose = mostrarDesgloseProp !== false;
   
   // Calcular duración del viaje
   const calcularDuracion = () => {
@@ -1047,7 +1049,7 @@ export function CotizacionPDFDocument({ data, colors }: CotizacionPDFProps) {
           <Text style={styles.sectionTitle}>Detalle de Precios</Text>
           
           <View style={styles.priceBreakdownSection}>
-            {esCotizacionManual && (
+            {esCotizacionManual && mostrarDesglose && (
               <>
                 {/* Vuelos */}
                 {parsePrice(precios.vuelos || '0') > 0 && (
