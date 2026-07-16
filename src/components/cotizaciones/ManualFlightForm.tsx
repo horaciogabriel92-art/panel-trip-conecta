@@ -3,10 +3,13 @@
 import { Plus, Trash2, Plane } from "lucide-react";
 import { AirlineLogo } from "@/components/flights/AirlineLogo";
 import { ParsedFlight } from "@/lib/amadeus-parser";
+import { getSimboloMoneda } from "@/lib/utils";
+import { MonedaCotizacion } from "@/types/cotizacion";
 
 interface ManualFlightFormProps {
   flights: ParsedFlight[];
   onChange: (flights: ParsedFlight[]) => void;
+  moneda?: MonedaCotizacion;
 }
 
 const emptyFlight = (linea: number): ParsedFlight => ({
@@ -44,7 +47,7 @@ const updateFlight = (
   return updated;
 };
 
-export default function ManualFlightForm({ flights, onChange }: ManualFlightFormProps) {
+export default function ManualFlightForm({ flights, onChange, moneda = "USD" }: ManualFlightFormProps) {
   const handleAdd = () => {
     onChange([...flights, emptyFlight(flights.length + 1)]);
   };
@@ -145,6 +148,25 @@ export default function ManualFlightForm({ flights, onChange }: ManualFlightForm
                 }
                 className="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] focus:border-teal-500 focus:outline-none"
               />
+            </div>
+            <div>
+              <label className="block text-xs text-[var(--muted-foreground)] mb-1">
+                Precio por persona
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-[var(--muted-foreground)]">{getSimboloMoneda(moneda)}</span>
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={flight.precio_por_persona ?? ""}
+                  onChange={(e) =>
+                    onChange(updateFlight(flights, index, "precio_por_persona", e.target.value === "" ? undefined : Number(e.target.value)))
+                  }
+                  placeholder="0.00"
+                  className="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] focus:border-teal-500 focus:outline-none"
+                />
+              </div>
             </div>
           </div>
 

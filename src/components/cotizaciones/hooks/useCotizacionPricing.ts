@@ -65,9 +65,8 @@ export function calcularTotalesDesdeServicios({
 }) {
   const pasajeros = Math.max(1, numPasajeros);
 
-  // Vuelos: por ahora no hay precio por persona en el objeto de vuelo,
-  // así que esto queda en 0 a menos que el backend lo agregue.
-  const vuelosTotal = 0;
+  // Vuelos: sumamos precio por persona si existe
+  const vuelosTotal = sumBy(vuelos, (v) => v.precio_por_persona) * pasajeros;
 
   // Hospedajes: solo los seleccionados
   const hospedajesSeleccionados = alojamientos.filter((a) => a.seleccionado);

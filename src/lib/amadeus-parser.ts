@@ -35,6 +35,7 @@ export interface ParsedFlight {
   operado_por?: string;
   marketing_codes?: string[];
   dias_adicionales?: number;
+  precio_por_persona?: number;
 }
 
 export interface ParsedPassenger {

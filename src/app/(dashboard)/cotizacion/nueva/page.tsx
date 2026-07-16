@@ -200,6 +200,18 @@ export default function NuevaCotizacionManual() {
     }
   }, [finalValues.subtotal, finalValues.total]);
 
+  // Sincronizar desglose calculado con el estado (sobrescribe ediciones manuales previas)
+  useEffect(() => {
+    setPrecios(prev => ({
+      ...prev,
+      vuelos: finalValues.vuelos.toFixed(2),
+      hospedajes: finalValues.hospedajes.toFixed(2),
+      traslados: finalValues.traslados.toFixed(2),
+      seguros: finalValues.seguros.toFixed(2),
+      extras: finalValues.extras.toFixed(2),
+    }));
+  }, [finalValues.vuelos, finalValues.hospedajes, finalValues.traslados, finalValues.seguros, finalValues.extras]);
+
   // Calcular margen de agencia
   useEffect(() => {
     const total = finalValues.total;
@@ -592,7 +604,7 @@ RP/DZOUY2100/
         /* MANUAL ENTRY */
         <div className="glass-card rounded-2xl p-6">
           <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Ingreso Manual</h3>
-          <ManualFlightForm flights={vuelosManuales} onChange={setVuelosManuales} />
+          <ManualFlightForm flights={vuelosManuales} onChange={setVuelosManuales} moneda={precios.moneda} />
         </div>
       )}
     </div>
@@ -742,6 +754,9 @@ RP/DZOUY2100/
         {/* Desglose de Precios */}
         <div className="space-y-4 mb-6">
           <h4 className="text-sm font-bold text-[var(--foreground)]">Desglose de Servicios</h4>
+          <p className="text-xs text-[var(--muted-foreground)]">
+            Los montos se calculan automáticamente desde los precios por persona ingresados en cada servicio.
+          </p>
           
           {/* Vuelos */}
           <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
@@ -749,11 +764,10 @@ RP/DZOUY2100/
             <div className="flex-1">
               <label className="block text-xs text-[var(--muted-foreground)]">Vuelos</label>
               <input
-                type="number"
-                value={precios.vuelos}
-                onChange={(e) => setField('vuelos', e.target.value)}
-                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-blue-500"
-                placeholder="0.00"
+                type="text"
+                readOnly
+                value={finalValues.vuelos.toFixed(2)}
+                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none cursor-default"
               />
             </div>
             <span className="text-[var(--muted-foreground)]">{getSimboloMoneda(precios.moneda)}</span>
@@ -765,11 +779,10 @@ RP/DZOUY2100/
             <div className="flex-1">
               <label className="block text-xs text-[var(--muted-foreground)]">Hospedajes</label>
               <input
-                type="number"
-                value={precios.hospedajes}
-                onChange={(e) => setField('hospedajes', e.target.value)}
-                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-purple-500"
-                placeholder="0.00"
+                type="text"
+                readOnly
+                value={finalValues.hospedajes.toFixed(2)}
+                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none cursor-default"
               />
             </div>
             <span className="text-[var(--muted-foreground)]">{getSimboloMoneda(precios.moneda)}</span>
@@ -781,11 +794,10 @@ RP/DZOUY2100/
             <div className="flex-1">
               <label className="block text-xs text-[var(--muted-foreground)]">Transfers</label>
               <input
-                type="number"
-                value={precios.traslados}
-                onChange={(e) => setField('traslados', e.target.value)}
-                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-cyan-500"
-                placeholder="0.00"
+                type="text"
+                readOnly
+                value={finalValues.traslados.toFixed(2)}
+                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none cursor-default"
               />
             </div>
             <span className="text-[var(--muted-foreground)]">{getSimboloMoneda(precios.moneda)}</span>
@@ -797,11 +809,10 @@ RP/DZOUY2100/
             <div className="flex-1">
               <label className="block text-xs text-[var(--muted-foreground)]">Seguros</label>
               <input
-                type="number"
-                value={precios.seguros}
-                onChange={(e) => setField('seguros', e.target.value)}
-                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-rose-500"
-                placeholder="0.00"
+                type="text"
+                readOnly
+                value={finalValues.seguros.toFixed(2)}
+                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none cursor-default"
               />
             </div>
             <span className="text-[var(--muted-foreground)]">{getSimboloMoneda(precios.moneda)}</span>
@@ -813,11 +824,10 @@ RP/DZOUY2100/
             <div className="flex-1">
               <label className="block text-xs text-[var(--muted-foreground)]">Extras</label>
               <input
-                type="number"
-                value={precios.extras}
-                onChange={(e) => setField('extras', e.target.value)}
-                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none focus:border-orange-500"
-                placeholder="0.00"
+                type="text"
+                readOnly
+                value={finalValues.extras.toFixed(2)}
+                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none cursor-default"
               />
             </div>
             <span className="text-[var(--muted-foreground)]">{getSimboloMoneda(precios.moneda)}</span>
