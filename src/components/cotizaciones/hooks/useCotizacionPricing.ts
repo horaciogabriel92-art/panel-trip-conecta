@@ -59,7 +59,7 @@ export function calcularTotalesDesdeServicios({
 }) {
   const pasajeros = Math.max(1, numPasajeros);
 
-  const vuelosPorPersona = sumBy(vuelos, (v) => v.precio_por_persona);
+  const vuelosPorPersona = sumBy(vuelos, (v) => v.precio_por_persona ?? v.datos_completos?.precio_por_persona);
   const hospedajesPorPersona = sumBy(
     alojamientos.filter((a) => a.seleccionado !== false),
     (a) => a.precio_por_persona

@@ -97,11 +97,18 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
   const [noIncluye, setNoIncluye] = useState<string[]>([]);
   const [politicas, setPoliticas] = useState('');
   const [moneda, setMoneda] = useState<'USD' | 'UYU'>('USD');
-  const [impuestos, setImpuestos] = useState(0);
   const [pasajerosIds, setPasajerosIds] = useState<string[]>([]);
   const [margenMonto, setMargenMonto] = useState<number>(0);
   const [notasInternas, setNotasInternas] = useState<string>('');
   const [mostrarDesglosePdf, setMostrarDesglosePdf] = useState<boolean>(true);
+  // Overrides manuales del desglose (por persona). Si un campo no está acá, se usa el calculado.
+  const [desgloseEdit, setDesgloseEdit] = useState<{
+    vuelos?: number;
+    hospedajes?: number;
+    traslados?: number;
+    seguros?: number;
+    extras?: number;
+  }>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -135,7 +142,6 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
         setPoliticas(pd.politicas_cancelacion || data.politicas_cancelacion || '');
 
         setMoneda(data.precio_moneda || 'USD');
-        setImpuestos(0);
 
         setMargenMonto(Number(data.margen_agencia_monto) || 0);
         setNotasInternas(data.notas_internas || '');
@@ -170,8 +176,15 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
     moneda,
   });
 
-  const subtotalCalculado = values.subtotal;
-  const totalCalculado = values.total;
+  // Valores efectivos: override manual ?? calculado desde servicios
+  const vuelosVal = desgloseEdit.vuelos ?? values.vuelos;
+  const hospedajesVal = desgloseEdit.hospedajes ?? values.hospedajes;
+  const trasladosVal = desgloseEdit.traslados ?? values.traslados;
+  const segurosVal = desgloseEdit.seguros ?? values.seguros;
+  const extrasVal = desgloseEdit.extras ?? values.extras;
+
+  const subtotalCalculado = vuelosVal + hospedajesVal + trasladosVal + segurosVal + extrasVal;
+  const totalCalculado = subtotalCalculado * numPasajeros;
 
   const addVuelo = () => {
     setVuelos([...vuelos, { tipo_trayecto: 'ida', es_escala: false }]);
@@ -220,11 +233,11 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
         politicas_cancelacion: politicas,
         precios: {
           moneda,
-          vuelos: values.vuelos,
-          hospedajes: values.hospedajes,
-          traslados: values.traslados,
-          seguros: values.seguros,
-          extras: values.extras,
+          vuelos: vuelosVal,
+          hospedajes: hospedajesVal,
+          traslados: trasladosVal,
+          seguros: segurosVal,
+          extras: extrasVal,
           subtotal: subtotalCalculado,
           impuestos: 0,
           total: totalCalculado,
@@ -445,12 +458,15 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
             </select>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <PriceInput label="Vuelos" value={values.vuelos} />
-            <PriceInput label="Hospedajes" value={values.hospedajes} />
-            <PriceInput label="Transfers" value={values.traslados} />
-            <PriceInput label="Seguros" value={values.seguros} />
-            <PriceInput label="Extras" value={values.extras} />
+            <PriceInput label="Vuelos" value={vuelosVal} onChange={(v) => setDesgloseEdit((p) => ({ ...p, vuelos: v }))} />
+            <PriceInput label="Hospedajes" value={hospedajesVal} onChange={(v) => setDesgloseEdit((p) => ({ ...p, hospedajes: v }))} />
+            <PriceInput label="Transfers" value={trasladosVal} onChange={(v) => setDesgloseEdit((p) => ({ ...p, traslados: v }))} />
+            <PriceInput label="Seguros" value={segurosVal} onChange={(v) => setDesgloseEdit((p) => ({ ...p, seguros: v }))} />
+            <PriceInput label="Extras" value={extrasVal} onChange={(v) => setDesgloseEdit((p) => ({ ...p, extras: v }))} />
           </div>
+          <p className="text-xs text-[var(--muted-foreground)]">
+            Valores por persona. Se calculan desde los servicios, pero podés editarlos manualmente.
+          </p>
 
           <label className="flex items-center gap-3 cursor-pointer p-3 bg-[var(--muted)] rounded-xl">
             <input
@@ -527,15 +543,20 @@ function Section({ title, icon, children }: { title: string; icon: React.ReactNo
   );
 }
 
-function PriceInput({ label, value }: { label: string; value: number }) {
+function PriceInput({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <div className="space-y-1">
       <label className="text-xs font-medium text-[var(--muted-foreground)] uppercase">{label}</label>
       <input
-        type="text"
-        readOnly
-        value={value ? value.toFixed(2) : '0.00'}
-        className="w-full bg-[var(--muted)]/50 border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none cursor-default opacity-70"
+        type="number"
+        min={0}
+        step="0.01"
+        value={Number.isFinite(value) ? value : 0}
+        onChange={(e) => {
+          const n = Number(e.target.value);
+          onChange(Number.isFinite(n) && n >= 0 ? n : 0);
+        }}
+        className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
       />
     </div>
   );
