@@ -49,10 +49,40 @@ export default function NotificationsBell() {
   };
 
   useEffect(() => {
-    fetchNotificaciones();
-    // Poll cada 30 segundos
-    const interval = setInterval(fetchNotificaciones, 30000);
-    return () => clearInterval(interval);
+    let interval: NodeJS.Timeout | null = null;
+
+    const startPolling = () => {
+      fetchNotificaciones();
+      if (!interval) {
+        interval = setInterval(fetchNotificaciones, 30000);
+      }
+    };
+
+    const stopPolling = () => {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    // Iniciar solo si la pestaña está visible
+    if (document.visibilityState === 'visible') {
+      startPolling();
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      stopPolling();
+    };
   }, []);
 
   // Cerrar dropdown al hacer click fuera

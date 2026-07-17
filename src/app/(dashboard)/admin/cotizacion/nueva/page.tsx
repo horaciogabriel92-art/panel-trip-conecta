@@ -34,7 +34,7 @@ import ServiciosStep from '@/components/cotizaciones/servicios/ServiciosStep';
 import CurrencySelector from '@/components/CurrencySelector';
 import { useCotizacionPricing, toMoney } from '@/components/cotizaciones/hooks/useCotizacionPricing';
 import { Cliente, clientesAPI } from '@/lib/api-clientes';
-import { getSimboloMoneda } from '@/lib/utils';
+import { getSimboloMoneda, parsePrecioInput } from '@/lib/utils';
 import type { AlojamientoCotizacion, TransferCotizacion, SeguroCotizacion, ExtraCotizacion, MonedaCotizacion } from '@/types/cotizacion';
 
 // ============================================
@@ -338,7 +338,15 @@ export default function AdminNuevaCotizacion() {
       router.push('/admin/cotizaciones');
     } catch (error: any) {
       console.error('Error al crear cotización:', error.response?.data || error.message);
-      const errorMsg = error.response?.data?.details || error.response?.data?.error || error.message || 'Error desconocido';
+      const errorDetails = error.response?.data?.details;
+      let errorMsg = 'Error desconocido';
+      if (typeof errorDetails === 'string') {
+        errorMsg = errorDetails;
+      } else if (errorDetails && typeof errorDetails === 'object') {
+        errorMsg = (errorDetails as any).message || (errorDetails as any).error || JSON.stringify(errorDetails);
+      } else {
+        errorMsg = error.response?.data?.error || error.message || 'Error desconocido';
+      }
       toastError(errorMsg, 'Error al crear cotización');
     } finally {
       setIsSubmitting(false);
@@ -739,7 +747,7 @@ RP/DZOUY2100/
                 ✓ {parsedFlights.length} vuelo(s) detectado(s)
               </h4>
               {parsedFlights.map((flight, idx) => (
-                <div key={idx} className="bg-teal-500/10 border border-teal-500/30 rounded-xl p-4">
+                <div key={idx} className="bg-teal-500/10 border border-teal-500/30 rounded-xl p-4 space-y-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <AirlineLogo iataCode={flight.aerolinea_codigo} size={20} />
@@ -750,17 +758,35 @@ RP/DZOUY2100/
                     <span className="text-xs text-[var(--muted-foreground)]">Clase {flight.clase_codigo}</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
-                    <div className="text-center">
+                    <div className="text-center flex-1">
                       <p className="text-[var(--foreground)] font-bold">{flight.origen_nombre || flight.origen_codigo}</p>
                       <p className="text-[var(--muted-foreground)] text-xs">{flight.hora_salida}</p>
                     </div>
                     <div className="flex-1 h-px bg-white/20 relative">
                       <Plane className="w-4 h-4 text-[var(--muted-foreground)] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                     </div>
-                    <div className="text-center">
+                    <div className="text-center flex-1">
                       <p className="text-[var(--foreground)] font-bold">{flight.destino_nombre || flight.destino_codigo}</p>
                       <p className="text-[var(--muted-foreground)] text-xs">{flight.hora_llegada}</p>
                     </div>
+                  </div>
+                  <div className="pt-2 border-t border-teal-500/20">
+                    <label className="block text-xs text-[var(--muted-foreground)] mb-1">
+                      Precio por persona ({getSimboloMoneda(moneda)})
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={flight.precio_por_persona ?? ''}
+                      onChange={(e) => {
+                        const updated = [...parsedFlights];
+                        updated[idx] = { ...updated[idx], precio_por_persona: parsePrecioInput(e.target.value) };
+                        setParsedFlights(updated);
+                      }}
+                      placeholder="0.00"
+                      className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-teal-500"
+                    />
                   </div>
                 </div>
               ))}
