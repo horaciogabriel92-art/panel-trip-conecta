@@ -125,6 +125,7 @@ interface Cotizacion {
   comision_vendedor_monto_estimado?: number;
   estado: 'nueva' | 'enviada' | 'vendida' | 'perdida';
   notas?: string;
+  notas_internas?: string;
   fecha_creacion: string;
   fecha_expiracion?: string;
   fecha_salida?: string;
@@ -1281,6 +1282,19 @@ export default function CotizacionDetalle() {
                 </div>
               )}
             </div>
+
+            {/* Notas internas */}
+            {cotizacion.notas_internas && (
+              <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                <h4 className="text-sm font-bold text-amber-400 mb-2 flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  Notas internas
+                </h4>
+                <p className="text-sm text-[var(--foreground)] whitespace-pre-wrap">
+                  {cotizacion.notas_internas}
+                </p>
+              </div>
+            )}
 
             {puedeConvertir && (
               <button

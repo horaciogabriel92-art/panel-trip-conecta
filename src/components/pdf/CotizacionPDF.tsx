@@ -604,6 +604,58 @@ function createStyles(COLORS: typeof DEFAULT_COLORS) {
     fontWeight: 'bold',
     color: COLORS.primary,
   },
+
+  // Opciones de hoteles
+  optionCard: {
+    backgroundColor: COLORS.background,
+    borderRadius: 6,
+    padding: 10,
+    marginBottom: 8,
+    borderLeft: `3px solid ${COLORS.primary}`,
+  },
+  optionCardSelected: {
+    borderLeft: `3px solid ${COLORS.primaryDark}`,
+    backgroundColor: '#ccfbf1',
+  },
+  optionTitle: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: COLORS.dark,
+    marginBottom: 4,
+  },
+  optionDetail: {
+    fontSize: 9,
+    color: COLORS.textLight,
+    marginBottom: 2,
+  },
+  optionTotalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 6,
+    paddingTop: 6,
+    borderTop: `1px dashed ${COLORS.primaryLight}`,
+  },
+  optionTotalLabel: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: COLORS.dark,
+  },
+  optionTotalValue: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+  },
+  optionBadge: {
+    backgroundColor: COLORS.primary,
+    color: 'white',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    fontSize: 8,
+    fontWeight: 'bold',
+    alignSelf: 'flex-start',
+    marginBottom: 6,
+  },
   });
 }
 
@@ -745,6 +797,18 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
   const tituloCotizacion = cotizacion.nombre_cotizacion || paquete.titulo;
   const destino = hospedaje?.[0]?.ciudad || vuelos?.[vuelos.length - 1]?.destino_ciudad || paquete.destino;
 
+  // Calcular opciones de hoteles (base común + cada hotel)
+  const baseServicios =
+    parsePrice(precios.vuelos || 0) +
+    parsePrice(precios.traslados || 0) +
+    parsePrice(precios.seguros || 0) +
+    parsePrice(precios.extras || 0);
+  const calcularTotalOpcion = (hotel: any) => {
+    const hotelTotal = (hotel.precio_por_persona || 0) * (cotizacion.num_pasajeros || 1);
+    return baseServicios + hotelTotal;
+  };
+  const mostrarOpciones = (hospedaje || []).length > 1;
+
   return (
     <Document>
       {/* ============================================
@@ -842,7 +906,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
 
         {/* Vuelos - Con fechas y horas claras */}
         {vuelos && vuelos.length > 0 && (
-          <View style={styles.section} wrap={false}>
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Vuelos</Text>
             {vuelos.map((vuelo, idx) => (
               <View key={idx} style={styles.flightCard}>
@@ -928,7 +992,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
 
         {/* Hospedajes manuales */}
         {hospedaje && hospedaje.length > 0 && (
-          <View style={styles.section} wrap={false}>
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Alojamiento</Text>
             {hospedaje.map((h, idx) => (
               <View key={idx} style={[styles.hotelCard, h.seleccionado && { borderLeft: `3px solid ${COLORS.primary}` }]}>
@@ -953,7 +1017,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                 {(h.tipo_habitacion || h.regimen) && (
                   <Text style={styles.hotelInfo}>Habitación: {h.tipo_habitacion || '-'} · Régimen: {h.regimen || '-'}</Text>
                 )}
-                {h.precio_por_persona > 0 && (
+                {mostrarDesglose && h.precio_por_persona > 0 && (
                   <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(h.precio_por_persona)} {precios.moneda}</Text>
                 )}
                 {h.notas && <Text style={styles.hotelInfo}>Notas: {h.notas}</Text>}
@@ -964,7 +1028,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
 
         {/* Transfers */}
         {traslados && traslados.length > 0 && (
-          <View style={styles.section} wrap={false}>
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Transfers</Text>
             {traslados.map((t, idx) => (
               <View key={idx} style={styles.hotelCard}>
@@ -973,7 +1037,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                 {(t.fecha || t.hora) && (
                   <Text style={styles.hotelInfo}>{t.fecha}{t.fecha && t.hora ? ' · ' : ''}{t.hora}</Text>
                 )}
-                {t.precio_por_persona > 0 && (
+                {mostrarDesglose && t.precio_por_persona > 0 && (
                   <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(t.precio_por_persona)} {precios.moneda}</Text>
                 )}
                 {t.notas && <Text style={styles.hotelInfo}>Notas: {t.notas}</Text>}
@@ -984,7 +1048,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
 
         {/* Seguros */}
         {seguros && seguros.length > 0 && (
-          <View style={styles.section} wrap={false}>
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Seguro de viaje</Text>
             {seguros.map((s, idx) => (
               <View key={idx} style={styles.hotelCard}>
@@ -994,7 +1058,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                   <Text style={styles.hotelInfo}>Vigencia: {s.fecha_inicio || '-'} al {s.fecha_fin || '-'}</Text>
                 )}
                 {s.cobertura_detalle && <Text style={styles.hotelInfo}>{s.cobertura_detalle}</Text>}
-                {s.precio_por_persona > 0 && (
+                {mostrarDesglose && s.precio_por_persona > 0 && (
                   <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(s.precio_por_persona)} {precios.moneda}</Text>
                 )}
               </View>
@@ -1004,14 +1068,14 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
 
         {/* Extras */}
         {extras && extras.length > 0 && (
-          <View style={styles.section} wrap={false}>
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Extras</Text>
             {extras.map((e, idx) => (
               <View key={idx} style={styles.hotelCard}>
                 <Text style={styles.hotelName}>{e.nombre || `Extra ${idx + 1}`}</Text>
                 {e.descripcion && <Text style={styles.hotelInfo}>{e.descripcion}</Text>}
                 {e.fecha && <Text style={styles.hotelInfo}>Fecha: {e.fecha}</Text>}
-                {e.precio_por_persona > 0 && (
+                {mostrarDesglose && e.precio_por_persona > 0 && (
                   <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(e.precio_por_persona)} {precios.moneda}</Text>
                 )}
               </View>
@@ -1021,7 +1085,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
 
         {/* Tabla de Todos los Pasajeros */}
         {pasajeros.length > 0 && (
-          <View style={styles.section} wrap={false}>
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Pasajeros ({pasajeros.length})</Text>
             <View style={styles.pricingTable}>
               <View style={styles.tableHeader}>
@@ -1044,9 +1108,61 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
           </View>
         )}
 
+        {/* Opciones de hoteles */}
+        {mostrarOpciones && (
+          <View style={styles.section} wrap={false}>
+            <Text style={styles.sectionTitle}>Opciones de Alojamiento</Text>
+            {(hospedaje || []).map((h, idx) => {
+              const totalOpcion = calcularTotalOpcion(h);
+              const porPersona = totalOpcion / (cotizacion.num_pasajeros || 1);
+              return (
+                <View
+                  key={idx}
+                  style={[
+                    styles.optionCard,
+                    h.seleccionado ? styles.optionCardSelected : {},
+                  ]}
+                >
+                  {h.seleccionado && (
+                    <Text style={styles.optionBadge}>OPCIÓN RECOMENDADA</Text>
+                  )}
+                  <Text style={styles.optionTitle}>
+                    Opción {String.fromCharCode(65 + idx)}: {h.nombre_alojamiento || h.nombre_hotel || 'Alojamiento'}
+                  </Text>
+                  <Text style={styles.optionDetail}>{h.tipo_alojamiento || 'Hotel'} · {h.ciudad || 'Ciudad no especificada'}</Text>
+                  {h.fecha_checkin && h.fecha_checkout && (
+                    <Text style={styles.optionDetail}>
+                      {h.fecha_checkin} al {h.fecha_checkout} · {h.noches || '-'} noches
+                    </Text>
+                  )}
+                  {(h.tipo_habitacion || h.regimen) && (
+                    <Text style={styles.optionDetail}>
+                      Habitación: {h.tipo_habitacion || '-'} · Régimen: {h.regimen || '-'}
+                    </Text>
+                  )}
+                  <View style={styles.optionTotalRow}>
+                    <Text style={styles.optionTotalLabel}>Total por persona</Text>
+                    <Text style={styles.optionTotalValue}>
+                      ${formatPrice(porPersona)} {precios.moneda}
+                    </Text>
+                  </View>
+                  <View style={styles.optionTotalRow}>
+                    <Text style={styles.optionTotalLabel}>TOTAL ({cotizacion.num_pasajeros} pasajeros)</Text>
+                    <Text style={styles.optionTotalValue}>
+                      ${formatPrice(totalOpcion)} {precios.moneda}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
         {/* Detalle de Precios */}
         <View style={styles.section} wrap={false}>
-          <Text style={styles.sectionTitle}>Detalle de Precios</Text>
+          <Text style={styles.sectionTitle}>
+            {mostrarDesglose ? 'Detalle de Precios' : 'Resumen de Precios'}
+          </Text>
           
           <View style={styles.priceBreakdownSection}>
             {esCotizacionManual && mostrarDesglose && (
@@ -1135,7 +1251,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
           if (incluye.length === 0 && noIncluye.length === 0) return null;
           
           return (
-            <View style={styles.section} wrap={false}>
+            <View style={styles.section}>
               <Text style={styles.sectionTitle}>Detalles del Servicio</Text>
               <View style={styles.includesGrid}>
                 {incluye.length > 0 && (
@@ -1166,7 +1282,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
           if (!itin) return null;
           
           return (
-            <View style={styles.section} wrap={false}>
+            <View style={styles.section}>
               <Text style={styles.sectionTitle}>Itinerario</Text>
               
               {/* Si es string */}

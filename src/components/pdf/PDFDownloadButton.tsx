@@ -347,7 +347,7 @@ export function PDFDownloadButton({ data, mostrarDesglose = true, className = ''
             {/* PDF Viewer */}
             <div className="flex-1 bg-slate-100">
               <PDFViewer width="100%" height="100%" className="border-0">
-                <CotizacionPDFDocument data={pdfData} colors={pdfColors} />
+                <CotizacionPDFDocument data={pdfData} colors={pdfColors} mostrarDesglose={mostrarDesglose} />
               </PDFViewer>
             </div>
           </div>

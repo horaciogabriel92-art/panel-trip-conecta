@@ -115,6 +115,7 @@ interface Cotizacion {
   mostrar_desglose_pdf?: boolean;
   estado: 'nueva' | 'enviada' | 'vendida' | 'perdida';
   notas?: string;
+  notas_internas?: string;
   fecha_creacion: string;
   fecha_expiracion?: string;
   fecha_envio?: string;
@@ -1627,6 +1628,19 @@ export default function AdminCotizacionDetalle() {
               <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-center">
                 <XCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
                 <p className="text-red-400 font-medium">Cotización perdida</p>
+              </div>
+            )}
+
+            {/* Notas internas */}
+            {cotizacion.notas_internas && (
+              <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                <h4 className="text-sm font-bold text-amber-400 mb-2 flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  Notas internas
+                </h4>
+                <p className="text-sm text-[var(--foreground)] whitespace-pre-wrap">
+                  {cotizacion.notas_internas}
+                </p>
               </div>
             )}
           </div>

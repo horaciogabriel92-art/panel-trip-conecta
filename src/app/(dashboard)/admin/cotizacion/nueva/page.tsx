@@ -109,6 +109,7 @@ export default function AdminNuevaCotizacion() {
   const [noIncluye, setNoIncluye] = useState<string[]>(['Gastos personales', 'Propinas']);
   const [politicasCancelacion, setPoliticasCancelacion] = useState('');
   const [mostrarDesglosePdf, setMostrarDesglosePdf] = useState(true);
+  const [notasInternas, setNotasInternas] = useState('');
 
   // Datos internos: margen fijo editable (monto)
   const [margenMonto, setMargenMonto] = useState<string>('');
@@ -316,6 +317,7 @@ export default function AdminNuevaCotizacion() {
         margen_agencia_monto: margenMontoNum,
         comision_vendedor_porcentaje: 0,
         comision_vendedor_monto_estimado: 0,
+        notas_internas: notasInternas,
       };
 
       if (clienteSeleccionado) {
@@ -1216,6 +1218,19 @@ RP/DZOUY2100/
                 Monto fijo que se suma al costo neto
               </p>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs text-[var(--muted-foreground)] mb-1">Notas internas</label>
+            <textarea
+              value={notasInternas}
+              onChange={(e) => setNotasInternas(e.target.value)}
+              placeholder="Notas internas sobre comisión, condiciones especiales, etc. (no visible para el cliente)"
+              className="w-full h-24 bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-blue-500 resize-none"
+            />
+            <p className="text-xs text-[var(--muted-foreground)] mt-1">
+              Información interna para el vendedor/admin. No se incluye en el PDF.
+            </p>
           </div>
         </div>
 
