@@ -517,21 +517,21 @@ RP/DZOUY2100/
                     <div className="flex items-center gap-2">
                       <AirlineLogo iataCode={flight.aerolinea_codigo} size={20} />
                       <span className="text-teal-400 font-bold">
-                        {flight.aerolinea_codigo} {flight.numero_vuelo}
+                        {flight.aerolinea_nombre || flight.aerolinea_codigo} {flight.numero_vuelo}
                       </span>
                     </div>
                     <span className="text-xs text-[var(--muted-foreground)]">Clase {flight.clase_codigo}</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
                     <div className="text-center">
-                      <p className="text-[var(--foreground)] font-bold">{flight.origen_codigo}</p>
+                      <p className="text-[var(--foreground)] font-bold">{flight.origen_nombre || flight.origen_codigo}</p>
                       <p className="text-[var(--muted-foreground)] text-xs">{flight.hora_salida}</p>
                     </div>
                     <div className="flex-1 h-px bg-white/20 relative">
                       <Plane className="w-4 h-4 text-[var(--muted-foreground)] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                     </div>
                     <div className="text-center">
-                      <p className="text-[var(--foreground)] font-bold">{flight.destino_codigo}</p>
+                      <p className="text-[var(--foreground)] font-bold">{flight.destino_nombre || flight.destino_codigo}</p>
                       <p className="text-[var(--muted-foreground)] text-xs">{flight.hora_llegada}</p>
                     </div>
                   </div>

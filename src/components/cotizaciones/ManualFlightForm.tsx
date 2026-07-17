@@ -95,17 +95,16 @@ export default function ManualFlightForm({ flights, onChange, moneda = "USD" }: 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div>
               <label className="block text-xs text-[var(--muted-foreground)] mb-1">
-                Aerolínea (IATA)
+                Aerolínea
               </label>
               <input
                 type="text"
-                value={flight.aerolinea_codigo}
+                value={flight.aerolinea_nombre}
                 onChange={(e) =>
-                  onChange(updateFlight(flights, index, "aerolinea_codigo", e.target.value.toUpperCase()))
+                  onChange(updateFlight(flights, index, "aerolinea_nombre", e.target.value))
                 }
-                placeholder="LA"
-                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] focus:border-teal-500 focus:outline-none uppercase"
-                maxLength={3}
+                placeholder="Ej. Latam"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] focus:border-teal-500 focus:outline-none"
               />
             </div>
             <div>
@@ -175,32 +174,30 @@ export default function ManualFlightForm({ flights, onChange, moneda = "USD" }: 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div>
               <label className="block text-xs text-[var(--muted-foreground)] mb-1">
-                Origen (IATA)
+                Origen
               </label>
               <input
                 type="text"
-                value={flight.origen_codigo}
+                value={flight.origen_nombre}
                 onChange={(e) =>
-                  onChange(updateFlight(flights, index, "origen_codigo", e.target.value.toUpperCase()))
+                  onChange(updateFlight(flights, index, "origen_nombre", e.target.value))
                 }
-                placeholder="JFK"
-                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] focus:border-teal-500 focus:outline-none uppercase"
-                maxLength={3}
+                placeholder="Ej. Buenos Aires"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] focus:border-teal-500 focus:outline-none"
               />
             </div>
             <div>
               <label className="block text-xs text-[var(--muted-foreground)] mb-1">
-                Destino (IATA)
+                Destino
               </label>
               <input
                 type="text"
-                value={flight.destino_codigo}
+                value={flight.destino_nombre}
                 onChange={(e) =>
-                  onChange(updateFlight(flights, index, "destino_codigo", e.target.value.toUpperCase()))
+                  onChange(updateFlight(flights, index, "destino_nombre", e.target.value))
                 }
-                placeholder="SCL"
-                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] focus:border-teal-500 focus:outline-none uppercase"
-                maxLength={3}
+                placeholder="Ej. Miami"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] focus:border-teal-500 focus:outline-none"
               />
             </div>
             <div>

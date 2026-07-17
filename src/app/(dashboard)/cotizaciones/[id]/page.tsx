@@ -958,7 +958,7 @@ export default function CotizacionDetalle() {
                         {vuelo.destino_ciudad || vuelo.destino_nombre || vuelo.destino}
                       </span>
                       <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
-                        {vuelo.aerolinea_codigo || vuelo.aerolinea?.substring(0, 2)?.toUpperCase() || 'AV'} {vuelo.numero_vuelo}
+                        {vuelo.aerolinea_nombre || vuelo.aerolinea_codigo || vuelo.aerolinea?.substring(0, 2)?.toUpperCase() || 'AV'} {vuelo.numero_vuelo}
                       </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">

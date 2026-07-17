@@ -848,10 +848,10 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
               <View key={idx} style={styles.flightCard}>
                 <View style={styles.flightHeader}>
                   <Text style={styles.flightRoute}>
-                    {vuelo.origen_ciudad} → {vuelo.destino_ciudad}
+                    {vuelo.origen_nombre || vuelo.origen_ciudad} → {vuelo.destino_nombre || vuelo.destino_ciudad}
                   </Text>
                   <Text style={styles.flightNumber}>
-                    {vuelo.aerolinea_codigo} {vuelo.numero_vuelo}
+                    {vuelo.aerolinea_nombre || vuelo.aerolinea_codigo} {vuelo.numero_vuelo}
                   </Text>
                 </View>
                 
@@ -860,8 +860,8 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                   <View style={styles.flightOrigin}>
                     <Text style={styles.flightTimeLarge}>{vuelo.hora_salida}</Text>
                     <Text style={styles.flightDateLarge}>{vuelo.fecha_salida}</Text>
-                    <Text style={styles.flightAirport}>{vuelo.origen_codigo}</Text>
-                    <Text style={styles.flightCity}>{vuelo.origen_ciudad}</Text>
+                    <Text style={styles.flightAirport}>{vuelo.origen_nombre || vuelo.origen_ciudad}</Text>
+                    <Text style={styles.flightCity}>{vuelo.origen_nombre || vuelo.origen_ciudad}</Text>
                   </View>
                   
                   <View style={styles.flightConnector}>
@@ -875,8 +875,8 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                   <View style={styles.flightDestination}>
                     <Text style={styles.flightTimeLarge}>{vuelo.hora_llegada}</Text>
                     <Text style={styles.flightDateLarge}>{vuelo.fecha_llegada}</Text>
-                    <Text style={styles.flightAirport}>{vuelo.destino_codigo}</Text>
-                    <Text style={styles.flightCity}>{vuelo.destino_ciudad}</Text>
+                    <Text style={styles.flightAirport}>{vuelo.destino_nombre || vuelo.destino_ciudad}</Text>
+                    <Text style={styles.flightCity}>{vuelo.destino_nombre || vuelo.destino_ciudad}</Text>
                   </View>
                 </View>
                 

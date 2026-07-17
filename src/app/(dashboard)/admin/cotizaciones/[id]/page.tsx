@@ -1127,7 +1127,7 @@ export default function AdminCotizacionDetalle() {
                         {v.origen_ciudad || v.origen_nombre || '?'} → {v.destino_ciudad || v.destino_nombre || '?'}
                       </span>
                       <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
-                        {v.aerolinea_codigo || 'AV'} {v.numero_vuelo}
+                        {v.aerolinea_nombre || v.aerolinea_codigo || 'AV'} {v.numero_vuelo}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
