@@ -308,7 +308,7 @@ export default function AdminNuevaCotizacion() {
           impuestos: 0,
           total: totalFinalNum,
         },
-        origen_datos: useAmadeus && amadeusText ? 'amadeus' : 'manual',
+        origen_datos: useAmadeus && amadeusText ? 'amadeus_pnr' : 'manual',
         amadeus_pnr_raw: useAmadeus ? amadeusText : null,
         mostrar_desglose_pdf: mostrarDesglosePdf,
         costo_neto: costoNetoNum,
