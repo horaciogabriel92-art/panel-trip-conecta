@@ -41,7 +41,16 @@ export function getNombreMoneda(codigo?: string): string {
   return MONEDAS.find((m) => m.codigo === codigo)?.nombre || codigo || 'USD';
 }
 
-// Debounce function for search inputs
+// Helper para inputs de precio: convierte string vacío a undefined y
+// rechaza valores no numéricos (NaN). Devuelve un número válido o undefined.
+export function parsePrecioInput(value: string): number | undefined {
+  if (value === '' || value === null || value === undefined) return undefined;
+  const normalized = value.trim().replace(',', '.');
+  const num = Number(normalized);
+  if (!Number.isFinite(num)) return undefined;
+  return num;
+}
+
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number

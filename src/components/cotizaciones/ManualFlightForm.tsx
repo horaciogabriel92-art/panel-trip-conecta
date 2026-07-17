@@ -3,7 +3,7 @@
 import { Plus, Trash2, Plane } from "lucide-react";
 import { AirlineLogo } from "@/components/flights/AirlineLogo";
 import { ParsedFlight } from "@/lib/amadeus-parser";
-import { getSimboloMoneda } from "@/lib/utils";
+import { parsePrecioInput, getSimboloMoneda } from "@/lib/utils";
 import { MonedaCotizacion } from "@/types/cotizacion";
 
 interface ManualFlightFormProps {
@@ -34,6 +34,7 @@ const emptyFlight = (linea: number): ParsedFlight => ({
   hora_llegada: "",
   fecha_llegada: "",
   dias_adicionales: 0,
+  precio_por_persona: undefined,
 });
 
 const updateFlight = (
@@ -82,6 +83,7 @@ export default function ManualFlightForm({ flights, onChange, moneda = "USD" }: 
               </span>
             </div>
             <button
+              type="button"
               onClick={() => handleRemove(index)}
               className="p-1.5 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
               title="Eliminar vuelo"
@@ -161,7 +163,7 @@ export default function ManualFlightForm({ flights, onChange, moneda = "USD" }: 
                   step="0.01"
                   value={flight.precio_por_persona ?? ""}
                   onChange={(e) =>
-                    onChange(updateFlight(flights, index, "precio_por_persona", e.target.value === "" ? undefined : Number(e.target.value)))
+                    onChange(updateFlight(flights, index, "precio_por_persona", parsePrecioInput(e.target.value)))
                   }
                   placeholder="0.00"
                   className="w-full bg-[var(--card)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] focus:border-teal-500 focus:outline-none"
@@ -261,6 +263,7 @@ export default function ManualFlightForm({ flights, onChange, moneda = "USD" }: 
       ))}
 
       <button
+        type="button"
         onClick={handleAdd}
         className="w-full py-3 border-2 border-dashed border-[var(--border)] hover:border-teal-500/50 text-[var(--muted-foreground)] hover:text-teal-400 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm font-bold"
       >

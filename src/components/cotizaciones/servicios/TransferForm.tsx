@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, Trash2 } from "lucide-react";
-import { getSimboloMoneda } from "@/lib/utils";
+import { getSimboloMoneda, parsePrecioInput } from "@/lib/utils";
 import type { TransferCotizacion, MonedaCotizacion } from "@/types/cotizacion";
 
 interface Props {
@@ -113,7 +113,7 @@ export default function TransferForm({ transfers, moneda = "USD", onChange }: Pr
                 <input
                   type="number"
                   value={t.precio_por_persona ?? ""}
-                  onChange={(e) => update(idx, "precio_por_persona", e.target.value === "" ? undefined : Number(e.target.value))}
+                  onChange={(e) => update(idx, "precio_por_persona", parsePrecioInput(e.target.value))}
                   placeholder="0.00"
                   className="flex-1 bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
                 />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo } from "react";
 import type {
   AlojamientoCotizacion,
   TransferCotizacion,
@@ -9,42 +9,30 @@ import type {
   MonedaCotizacion,
 } from "@/types/cotizacion";
 
-export interface PricingInputs {
+export interface PricingValues {
   moneda: MonedaCotizacion;
-  vuelos: string;
-  hospedajes: string;
-  traslados: string;
-  seguros: string;
-  extras: string;
-  impuestos: string;
-  subtotal: string;
-  total: string;
+  vuelos: number;
+  hospedajes: number;
+  traslados: number;
+  seguros: number;
+  extras: number;
+  subtotal: number;
+  total: number;
 }
 
-export interface PricingOverrides {
-  vuelos?: string;
-  hospedajes?: string;
-  traslados?: string;
-  seguros?: string;
-  extras?: string;
-  impuestos?: string;
-}
-
-interface UseCotizacionPricingProps {
-  vuelos: any[];
-  alojamientos: AlojamientoCotizacion[];
-  transfers: TransferCotizacion[];
-  seguros: SeguroCotizacion[];
-  extras: ExtraCotizacion[];
-  numPasajeros: number;
-  pricing: PricingInputs;
-  onChange: (pricing: PricingInputs) => void;
+export function toMoney(value: string | number | undefined | null): number {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  if (typeof value !== "string") return 0;
+  const trimmed = value.trim().replace(",", ".");
+  if (trimmed === "") return 0;
+  const num = Number(trimmed);
+  return Number.isFinite(num) ? num : 0;
 }
 
 function sumBy<T>(items: T[], getter: (item: T) => number | undefined | null): number {
   return items.reduce((sum, item) => {
     const value = getter(item);
-    return sum + (typeof value === "number" && !isNaN(value) ? value : 0);
+    return sum + (typeof value === "number" && Number.isFinite(value) ? value : 0);
   }, 0);
 }
 
@@ -65,28 +53,25 @@ export function calcularTotalesDesdeServicios({
 }) {
   const pasajeros = Math.max(1, numPasajeros);
 
-  // Vuelos: sumamos precio por persona si existe
   const vuelosTotal = sumBy(vuelos, (v) => v.precio_por_persona) * pasajeros;
 
-  // Hospedajes: solo los seleccionados
-  const hospedajesSeleccionados = alojamientos.filter((a) => a.seleccionado);
   const hospedajesTotal =
-    sumBy(hospedajesSeleccionados, (a) => a.precio_por_persona) * pasajeros;
+    sumBy(
+      alojamientos.filter((a) => a.seleccionado !== false),
+      (a) => a.precio_por_persona
+    ) * pasajeros;
 
-  // Transfers
-  const trasladosTotal =
-    sumBy(transfers, (t) => t.precio_por_persona) * pasajeros;
+  const trasladosTotal = sumBy(transfers, (t) => t.precio_por_persona) * pasajeros;
+  const segurosTotal = sumBy(seguros, (s) => s.precio_por_persona) * pasajeros;
 
-  // Seguros
-  const segurosTotal =
-    sumBy(seguros, (s) => s.precio_por_persona) * pasajeros;
-
-  // Extras: solo los incluidos
   const extrasTotal =
     sumBy(
       extras.filter((e) => e.incluido !== false),
       (e) => e.precio_por_persona
     ) * pasajeros;
+
+  const subtotal =
+    vuelosTotal + hospedajesTotal + trasladosTotal + segurosTotal + extrasTotal;
 
   return {
     vuelos: vuelosTotal,
@@ -94,6 +79,8 @@ export function calcularTotalesDesdeServicios({
     traslados: trasladosTotal,
     seguros: segurosTotal,
     extras: extrasTotal,
+    subtotal,
+    total: subtotal,
   };
 }
 
@@ -104,104 +91,31 @@ export function useCotizacionPricing({
   seguros,
   extras,
   numPasajeros,
-  pricing,
-  onChange,
-}: UseCotizacionPricingProps) {
-  // Overrides explícitos del operador
-  const [overrides, setOverrides] = useState<PricingOverrides>({});
-
-  // Totales calculados desde servicios
-  const calculados = useMemo(
-    () =>
-      calcularTotalesDesdeServicios({
-        vuelos,
-        alojamientos,
-        transfers,
-        seguros,
-        extras,
-        numPasajeros,
-      }),
-    [vuelos, alojamientos, transfers, seguros, extras, numPasajeros]
-  );
-
-  // Cuando los calculados cambian, precargamos los campos vacíos con el cálculo
-  useEffect(() => {
-    const next: Partial<PricingInputs> = {};
-
-    (Object.keys(calculados) as Array<keyof typeof calculados>).forEach((key) => {
-      const currentValue = pricing[key];
-      const calculatedValue = calculados[key];
-      if (
-        (currentValue === "" || currentValue === "0" || currentValue === "0.00") &&
-        calculatedValue > 0
-      ) {
-        next[key] = calculatedValue.toFixed(2);
-      }
-    });
-
-    if (Object.keys(next).length > 0) {
-      onChange({ ...pricing, ...next });
-    }
-  }, [calculados]);
-
-  // Valores finales: override > manual > calculado
-  const finalValues = useMemo(() => {
-    const getValue = (key: keyof typeof calculados): number => {
-      const override = overrides[key];
-      if (override !== undefined && override !== "") {
-        const parsed = parseFloat(override);
-        if (!isNaN(parsed)) return parsed;
-      }
-      const manual = pricing[key];
-      if (manual !== undefined && manual !== "") {
-        const parsed = parseFloat(manual);
-        if (!isNaN(parsed)) return parsed;
-      }
-      return calculados[key];
-    };
-
-    const vuelos = getValue("vuelos");
-    const hospedajes = getValue("hospedajes");
-    const traslados = getValue("traslados");
-    const seguros = getValue("seguros");
-    const extras = getValue("extras");
-    const impuestos = parseFloat(pricing.impuestos) || 0;
-
-    const subtotal = vuelos + hospedajes + traslados + seguros + extras;
-    const total = subtotal + impuestos;
-
-    return {
+  moneda,
+}: {
+  vuelos: any[];
+  alojamientos: AlojamientoCotizacion[];
+  transfers: TransferCotizacion[];
+  seguros: SeguroCotizacion[];
+  extras: ExtraCotizacion[];
+  numPasajeros: number;
+  moneda: MonedaCotizacion;
+}) {
+  const values = useMemo<PricingValues>(() => {
+    const calculados = calcularTotalesDesdeServicios({
       vuelos,
-      hospedajes,
-      traslados,
+      alojamientos,
+      transfers,
       seguros,
       extras,
-      impuestos,
-      subtotal,
-      total,
+      numPasajeros,
+    });
+
+    return {
+      moneda,
+      ...calculados,
     };
-  }, [overrides, pricing, calculados]);
+  }, [vuelos, alojamientos, transfers, seguros, extras, numPasajeros, moneda]);
 
-  const setField = (field: keyof PricingInputs, value: string) => {
-    if (
-      field === "vuelos" ||
-      field === "hospedajes" ||
-      field === "traslados" ||
-      field === "seguros" ||
-      field === "extras" ||
-      field === "impuestos"
-    ) {
-      setOverrides((prev) => ({ ...prev, [field]: value }));
-    }
-    onChange({ ...pricing, [field]: value });
-  };
-
-  const resetOverrides = () => setOverrides({});
-
-  return {
-    calculados,
-    finalValues,
-    setField,
-    resetOverrides,
-  };
+  return { values };
 }
