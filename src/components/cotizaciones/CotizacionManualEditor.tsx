@@ -7,6 +7,7 @@ import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 import AirlineLogo from '@/components/flights/AirlineLogo';
 import ServiciosStep from './servicios/ServiciosStep';
+import { useCotizacionPricing, toMoney, calcularTotalesDesdeServicios } from '@/components/cotizaciones/hooks/useCotizacionPricing';
 import type { AlojamientoCotizacion, TransferCotizacion, SeguroCotizacion, ExtraCotizacion } from '@/types/cotizacion';
 import {
   ArrowLeft, Save, Plus, Trash2, Plane, Hotel, FileText,
@@ -44,18 +45,6 @@ interface Pasajero {
   apellido: string;
   documento?: string;
   es_titular?: boolean;
-}
-
-interface Precios {
-  moneda: string;
-  vuelos: number;
-  hospedajes: number;
-  traslados: number;
-  seguros: number;
-  extras: number;
-  subtotal: number;
-  impuestos: number;
-  total: number;
 }
 
 interface CotizacionData {
@@ -107,9 +96,8 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
   const [incluye, setIncluye] = useState<string[]>([]);
   const [noIncluye, setNoIncluye] = useState<string[]>([]);
   const [politicas, setPoliticas] = useState('');
-  const [precios, setPrecios] = useState<Precios>({
-    moneda: 'USD', vuelos: 0, hospedajes: 0, traslados: 0, seguros: 0, extras: 0, subtotal: 0, impuestos: 0, total: 0
-  });
+  const [moneda, setMoneda] = useState<'USD' | 'UYU'>('USD');
+  const [impuestos, setImpuestos] = useState(0);
   const [pasajerosIds, setPasajerosIds] = useState<string[]>([]);
   const [margenMonto, setMargenMonto] = useState<number>(0);
   const [notasInternas, setNotasInternas] = useState<string>('');
@@ -146,17 +134,8 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
         setNoIncluye(pd.no_incluye || data.no_incluye || ['Gastos personales', 'Propinas']);
         setPoliticas(pd.politicas_cancelacion || data.politicas_cancelacion || '');
 
-        setPrecios({
-          moneda: data.precio_moneda || 'USD',
-          vuelos: Number(pd.precio_vuelos) || 0,
-          hospedajes: Number(pd.precio_hospedajes) || 0,
-          traslados: Number(pd.precio_traslados) || 0,
-          seguros: Number(pd.precio_seguros) || 0,
-          extras: Number(pd.precio_extras) || 0,
-          subtotal: Number(pd.precio_subtotal) || Number(data.precio_total) || 0,
-          impuestos: Number(pd.precio_impuestos) || 0,
-          total: Number(data.precio_total) || 0,
-        });
+        setMoneda(data.precio_moneda || 'USD');
+        setImpuestos(0);
 
         setMargenMonto(Number(data.margen_agencia_monto) || 0);
         setNotasInternas(data.notas_internas || '');
@@ -179,17 +158,20 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
     fetchData();
   }, [cotizacionId, isAdmin]);
 
-  useEffect(() => {
-    const v = Number(precios.vuelos) || 0;
-    const h = Number(precios.hospedajes) || 0;
-    const t = Number(precios.traslados) || 0;
-    const s = Number(precios.seguros) || 0;
-    const e = Number(precios.extras) || 0;
-    const i = Number(precios.impuestos) || 0;
-    const sub = v + h + t + s + e;
-    const total = sub + i;
-    setPrecios((prev) => ({ ...prev, subtotal: sub, total }));
-  }, [precios.vuelos, precios.hospedajes, precios.traslados, precios.seguros, precios.extras, precios.impuestos]);
+  const numPasajeros = Math.max(1, cotizacion?.num_pasajeros || 1);
+
+  const { values } = useCotizacionPricing({
+    vuelos,
+    alojamientos,
+    transfers,
+    seguros,
+    extras,
+    numPasajeros,
+    moneda,
+  });
+
+  const subtotalCalculado = values.subtotal;
+  const totalCalculado = values.total;
 
   const addVuelo = () => {
     setVuelos([...vuelos, { tipo_trayecto: 'ida', es_escala: false }]);
@@ -237,18 +219,19 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
         no_incluye: noIncluye.filter(Boolean),
         politicas_cancelacion: politicas,
         precios: {
-          moneda: precios.moneda,
-          vuelos: Number(precios.vuelos) || 0,
-          hospedajes: Number(precios.hospedajes) || 0,
-          traslados: Number(precios.traslados) || 0,
-          seguros: Number(precios.seguros) || 0,
-          extras: Number(precios.extras) || 0,
-          subtotal: Number(precios.subtotal) || 0,
-          impuestos: Number(precios.impuestos) || 0,
-          total: Number(precios.total) || 0,
+          moneda,
+          vuelos: values.vuelos,
+          hospedajes: values.hospedajes,
+          traslados: values.traslados,
+          seguros: values.seguros,
+          extras: values.extras,
+          subtotal: subtotalCalculado,
+          impuestos: 0,
+          total: totalCalculado,
         },
         pasajeros_ids: pasajerosIds,
-        costo_neto: Number(precios.subtotal) || 0,
+        num_pasajeros: numPasajeros,
+        costo_neto: subtotalCalculado,
         margen_agencia_porcentaje: 0,
         margen_agencia_monto: Number(margenMonto) || 0,
         comision_vendedor_porcentaje: 0,
@@ -387,7 +370,7 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
           transfers={transfers}
           seguros={seguros}
           extras={extras}
-          moneda={precios.moneda as 'USD' | 'UYU'}
+          moneda={moneda}
           onChange={({ alojamientos: a, transfers: t, seguros: s, extras: e }) => {
             setAlojamientos(a);
             setTransfers(t);
@@ -453,8 +436,8 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
           <div className="flex items-center gap-4">
             <label className="text-xs font-medium text-[var(--muted-foreground)] uppercase">Moneda</label>
             <select
-              value={precios.moneda}
-              onChange={(e) => setPrecios({ ...precios, moneda: e.target.value })}
+              value={moneda}
+              onChange={(e) => setMoneda(e.target.value as 'USD' | 'UYU')}
               className="bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none"
             >
               <option value="USD">USD</option>
@@ -462,12 +445,11 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
             </select>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <PriceInput label="Vuelos" value={precios.vuelos} onChange={(v) => setPrecios({ ...precios, vuelos: v })} />
-            <PriceInput label="Hospedajes" value={precios.hospedajes} onChange={(v) => setPrecios({ ...precios, hospedajes: v })} />
-            <PriceInput label="Transfers" value={precios.traslados} onChange={(v) => setPrecios({ ...precios, traslados: v })} />
-            <PriceInput label="Seguros" value={precios.seguros} onChange={(v) => setPrecios({ ...precios, seguros: v })} />
-            <PriceInput label="Extras" value={precios.extras} onChange={(v) => setPrecios({ ...precios, extras: v })} />
-            <PriceInput label="Impuestos" value={precios.impuestos} onChange={(v) => setPrecios({ ...precios, impuestos: v })} />
+            <PriceInput label="Vuelos" value={values.vuelos} />
+            <PriceInput label="Hospedajes" value={values.hospedajes} />
+            <PriceInput label="Transfers" value={values.traslados} />
+            <PriceInput label="Seguros" value={values.seguros} />
+            <PriceInput label="Extras" value={values.extras} />
           </div>
 
           <label className="flex items-center gap-3 cursor-pointer p-3 bg-[var(--muted)] rounded-xl">
@@ -515,12 +497,12 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
 
           <div className="glass-card p-5 rounded-xl flex items-center justify-between">
             <div>
-              <p className="text-xs text-[var(--muted-foreground)] uppercase">Subtotal</p>
-              <p className="text-lg font-bold text-[var(--foreground)]">${formatCurrency(precios.subtotal)}</p>
+              <p className="text-xs text-[var(--muted-foreground)] uppercase">Costo neto por persona</p>
+              <p className="text-lg font-bold text-[var(--foreground)]">${formatCurrency(subtotalCalculado)}</p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-[var(--muted-foreground)] uppercase">Total</p>
-              <p className="text-2xl font-black text-emerald-400">${formatCurrency(precios.total)}</p>
+              <p className="text-xs text-[var(--muted-foreground)] uppercase">Total final</p>
+              <p className="text-2xl font-black text-emerald-400">${formatCurrency(totalCalculado)}</p>
             </div>
           </div>
         </div>
@@ -545,15 +527,15 @@ function Section({ title, icon, children }: { title: string; icon: React.ReactNo
   );
 }
 
-function PriceInput({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+function PriceInput({ label, value }: { label: string; value: number }) {
   return (
     <div className="space-y-1">
       <label className="text-xs font-medium text-[var(--muted-foreground)] uppercase">{label}</label>
       <input
-        type="number"
-        value={value || ''}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
+        type="text"
+        readOnly
+        value={value ? value.toFixed(2) : '0.00'}
+        className="w-full bg-[var(--muted)]/50 border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none cursor-default opacity-70"
       />
     </div>
   );

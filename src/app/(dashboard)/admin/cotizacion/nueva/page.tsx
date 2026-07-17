@@ -118,7 +118,11 @@ export default function AdminNuevaCotizacion() {
   const [moneda, setMoneda] = useState<MonedaCotizacion>('USD');
 
 
-  const totalPasajeros = 1 + pasajeros.length;
+  const totalPasajeros = 1 + pasajeros.length + pasajerosSeleccionadosIds.length;
+
+  const fechaSalida = useAmadeus
+    ? parsedFlights[0]?.fecha_salida || null
+    : vuelosManuales[0]?.fecha_salida || null;
 
   // Cargar vendedores al inicio
   useEffect(() => {
@@ -253,10 +257,10 @@ export default function AdminNuevaCotizacion() {
     moneda,
   });
 
-  // Fórmula: el total final es el costo neto (precio al cliente). La comisión es interna.
-  const costoNetoNum = values.subtotal;
+  // Fórmula: total = costo_neto por persona * pasajeros. El margen es interno, no se suma.
+  const costoNetoNum = values.costo_neto;
   const margenMontoNum = toMoney(margenMonto);
-  const totalFinalNum = costoNetoNum;
+  const totalFinalNum = values.total;
 
 
   const handleSubmit = async () => {
@@ -312,6 +316,8 @@ export default function AdminNuevaCotizacion() {
         origen_datos: useAmadeus && amadeusText ? 'amadeus_pnr' : 'manual',
         amadeus_pnr_raw: useAmadeus ? amadeusText : null,
         mostrar_desglose_pdf: mostrarDesglosePdf,
+        num_pasajeros: totalPasajeros,
+        fecha_salida: fechaSalida,
         costo_neto: costoNetoNum,
         margen_agencia_porcentaje: 0,
         margen_agencia_monto: margenMontoNum,
@@ -1037,9 +1043,9 @@ RP/DZOUY2100/
           </span>
         </div>
 
-        {/* Costo neto (auto-calculado) */}
+        {/* Costo neto por persona (auto-calculado) */}
         <div className="flex justify-between items-center p-4 bg-green-500/10 border border-green-500/30 rounded-xl mt-4">
-          <span className="text-[var(--foreground)] font-bold text-lg">COSTO NETO</span>
+          <span className="text-[var(--foreground)] font-bold text-lg">COSTO NETO POR PERSONA</span>
           <span className="text-green-400 font-black text-2xl">
             {getSimboloMoneda(moneda)} {values.subtotal.toFixed(2)}
           </span>
@@ -1084,7 +1090,7 @@ RP/DZOUY2100/
               <span className="text-[var(--foreground)]">{extras.length}</span>
             </div>
             <div className="flex justify-between border-t border-[var(--border)] pt-2 mt-2">
-              <span className="text-[var(--muted-foreground)] font-bold">Precio por persona (servicios):</span>
+              <span className="text-[var(--muted-foreground)] font-bold">Costo neto por persona:</span>
               <span className="text-green-400 font-bold text-lg">
                 {getSimboloMoneda(moneda)} {totalPasajeros > 0 ? (values.total / totalPasajeros).toFixed(2) : '0.00'}
               </span>
@@ -1243,7 +1249,7 @@ RP/DZOUY2100/
             </span>
           </div>
           <p className="text-xs text-[var(--muted-foreground)] text-right">
-            Costo neto {getSimboloMoneda(moneda)} {costoNetoNum.toFixed(2)} · comisión interna {getSimboloMoneda(moneda)} {margenMontoNum.toFixed(2)}
+            Costo neto por persona {getSimboloMoneda(moneda)} {costoNetoNum.toFixed(2)} · margen interno {getSimboloMoneda(moneda)} {margenMontoNum.toFixed(2)}
           </p>
           <p className="text-xs text-[var(--muted-foreground)] text-right">
             {getSimboloMoneda(moneda)} {totalPasajeros > 0 ? (totalFinalNum / totalPasajeros).toFixed(2) : '0.00'} por persona

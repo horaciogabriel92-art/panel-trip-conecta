@@ -16,16 +16,22 @@ export interface PricingValues {
   traslados: number;
   seguros: number;
   extras: number;
-  subtotal: number;
+  costo_neto: number;
+  subtotal: number; // alias de costo_neto (por persona)
   total: number;
 }
 
 export function toMoney(value: string | number | undefined | null): number {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
   if (typeof value !== "string") return 0;
-  const trimmed = value.trim().replace(",", ".");
+  const trimmed = value.trim();
   if (trimmed === "") return 0;
-  const num = Number(trimmed);
+  // Soporta "1.365,00" (español) y "1365.00" / "1365,00"
+  const hasCommaCents = /^[\d.]+,\d{1,2}$/.test(trimmed);
+  const clean = hasCommaCents
+    ? trimmed.replace(/\./g, "").replace(",", ".")
+    : trimmed.replace(",", ".");
+  const num = Number(clean);
   return Number.isFinite(num) ? num : 0;
 }
 
@@ -53,34 +59,34 @@ export function calcularTotalesDesdeServicios({
 }) {
   const pasajeros = Math.max(1, numPasajeros);
 
-  const vuelosTotal = sumBy(vuelos, (v) => v.precio_por_persona) * pasajeros;
+  const vuelosPorPersona = sumBy(vuelos, (v) => v.precio_por_persona);
+  const hospedajesPorPersona = sumBy(
+    alojamientos.filter((a) => a.seleccionado !== false),
+    (a) => a.precio_por_persona
+  );
+  const trasladosPorPersona = sumBy(transfers, (t) => t.precio_por_persona);
+  const segurosPorPersona = sumBy(seguros, (s) => s.precio_por_persona);
+  const extrasPorPersona = sumBy(
+    extras.filter((e) => e.incluido !== false),
+    (e) => e.precio_por_persona
+  );
 
-  const hospedajesTotal =
-    sumBy(
-      alojamientos.filter((a) => a.seleccionado !== false),
-      (a) => a.precio_por_persona
-    ) * pasajeros;
-
-  const trasladosTotal = sumBy(transfers, (t) => t.precio_por_persona) * pasajeros;
-  const segurosTotal = sumBy(seguros, (s) => s.precio_por_persona) * pasajeros;
-
-  const extrasTotal =
-    sumBy(
-      extras.filter((e) => e.incluido !== false),
-      (e) => e.precio_por_persona
-    ) * pasajeros;
-
-  const subtotal =
-    vuelosTotal + hospedajesTotal + trasladosTotal + segurosTotal + extrasTotal;
+  const costo_neto =
+    vuelosPorPersona +
+    hospedajesPorPersona +
+    trasladosPorPersona +
+    segurosPorPersona +
+    extrasPorPersona;
 
   return {
-    vuelos: vuelosTotal,
-    hospedajes: hospedajesTotal,
-    traslados: trasladosTotal,
-    seguros: segurosTotal,
-    extras: extrasTotal,
-    subtotal,
-    total: subtotal,
+    vuelos: vuelosPorPersona,
+    hospedajes: hospedajesPorPersona,
+    traslados: trasladosPorPersona,
+    seguros: segurosPorPersona,
+    extras: extrasPorPersona,
+    costo_neto,
+    subtotal: costo_neto,
+    total: costo_neto * pasajeros,
   };
 }
 

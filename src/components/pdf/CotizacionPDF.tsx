@@ -1,6 +1,7 @@
 'use client';
 
 import { Document, Page, Text, View, StyleSheet, Image, Font, Link } from '@react-pdf/renderer';
+import { calcularTotalesDesdeServicios } from '@/components/cotizaciones/hooks/useCotizacionPricing';
 
 // ============================================
 // COLORES DE MARCA TRIP CONECTA
@@ -775,25 +776,27 @@ function formatPrice(value: string | number): string {
 export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDesgloseProp }: CotizacionPDFProps) {
   const COLORS = { ...DEFAULT_COLORS, ...colors };
   const styles = createStyles(COLORS);
-  const { cotizacion, cliente, paquete, pasajeros, hospedaje, traslados, seguros, extras, vuelos, precios, vendedor } = data;
+  const { cotizacion, cliente, paquete, pasajeros, hospedaje, traslados, seguros, extras, vuelos, vendedor } = data;
   const mostrarDesglose = mostrarDesgloseProp !== false;
   
   // Calcular duración del viaje
   const calcularDuracion = () => {
     if (hospedaje && hospedaje.length > 0) {
-      const checkin = new Date(hospedaje[0].fecha_checkin || '');
-      const checkout = new Date(hospedaje[0].fecha_checkout || '');
-      if (checkin && checkout) {
-        const diff = Math.ceil((checkout.getTime() - checkin.getTime()) / (1000 * 60 * 60 * 24));
-        return diff;
+      for (const h of hospedaje) {
+        const checkin = new Date(h.fecha_checkin || '');
+        const checkout = new Date(h.fecha_checkout || '');
+        if (!isNaN(checkin.getTime()) && !isNaN(checkout.getTime())) {
+          const diff = Math.ceil((checkout.getTime() - checkin.getTime()) / (1000 * 60 * 60 * 24));
+          if (diff > 0) return diff;
+        }
       }
     }
     if (vuelos && vuelos.length >= 2) {
       const salida = new Date(vuelos[0].fecha_salida);
       const llegada = new Date(vuelos[vuelos.length - 1].fecha_llegada);
-      if (salida && llegada) {
+      if (!isNaN(salida.getTime()) && !isNaN(llegada.getTime())) {
         const diff = Math.ceil((llegada.getTime() - salida.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-        return diff;
+        if (diff > 0) return diff;
       }
     }
     return paquete.duracion_dias || 0;
@@ -804,14 +807,41 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
   const tituloCotizacion = cotizacion.nombre_cotizacion || paquete.titulo;
   const destino = hospedaje?.[0]?.ciudad || vuelos?.[vuelos.length - 1]?.destino_ciudad || paquete.destino;
 
+  // Recalcular precios desde los servicios (fuente única de verdad para manuales)
+  const numPasajerosPdf = Math.max(1, cotizacion.num_pasajeros || 1);
+  const preciosCalculados = calcularTotalesDesdeServicios({
+    vuelos: vuelos || [],
+    alojamientos: hospedaje || [],
+    transfers: traslados || [],
+    seguros: seguros || [],
+    extras: extras || [],
+    numPasajeros: numPasajerosPdf,
+  });
+
+  // Total final: preferir el guardado en la cotización; si no, recalcular.
+  const totalFinal = parsePrice(data.precios?.total ?? preciosCalculados.total);
+  const costoNetoPorPersona = parsePrice(data.precios?.subtotal ?? preciosCalculados.costo_neto);
+
+  const preciosPdf = {
+    moneda: data.precios?.moneda || 'USD',
+    vuelos: preciosCalculados.vuelos,
+    hospedajes: preciosCalculados.hospedajes,
+    traslados: preciosCalculados.traslados,
+    seguros: preciosCalculados.seguros,
+    extras: preciosCalculados.extras,
+    subtotal: costoNetoPorPersona,
+    impuestos: 0,
+    total: totalFinal,
+  };
+
   // Calcular opciones de hoteles (base común + cada hotel)
   const baseServicios =
-    parsePrice(precios.vuelos || 0) +
-    parsePrice(precios.traslados || 0) +
-    parsePrice(precios.seguros || 0) +
-    parsePrice(precios.extras || 0);
+    preciosPdf.vuelos +
+    preciosPdf.traslados +
+    preciosPdf.seguros +
+    preciosPdf.extras;
   const calcularTotalOpcion = (hotel: any) => {
-    const hotelTotal = (hotel.precio_por_persona || 0) * (cotizacion.num_pasajeros || 1);
+    const hotelTotal = (hotel.precio_por_persona || 0) * numPasajerosPdf;
     return baseServicios + hotelTotal;
   };
   const mostrarOpciones = (hospedaje || []).length > 1;
@@ -1025,7 +1055,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                   <Text style={styles.hotelInfo}>Habitación: {h.tipo_habitacion || '-'} · Régimen: {h.regimen || '-'}</Text>
                 )}
                 {mostrarDesglose && h.precio_por_persona > 0 && (
-                  <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(h.precio_por_persona)} {precios.moneda}</Text>
+                  <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(h.precio_por_persona)} {preciosPdf.moneda}</Text>
                 )}
                 {h.notas && <Text style={styles.hotelInfo}>Notas: {h.notas}</Text>}
               </View>
@@ -1045,7 +1075,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                   <Text style={styles.hotelInfo}>{t.fecha}{t.fecha && t.hora ? ' · ' : ''}{t.hora}</Text>
                 )}
                 {mostrarDesglose && t.precio_por_persona > 0 && (
-                  <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(t.precio_por_persona)} {precios.moneda}</Text>
+                  <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(t.precio_por_persona)} {preciosPdf.moneda}</Text>
                 )}
                 {t.notas && <Text style={styles.hotelInfo}>Notas: {t.notas}</Text>}
               </View>
@@ -1066,7 +1096,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                 )}
                 {s.cobertura_detalle && <Text style={styles.hotelInfo}>{s.cobertura_detalle}</Text>}
                 {mostrarDesglose && s.precio_por_persona > 0 && (
-                  <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(s.precio_por_persona)} {precios.moneda}</Text>
+                  <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(s.precio_por_persona)} {preciosPdf.moneda}</Text>
                 )}
               </View>
             ))}
@@ -1083,7 +1113,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                 {e.descripcion && <Text style={styles.hotelInfo}>{e.descripcion}</Text>}
                 {e.fecha && <Text style={styles.hotelInfo}>Fecha: {e.fecha}</Text>}
                 {mostrarDesglose && e.precio_por_persona > 0 && (
-                  <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(e.precio_por_persona)} {precios.moneda}</Text>
+                  <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(e.precio_por_persona)} {preciosPdf.moneda}</Text>
                 )}
               </View>
             ))}
@@ -1150,13 +1180,13 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                   <View style={styles.optionTotalRow}>
                     <Text style={styles.optionTotalLabel}>Total por persona</Text>
                     <Text style={styles.optionTotalValue}>
-                      ${formatPrice(porPersona)} {precios.moneda}
+                      ${formatPrice(porPersona)} {preciosPdf.moneda}
                     </Text>
                   </View>
                   <View style={styles.optionTotalRow}>
                     <Text style={styles.optionTotalLabel}>TOTAL ({cotizacion.num_pasajeros} pasajeros)</Text>
                     <Text style={styles.optionTotalValue}>
-                      ${formatPrice(totalOpcion)} {precios.moneda}
+                      ${formatPrice(totalOpcion)} {preciosPdf.moneda}
                     </Text>
                   </View>
                 </View>
@@ -1175,56 +1205,56 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
             {esCotizacionManual && mostrarDesglose && (
               <>
                 {/* Vuelos */}
-                {parsePrice(precios.vuelos || '0') > 0 && (
+                {parsePrice(preciosPdf.vuelos || '0') > 0 && (
                   <View style={styles.priceBreakdownRow}>
                     <Text style={styles.priceBreakdownLabel}>Vuelos</Text>
-                    <Text style={styles.priceBreakdownValue}>${formatPrice(precios.vuelos || '0')} {precios.moneda}</Text>
+                    <Text style={styles.priceBreakdownValue}>${formatPrice(preciosPdf.vuelos || '0')} {preciosPdf.moneda}</Text>
                   </View>
                 )}
 
                 {/* Hospedajes */}
-                {parsePrice(precios.hospedajes || '0') > 0 && (
+                {parsePrice(preciosPdf.hospedajes || '0') > 0 && (
                   <View style={styles.priceBreakdownRow}>
                     <Text style={styles.priceBreakdownLabel}>Hospedajes</Text>
-                    <Text style={styles.priceBreakdownValue}>${formatPrice(precios.hospedajes || '0')} {precios.moneda}</Text>
+                    <Text style={styles.priceBreakdownValue}>${formatPrice(preciosPdf.hospedajes || '0')} {preciosPdf.moneda}</Text>
                   </View>
                 )}
 
                 {/* Transfers */}
-                {parsePrice(precios.traslados || '0') > 0 && (
+                {parsePrice(preciosPdf.traslados || '0') > 0 && (
                   <View style={styles.priceBreakdownRow}>
                     <Text style={styles.priceBreakdownLabel}>Transfers</Text>
-                    <Text style={styles.priceBreakdownValue}>${formatPrice(precios.traslados || '0')} {precios.moneda}</Text>
+                    <Text style={styles.priceBreakdownValue}>${formatPrice(preciosPdf.traslados || '0')} {preciosPdf.moneda}</Text>
                   </View>
                 )}
 
                 {/* Seguros */}
-                {parsePrice(precios.seguros || '0') > 0 && (
+                {parsePrice(preciosPdf.seguros || '0') > 0 && (
                   <View style={styles.priceBreakdownRow}>
                     <Text style={styles.priceBreakdownLabel}>Seguros</Text>
-                    <Text style={styles.priceBreakdownValue}>${formatPrice(precios.seguros || '0')} {precios.moneda}</Text>
+                    <Text style={styles.priceBreakdownValue}>${formatPrice(preciosPdf.seguros || '0')} {preciosPdf.moneda}</Text>
                   </View>
                 )}
 
-                {/* Extras / Servicios */}
-                {(parsePrice(precios.extras || '0') > 0 || parsePrice(precios.servicios || '0') > 0) && (
+                {/* Extras */}
+                {parsePrice(preciosPdf.extras || '0') > 0 && (
                   <View style={styles.priceBreakdownRow}>
                     <Text style={styles.priceBreakdownLabel}>Extras</Text>
-                    <Text style={styles.priceBreakdownValue}>${formatPrice(precios.extras || precios.servicios || '0')} {precios.moneda}</Text>
+                    <Text style={styles.priceBreakdownValue}>${formatPrice(preciosPdf.extras || '0')} {preciosPdf.moneda}</Text>
                   </View>
                 )}
 
                 {/* Subtotal */}
                 <View style={styles.priceBreakdownRow}>
                   <Text style={styles.priceBreakdownLabel}>Subtotal</Text>
-                  <Text style={styles.priceBreakdownValue}>${formatPrice(precios.subtotal || '0')} {precios.moneda}</Text>
+                  <Text style={styles.priceBreakdownValue}>${formatPrice(preciosPdf.subtotal || '0')} {preciosPdf.moneda}</Text>
                 </View>
 
                 {/* Impuestos */}
-                {parsePrice(precios.impuestos || '0') > 0 && (
+                {parsePrice(preciosPdf.impuestos || '0') > 0 && (
                   <View style={styles.priceBreakdownRow}>
                     <Text style={styles.priceBreakdownLabel}>Impuestos</Text>
-                    <Text style={styles.priceBreakdownValue}>${formatPrice(precios.impuestos || '0')} {precios.moneda}</Text>
+                    <Text style={styles.priceBreakdownValue}>${formatPrice(preciosPdf.impuestos || '0')} {preciosPdf.moneda}</Text>
                   </View>
                 )}
 
@@ -1236,7 +1266,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
             <View style={styles.priceBreakdownRow}>
               <Text style={styles.priceBreakdownLabel}>Precio por persona</Text>
               <Text style={styles.priceBreakdownValue}>
-                ${precios.precio_unitario ? formatPrice(precios.precio_unitario) : formatPrice(parsePrice(precios.total || 0) / (cotizacion.num_pasajeros || 1))} {precios.moneda}
+                ${formatPrice(parsePrice(preciosPdf.total || 0) / (cotizacion.num_pasajeros || 1))} {preciosPdf.moneda}
               </Text>
             </View>
             
@@ -1245,7 +1275,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
             {/* Total */}
             <View style={styles.priceBreakdownTotal}>
               <Text style={styles.priceBreakdownTotalLabel}>TOTAL ({cotizacion.num_pasajeros} pasajeros)</Text>
-              <Text style={styles.priceBreakdownTotalValue}>${formatPrice(precios.total || 0)} {precios.moneda}</Text>
+              <Text style={styles.priceBreakdownTotalValue}>${formatPrice(preciosPdf.total || 0)} {preciosPdf.moneda}</Text>
             </View>
           </View>
         </View>

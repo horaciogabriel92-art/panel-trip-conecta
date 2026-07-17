@@ -577,6 +577,35 @@ export default function AdminCotizacionDetalle() {
   const numPasajerosReal = cotizacion.pasajeros?.length || cotizacion.num_pasajeros || 1;
   const imagen = paquete?.imagen_url || paquete?.imagen_principal || datosPaqueteDesdeNotas?.imagen_principal || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800';
 
+  const calcularDuracionDias = () => {
+    if (paquete?.duracion_dias || paquete?.duracion || datosPaqueteDesdeNotas?.duracion_dias) {
+      return paquete?.duracion_dias || paquete?.duracion || datosPaqueteDesdeNotas?.duracion_dias;
+    }
+    const hospedajes = cotizacion.hospedajes || cotizacion.hospedaje || [];
+    for (const h of hospedajes) {
+      if (h.fecha_checkin && h.fecha_checkout) {
+        const checkin = new Date(h.fecha_checkin);
+        const checkout = new Date(h.fecha_checkout);
+        if (!isNaN(checkin.getTime()) && !isNaN(checkout.getTime())) {
+          return Math.ceil((checkout.getTime() - checkin.getTime()) / (1000 * 60 * 60 * 24));
+        }
+      }
+    }
+    if (vuelos.length >= 2) {
+      const fechaSalida = vuelos[0]?.fecha_salida;
+      const fechaLlegada = vuelos[vuelos.length - 1]?.fecha_llegada;
+      if (fechaSalida && fechaLlegada) {
+        const salida = new Date(fechaSalida);
+        const llegada = new Date(fechaLlegada);
+        if (!isNaN(salida.getTime()) && !isNaN(llegada.getTime())) {
+          return Math.ceil((llegada.getTime() - salida.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        }
+      }
+    }
+    return 0;
+  };
+  const duracionDias = calcularDuracionDias() || 0;
+
   // Datos normalizados para el PDF de cotización
   const pdfData = {
     id: cotizacion.id,
@@ -599,7 +628,7 @@ export default function AdminCotizacionDetalle() {
       titulo: paquete?.titulo || paquete?.nombre || datosPaqueteDesdeNotas?.titulo || cotizacion.nombre_cotizacion || 'Cotización',
       destino: paquete?.destino || datosPaqueteDesdeNotas?.destino || cotizacion.destino_principal || cotizacion.hospedaje?.[0]?.ciudad || cotizacion.hospedajes?.[0]?.ciudad || 'Destino no especificado',
       descripcion: paquete?.descripcion || datosPaqueteDesdeNotas?.descripcion,
-      duracion_dias: paquete?.duracion_dias || paquete?.duracion || datosPaqueteDesdeNotas?.duracion_dias || 0,
+      duracion_dias: duracionDias || paquete?.duracion_dias || paquete?.duracion || datosPaqueteDesdeNotas?.duracion_dias || 0,
       imagen_principal: paquete?.imagen_principal || paquete?.imagen_url || datosPaqueteDesdeNotas?.imagen_principal,
       politicas_cancelacion: paquete?.politicas_cancelacion || datosPaqueteDesdeNotas?.politicas_cancelacion,
       itinerario: (() => {
@@ -789,7 +818,7 @@ export default function AdminCotizacionDetalle() {
                 <div className="flex gap-4 mb-4">
                   <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
                     <span className="text-xs text-[var(--muted-foreground)]">DURACIÓN</span>
-                    <p className="font-bold text-[var(--foreground)]">{(paquete?.duracion_dias || paquete?.duracion || datosPaqueteDesdeNotas?.duracion_dias || (cotizacion.paquete_data as any)?.duracion_dias || '-')} días</p>
+                    <p className="font-bold text-[var(--foreground)]">{duracionDias > 0 ? `${duracionDias} días` : '-'}</p>
                   </div>
                   {paquete?.noches && (
                     <div className="px-3 py-1 bg-[var(--background)] rounded-lg">
@@ -1540,7 +1569,7 @@ export default function AdminCotizacionDetalle() {
               <div className="flex justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Precio por persona</span>
                 <span className="text-[var(--foreground)]">
-                  ${formatCurrency(Math.round(cotizacion.precio_total / cotizacion.num_pasajeros))}
+                  ${formatCurrency(cotizacion.precio_total / (cotizacion.num_pasajeros || 1))}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
