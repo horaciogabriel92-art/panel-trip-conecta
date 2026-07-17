@@ -147,7 +147,7 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
         setNotasInternas(data.notas_internas || '');
         setMostrarDesglosePdf(data.mostrar_desglose_pdf !== false);
 
-        setPasajerosIds((data.pasajeros || []).map((p: any) => p.id || p.pasajero_id));
+        setPasajerosIds((data.pasajeros || []).map((p: any) => p.pasajero_id || p.pasajero?.id || p.id));
       } catch (err) {
         console.error(err);
       } finally {

@@ -818,31 +818,26 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
     numPasajeros: numPasajerosPdf,
   });
 
-  // Total final: preferir el guardado en la cotización; si no, recalcular.
-  const totalFinal = parsePrice(data.precios?.total ?? preciosCalculados.total);
-  const costoNetoPorPersona = parsePrice(data.precios?.subtotal ?? preciosCalculados.costo_neto);
+  // Total final y costo neto: preferir lo guardado en la cotización; si falta o es 0, recalcular.
+  const totalFinal = parsePrice(data.precios?.total ?? 0) || preciosCalculados.total;
+  const costoNetoPorPersona = parsePrice(data.precios?.subtotal ?? 0) || preciosCalculados.costo_neto;
 
+  // Filas del desglose: misma fuente que el subtotal (guardado), con fallback al recálculo.
   const preciosPdf = {
     moneda: data.precios?.moneda || 'USD',
-    vuelos: preciosCalculados.vuelos,
-    hospedajes: preciosCalculados.hospedajes,
-    traslados: preciosCalculados.traslados,
-    seguros: preciosCalculados.seguros,
-    extras: preciosCalculados.extras,
+    vuelos: parsePrice(data.precios?.vuelos ?? 0) || preciosCalculados.vuelos,
+    hospedajes: parsePrice(data.precios?.hospedajes ?? 0) || preciosCalculados.hospedajes,
+    traslados: parsePrice(data.precios?.traslados ?? 0) || preciosCalculados.traslados,
+    seguros: parsePrice(data.precios?.seguros ?? 0) || preciosCalculados.seguros,
+    extras: parsePrice(data.precios?.extras ?? 0) || preciosCalculados.extras,
     subtotal: costoNetoPorPersona,
     impuestos: 0,
     total: totalFinal,
   };
 
-  // Calcular opciones de hoteles (base común + cada hotel)
-  const baseServicios =
-    preciosPdf.vuelos +
-    preciosPdf.traslados +
-    preciosPdf.seguros +
-    preciosPdf.extras;
+  // Opciones de hoteles: cada opción muestra el precio del hotel (por persona y total).
   const calcularTotalOpcion = (hotel: any) => {
-    const hotelTotal = (hotel.precio_por_persona || 0) * numPasajerosPdf;
-    return baseServicios + hotelTotal;
+    return (hotel.precio_por_persona || 0) * numPasajerosPdf;
   };
   const mostrarOpciones = (hospedaje || []).length > 1;
 
