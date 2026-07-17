@@ -751,7 +751,7 @@ export default function CotizacionDetalle() {
                   </p>
                 </div>
                 <div className="p-4 bg-[var(--muted)] rounded-xl">
-                  <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Margen agencia</p>
+                  <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Comisión / margen interno</p>
                   <p className="text-xl font-black text-[var(--foreground)]">
                     {getSimboloMoneda(cotizacion.precio_moneda)}{formatCurrency(cotizacion.margen_agencia_monto)}
                   </p>

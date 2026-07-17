@@ -253,10 +253,10 @@ export default function AdminNuevaCotizacion() {
     moneda,
   });
 
-  // Fórmula única: costo_neto = suma de servicios; total = costo_neto + margen_fijo
+  // Fórmula: el total final es el costo neto (precio al cliente). La comisión es interna.
   const costoNetoNum = values.subtotal;
   const margenMontoNum = toMoney(margenMonto);
-  const totalFinalNum = costoNetoNum + margenMontoNum;
+  const totalFinalNum = costoNetoNum;
 
 
   const handleSubmit = async () => {
@@ -1201,7 +1201,7 @@ RP/DZOUY2100/
             </div>
 
             <div>
-              <label className="block text-xs text-[var(--muted-foreground)] mb-1">Margen / comisión</label>
+              <label className="block text-xs text-[var(--muted-foreground)] mb-1">Comisión / margen interno</label>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-[var(--muted-foreground)]">{getSimboloMoneda(moneda)}</span>
                 <input
@@ -1215,7 +1215,7 @@ RP/DZOUY2100/
                 />
               </div>
               <p className="text-xs text-[var(--muted-foreground)] mt-1">
-                Monto fijo que se suma al costo neto
+                Monto interno para reportes. No se suma al total del cliente.
               </p>
             </div>
           </div>
@@ -1243,7 +1243,7 @@ RP/DZOUY2100/
             </span>
           </div>
           <p className="text-xs text-[var(--muted-foreground)] text-right">
-            Costo neto {getSimboloMoneda(moneda)} {costoNetoNum.toFixed(2)} + margen {getSimboloMoneda(moneda)} {margenMontoNum.toFixed(2)}
+            Costo neto {getSimboloMoneda(moneda)} {costoNetoNum.toFixed(2)} · comisión interna {getSimboloMoneda(moneda)} {margenMontoNum.toFixed(2)}
           </p>
           <p className="text-xs text-[var(--muted-foreground)] text-right">
             {getSimboloMoneda(moneda)} {totalPasajeros > 0 ? (totalFinalNum / totalPasajeros).toFixed(2) : '0.00'} por persona

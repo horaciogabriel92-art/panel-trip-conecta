@@ -111,6 +111,9 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
     moneda: 'USD', vuelos: 0, hospedajes: 0, traslados: 0, seguros: 0, extras: 0, subtotal: 0, impuestos: 0, total: 0
   });
   const [pasajerosIds, setPasajerosIds] = useState<string[]>([]);
+  const [margenMonto, setMargenMonto] = useState<number>(0);
+  const [notasInternas, setNotasInternas] = useState<string>('');
+  const [mostrarDesglosePdf, setMostrarDesglosePdf] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -154,6 +157,10 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
           impuestos: Number(pd.precio_impuestos) || 0,
           total: Number(data.precio_total) || 0,
         });
+
+        setMargenMonto(Number(data.margen_agencia_monto) || 0);
+        setNotasInternas(data.notas_internas || '');
+        setMostrarDesglosePdf(data.mostrar_desglose_pdf !== false);
 
         setPasajerosIds((data.pasajeros || []).map((p: any) => p.id || p.pasajero_id));
       } catch (err) {
@@ -241,6 +248,13 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
           total: Number(precios.total) || 0,
         },
         pasajeros_ids: pasajerosIds,
+        costo_neto: Number(precios.subtotal) || 0,
+        margen_agencia_porcentaje: 0,
+        margen_agencia_monto: Number(margenMonto) || 0,
+        comision_vendedor_porcentaje: 0,
+        comision_vendedor_monto_estimado: 0,
+        notas_internas: notasInternas,
+        mostrar_desglose_pdf: mostrarDesglosePdf,
       };
 
       if (isAdmin && vendedorId) {
@@ -455,6 +469,50 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
             <PriceInput label="Extras" value={precios.extras} onChange={(v) => setPrecios({ ...precios, extras: v })} />
             <PriceInput label="Impuestos" value={precios.impuestos} onChange={(v) => setPrecios({ ...precios, impuestos: v })} />
           </div>
+
+          <label className="flex items-center gap-3 cursor-pointer p-3 bg-[var(--muted)] rounded-xl">
+            <input
+              type="checkbox"
+              checked={mostrarDesglosePdf}
+              onChange={(e) => setMostrarDesglosePdf(e.target.checked)}
+              className="w-5 h-5 rounded border-[var(--border)] text-emerald-500 focus:ring-emerald-500"
+            />
+            <div>
+              <p className="text-sm font-medium text-[var(--foreground)]">Mostrar desglose de precios en PDF</p>
+              <p className="text-xs text-[var(--muted-foreground)]">
+                El cliente verá vuelos, hospedajes, transfers, seguros y extras por separado.
+              </p>
+            </div>
+          </label>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--muted-foreground)] uppercase">Comisión / margen interno</label>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                value={margenMonto || ''}
+                onChange={(e) => setMargenMonto(Number(e.target.value))}
+                className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
+              />
+              <p className="text-xs text-[var(--muted-foreground)]">
+                Monto interno para reportes. No se suma al total del cliente.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-[var(--muted-foreground)] uppercase">Notas internas</label>
+            <textarea
+              value={notasInternas}
+              onChange={(e) => setNotasInternas(e.target.value)}
+              rows={3}
+              className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500 resize-none"
+              placeholder="Notas internas sobre comisión, condiciones especiales, etc. (no visible para el cliente)"
+            />
+          </div>
+
           <div className="glass-card p-5 rounded-xl flex items-center justify-between">
             <div>
               <p className="text-xs text-[var(--muted-foreground)] uppercase">Subtotal</p>
