@@ -87,8 +87,9 @@ function createStyles(COLORS: typeof DEFAULT_COLORS) {
     fontSize: 11,
     fontWeight: 'bold',
     color: COLORS.primary,
-    marginBottom: 5,
+    marginBottom: 6,
     textTransform: 'uppercase',
+    lineHeight: 1.4,
   },
 
   // Cards de info
@@ -429,6 +430,8 @@ function createStyles(COLORS: typeof DEFAULT_COLORS) {
     fontWeight: 'bold',
     color: COLORS.dark,
     flex: 1,
+    lineHeight: 1.4,
+    marginBottom: 3,
   },
   hotelButton: {
     backgroundColor: COLORS.primary,
@@ -444,7 +447,8 @@ function createStyles(COLORS: typeof DEFAULT_COLORS) {
   hotelInfo: {
     fontSize: 9,
     color: COLORS.textLight,
-    marginTop: 2,
+    marginTop: 3,
+    lineHeight: 1.5,
   },
   
   // Vuelos - Mejorado con fechas claras
@@ -622,11 +626,13 @@ function createStyles(COLORS: typeof DEFAULT_COLORS) {
     fontWeight: 'bold',
     color: COLORS.dark,
     marginBottom: 4,
+    lineHeight: 1.4,
   },
   optionDetail: {
     fontSize: 9,
     color: COLORS.textLight,
-    marginBottom: 2,
+    marginBottom: 3,
+    lineHeight: 1.5,
   },
   optionTotalRow: {
     flexDirection: 'row',
@@ -650,11 +656,12 @@ function createStyles(COLORS: typeof DEFAULT_COLORS) {
     color: 'white',
     borderRadius: 4,
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 3,
     fontSize: 8,
     fontWeight: 'bold',
     alignSelf: 'flex-start',
     marginBottom: 6,
+    lineHeight: 1.4,
   },
   });
 }
@@ -1110,7 +1117,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
 
         {/* Opciones de hoteles */}
         {mostrarOpciones && (
-          <View style={styles.section} wrap={false}>
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Opciones de Alojamiento</Text>
             {(hospedaje || []).map((h, idx) => {
               const totalOpcion = calcularTotalOpcion(h);
