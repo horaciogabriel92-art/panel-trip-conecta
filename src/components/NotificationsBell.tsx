@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Bell, X, Check, Trash2, ShoppingCart, FileText, CreditCard, Upload } from 'lucide-react';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 interface Notificacion {
   id: string;
@@ -37,6 +38,8 @@ export default function NotificationsBell() {
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { user } = useAuth();
+  const esAdmin = user?.rol === 'admin';
 
   const fetchNotificaciones = async () => {
     try {
@@ -124,11 +127,11 @@ export default function NotificationsBell() {
       marcarLeida(notif.id);
     }
     
-    // Navegar según el tipo
+    // Navegar según el tipo y el rol del usuario
     if (notif.data?.venta_id) {
-      router.push(`/admin/ventas/${notif.data.venta_id}`);
+      router.push(esAdmin ? `/admin/ventas/${notif.data.venta_id}` : '/mis-ventas');
     } else if (notif.data?.cotizacion_id) {
-      router.push(`/admin/cotizaciones/${notif.data.cotizacion_id}`);
+      router.push(esAdmin ? `/admin/cotizaciones/${notif.data.cotizacion_id}` : `/cotizaciones/${notif.data.cotizacion_id}`);
     }
     
     setIsOpen(false);
@@ -244,7 +247,7 @@ export default function NotificationsBell() {
             <div className="p-3 border-t border-[var(--border)] bg-[var(--muted)]/30">
               <button 
                 onClick={() => {
-                  router.push('/admin/notificaciones');
+                  router.push(esAdmin ? '/admin/cotizaciones' : '/cotizaciones');
                   setIsOpen(false);
                 }}
                 className="w-full text-center text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"

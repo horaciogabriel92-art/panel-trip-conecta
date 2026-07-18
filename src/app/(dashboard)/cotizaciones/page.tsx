@@ -26,7 +26,7 @@ interface Cotizacion {
   cliente_nombre: string;
   paquete_nombre: string;
   precio_total: number;
-  estado: 'nueva' | 'enviada' | 'vendida' | 'perdida';
+  estado: 'nueva' | 'enviada' | 'aprobada' | 'vendida' | 'perdida';
   fecha_creacion: string;
   fecha_envio?: string;
   fecha_vencimiento?: string;
@@ -37,7 +37,7 @@ interface Cotizacion {
   hospedaje?: any[];
 }
 
-// Estados reales de la DB: nueva, enviada, vendida, perdida
+// Estados reales de la DB: nueva, enviada, aprobada, vendida, perdida
 const COLUMNAS = [
   { 
     id: 'nueva', 
@@ -52,6 +52,13 @@ const COLUMNAS = [
     description: 'Enviada al cliente',
     color: 'bg-blue-500/10 border-blue-500/20',
     icon: Send
+  },
+  { 
+    id: 'aprobada', 
+    label: 'Aprobada', 
+    description: 'Aprobada por administración',
+    color: 'bg-teal-500/10 border-teal-500/20',
+    icon: CheckCircle
   },
   { 
     id: 'vendida', 
@@ -195,8 +202,8 @@ export default function CotizacionesCRM() {
         </button>
       </div>
 
-      {/* Kanban Board - 4 columnas */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-0">
+      {/* Kanban Board - 5 columnas */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-4 min-h-0">
         {COLUMNAS.map((columna) => {
           const cotizacionesColumna = cotizaciones.filter(
             c => getColumnaCotizacion(c) === columna.id
@@ -310,6 +317,13 @@ export default function CotizacionesCRM() {
                               VENTA PERDIDA
                             </button>
                           </>
+                        )}
+
+                        {/* COLUMNA APROBADA: Badge informativo */}
+                        {columna.id === 'aprobada' && (
+                          <div className="w-full py-2 bg-teal-500/10 text-teal-500 rounded-lg text-xs font-bold text-center">
+                            APROBADA — LISTA PARA CONVERTIR
+                          </div>
                         )}
 
                         {/* COLUMNA VENDIDA: Link a venta */}

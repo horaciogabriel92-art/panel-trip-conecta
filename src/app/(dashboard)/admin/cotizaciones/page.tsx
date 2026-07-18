@@ -28,7 +28,7 @@ interface Cotizacion {
   paquete_nombre?: string;
   precio_total: number;
   comision_vendedor?: number;
-  estado: 'nueva' | 'enviada' | 'vendida' | 'perdida';
+  estado: 'nueva' | 'enviada' | 'aprobada' | 'vendida' | 'perdida';
   fecha_creacion: string;
   num_pasajeros: number;
   venta_id?: string | null;
@@ -37,6 +37,7 @@ interface Cotizacion {
 const estadosKanban: { key: Cotizacion['estado']; label: string; color: string }[] = [
   { key: 'nueva', label: 'Nuevas', color: 'border-blue-500/30 bg-blue-500/5' },
   { key: 'enviada', label: 'Enviadas', color: 'border-orange-500/30 bg-orange-500/5' },
+  { key: 'aprobada', label: 'Aprobadas', color: 'border-teal-500/30 bg-teal-500/5' },
   { key: 'vendida', label: 'Vendidas', color: 'border-green-500/30 bg-green-500/5' },
   { key: 'perdida', label: 'Perdidas', color: 'border-slate-500/30 bg-slate-500/5' }
 ];
@@ -235,6 +236,7 @@ export default function AdminCotizaciones() {
   const getStatusColor = (estado: string) => {
     switch (estado) {
       case 'vendida': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20';
+      case 'aprobada': return 'bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-500/10 dark:text-teal-400 dark:border-teal-500/20';
       case 'enviada': return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20';
       case 'perdida': return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20';
       case 'nueva': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20';
@@ -254,7 +256,7 @@ export default function AdminCotizaciones() {
 
   const stats = {
     total: cotizaciones.length,
-    pendientes: cotizaciones.filter(c => c.estado === 'nueva' || c.estado === 'enviada').length,
+    pendientes: cotizaciones.filter(c => c.estado === 'nueva' || c.estado === 'enviada' || c.estado === 'aprobada').length,
     convertidas: cotizaciones.filter(c => c.estado === 'vendida').length,
     montoTotal: cotizaciones.reduce((sum, c) => sum + (c.precio_total || 0), 0)
   };
@@ -265,6 +267,15 @@ export default function AdminCotizaciones() {
   };
 
   const moverCotizacion = async (id: string, nuevoEstado: Cotizacion['estado']) => {
+    // vendida y aprobada requieren sus flujos dedicados (crear venta / registrar aprobación)
+    if (nuevoEstado === 'vendida') {
+      toastError('Para convertir en venta usá el detalle de la cotización', 'Acción no válida');
+      return;
+    }
+    if (nuevoEstado === 'aprobada') {
+      toastError('Para aprobar usá el botón Aprobar en el detalle de la cotización', 'Acción no válida');
+      return;
+    }
     try {
       // Optimistic update
       setCotizaciones(prev => prev.map(c => c.id === id ? { ...c, estado: nuevoEstado } : c));
@@ -344,7 +355,7 @@ export default function AdminCotizaciones() {
           />
         </div>
         <div className="flex gap-2">
-          {vista === 'lista' && ['todos', 'nueva', 'enviada', 'vendida', 'perdida'].map((estado) => (
+          {vista === 'lista' && ['todos', 'nueva', 'enviada', 'aprobada', 'vendida', 'perdida'].map((estado) => (
             <button
               key={estado}
               onClick={() => setFiltroEstado(estado)}

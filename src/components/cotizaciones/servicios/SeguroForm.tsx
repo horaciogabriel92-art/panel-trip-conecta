@@ -108,19 +108,6 @@ export default function SeguroForm({ seguros, moneda = "USD", onChange }: Props)
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-[var(--muted-foreground)]">Moneda</label>
-              <select
-                value={s.moneda || moneda}
-                onChange={(e) => update(idx, "moneda", e.target.value)}
-                className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
-              >
-                {['USD','UYU','ARS','BRL','CLP','COP','PEN','MXN','EUR'].map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-
             <div className="space-y-1 md:col-span-2">
               <label className="text-xs font-medium text-[var(--muted-foreground)]">¿Qué cubre?</label>
               <textarea
