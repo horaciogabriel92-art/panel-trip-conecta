@@ -182,7 +182,8 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
         if (data.cliente_id) {
           try {
             const resP = await api.get(`/clientes/${data.cliente_id}/pasajeros`);
-            setPasajerosFrecuentes(resP.data || []);
+            const lista = Array.isArray(resP.data) ? resP.data : (resP.data?.data || []);
+            setPasajerosFrecuentes(lista);
           } catch {
             setPasajerosFrecuentes([]);
           }
