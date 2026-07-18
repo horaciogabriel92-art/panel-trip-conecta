@@ -91,6 +91,49 @@ export default function ConfiguracionPage() {
   const [isSavingBrand, setIsSavingBrand] = useState(false);
   const [brandMessage, setBrandMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Datos de ejemplo (demo) — solo admin
+  const [tieneDemo, setTieneDemo] = useState<boolean | null>(null);
+  const [isDemoWorking, setIsDemoWorking] = useState(false);
+  const [confirmandoDemoDelete, setConfirmandoDemoDelete] = useState(false);
+  const [demoMessage, setDemoMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  useEffect(() => {
+    if (user?.rol !== 'admin') return;
+    api.get('/cotizaciones')
+      .then(res => setTieneDemo((res.data || []).some((c: any) => c.codigo?.startsWith('DEMO-'))))
+      .catch(() => setTieneDemo(null));
+  }, [user?.rol]);
+
+  const handleDemoSeed = async () => {
+    setIsDemoWorking(true);
+    setDemoMessage(null);
+    try {
+      await api.post('/config/demo-data');
+      setTieneDemo(true);
+      setDemoMessage({ type: 'success', text: 'Datos de ejemplo cargados. Revisá el dashboard para ver los primeros pasos.' });
+    } catch (err: any) {
+      setDemoMessage({ type: 'error', text: err.response?.data?.error || 'Error al cargar los datos de ejemplo' });
+    } finally {
+      setIsDemoWorking(false);
+    }
+  };
+
+  const handleDemoDelete = async () => {
+    if (!confirmandoDemoDelete) { setConfirmandoDemoDelete(true); return; }
+    setIsDemoWorking(true);
+    setDemoMessage(null);
+    try {
+      await api.delete('/config/demo-data');
+      setTieneDemo(false);
+      setConfirmandoDemoDelete(false);
+      setDemoMessage({ type: 'success', text: 'Datos de ejemplo eliminados.' });
+    } catch (err: any) {
+      setDemoMessage({ type: 'error', text: err.response?.data?.error || 'Error al eliminar los datos de ejemplo' });
+    } finally {
+      setIsDemoWorking(false);
+    }
+  };
+
   // Cargar datos del usuario
   useEffect(() => {
     const fetchProfile = async () => {
@@ -262,6 +305,49 @@ export default function ConfiguracionPage() {
         <h2 className="text-2xl font-black text-[var(--foreground)]">Configuración</h2>
         <p className="text-[var(--muted-foreground)]">Gestiona tu información personal y preferencias</p>
       </div>
+
+      {/* Datos de ejemplo (solo admin) */}
+      {user?.rol === 'admin' && tieneDemo !== null && (
+        <div className="glass-card rounded-2xl p-4 flex flex-wrap items-center gap-3 border border-[var(--border)]">
+          <div className="w-9 h-9 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+            <Puzzle className="w-4 h-4 text-purple-400" />
+          </div>
+          <div className="flex-1 min-w-[200px]">
+            <p className="text-sm font-bold text-[var(--foreground)]">Datos de ejemplo</p>
+            <p className="text-xs text-[var(--muted-foreground)]">
+              {tieneDemo
+                ? 'Este tenant tiene datos de prueba cargados (prefijo DEMO-).'
+                : 'Cargá paquetes, clientes y cotizaciones de prueba para explorar el sistema.'}
+            </p>
+            {demoMessage && (
+              <p className={`text-xs mt-1 ${demoMessage.type === 'error' ? 'text-red-400' : 'text-green-400'}`}>
+                {demoMessage.text}
+              </p>
+            )}
+          </div>
+          {tieneDemo ? (
+            <button
+              onClick={handleDemoDelete}
+              disabled={isDemoWorking}
+              className={`flex-shrink-0 px-3 py-2 text-xs font-bold rounded-xl transition-colors ${
+                confirmandoDemoDelete
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-[var(--muted)] hover:bg-red-500/20 text-[var(--muted-foreground)] hover:text-red-400'
+              }`}
+            >
+              {isDemoWorking ? 'Eliminando...' : confirmandoDemoDelete ? '¿Seguro? Confirmar borrado' : 'Eliminar datos de ejemplo'}
+            </button>
+          ) : (
+            <button
+              onClick={handleDemoSeed}
+              disabled={isDemoWorking}
+              className="flex-shrink-0 px-3 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50"
+            >
+              {isDemoWorking ? 'Cargando...' : 'Cargar datos de ejemplo'}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-[var(--border)] pb-1">
