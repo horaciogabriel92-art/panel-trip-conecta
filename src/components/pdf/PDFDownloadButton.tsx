@@ -287,6 +287,7 @@ export function PDFDownloadButton({ data, mostrarDesglose = true, className = ''
           {({ loading }) => (
             <button
               disabled={loading || loadingLogos}
+              onClick={() => { if (user?.id) localStorage.setItem(`onboarding_pdf_${user.id}`, '1'); }}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors"
             >
               {loading ? (
@@ -340,6 +341,7 @@ export function PDFDownloadButton({ data, mostrarDesglose = true, className = ''
                   {({ loading }) => (
                     <button
                       disabled={loading || loadingLogos}
+                      onClick={() => { if (user?.id) localStorage.setItem(`onboarding_pdf_${user.id}`, '1'); }}
                       className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-sm rounded-lg transition-colors"
                     >
                       <Download className="w-4 h-4" />
