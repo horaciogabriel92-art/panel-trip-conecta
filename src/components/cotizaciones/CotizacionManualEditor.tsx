@@ -7,6 +7,7 @@ import { cn, formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 import AirlineLogo from '@/components/flights/AirlineLogo';
 import ServiciosStep from './servicios/ServiciosStep';
+import ImagenUploader from '@/components/common/ImagenUploader';
 import { useCotizacionPricing, toMoney, calcularTotalesDesdeServicios } from '@/components/cotizaciones/hooks/useCotizacionPricing';
 import type { AlojamientoCotizacion, TransferCotizacion, SeguroCotizacion, ExtraCotizacion } from '@/types/cotizacion';
 import {
@@ -93,6 +94,7 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
   const [seguros, setSeguros] = useState<SeguroCotizacion[]>([]);
   const [extras, setExtras] = useState<ExtraCotizacion[]>([]);
   const [itinerario, setItinerario] = useState('');
+  const [imagenUrl, setImagenUrl] = useState('');
   const [incluye, setIncluye] = useState<string[]>([]);
   const [noIncluye, setNoIncluye] = useState<string[]>([]);
   const [politicas, setPoliticas] = useState('');
@@ -157,6 +159,7 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
 
         const itin = typeof data.itinerario === 'string' ? data.itinerario : (data.itinerario?.texto || '');
         setItinerario(itin);
+        setImagenUrl(data.imagen_url || '');
 
         const pd = data.paquete_data || {};
         setIncluye(pd.incluye || data.incluye || ['Traslados aeropuerto-hotel-aeropuerto']);
@@ -297,6 +300,7 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
         seguros: seguros,
         extras: extras,
         itinerario,
+        imagen_url: imagenUrl || null,
         incluye: incluye.filter(Boolean),
         no_incluye: noIncluye.filter(Boolean),
         politicas_cancelacion: politicas,
@@ -594,6 +598,15 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
               rows={4}
               className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500 resize-none"
               placeholder="Describe el itinerario día por día..."
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-[var(--muted-foreground)] uppercase">Imagen de portada (opcional)</label>
+            <ImagenUploader
+              imagenUrl={imagenUrl}
+              onImagenSubida={setImagenUrl}
+              label=""
             />
           </div>
 

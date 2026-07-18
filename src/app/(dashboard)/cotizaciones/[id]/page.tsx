@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useTenant } from '@/context/TenantContext';
 import { useWorkflowMode } from '@/hooks/useWorkflowMode';
 import { formatCurrency, getSimboloMoneda } from '@/lib/utils';
 
@@ -106,6 +107,7 @@ interface Cotizacion {
   nombre_cotizacion?: string;
   tipo_cotizacion?: 'paquete' | 'manual';
   destino_principal?: string;
+  imagen_url?: string;
   num_pasajeros: number;
   precio_total: number;
   precio_moneda?: string;
@@ -200,6 +202,7 @@ export default function CotizacionDetalle() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const { tenant } = useTenant();
   const { success: toastSuccess, error: toastError } = useToast();
   
   // Detectar si venimos del kanban con accion=cerrar
@@ -590,6 +593,8 @@ export default function CotizacionDetalle() {
               tipo_cotizacion: cotizacion.tipo_cotizacion,
               nombre_cotizacion: cotizacion.nombre_cotizacion,
               itinerario_manual: cotizacion.itinerario_manual,
+              imagen_url: cotizacion.imagen_url,
+              brand: tenant?.configuracion?.pdf_brand || undefined,
               // Paquete: combina datos directos + parseados de notas
               paquete: {
                 titulo: paquete?.titulo || paquete?.nombre || datosPaqueteDesdeNotas?.titulo || cotizacion.nombre_cotizacion || 'Cotización',

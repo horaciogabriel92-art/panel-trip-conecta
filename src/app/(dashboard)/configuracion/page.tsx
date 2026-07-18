@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useTenant } from "@/context/TenantContext";
+import { configAPI } from "@/lib/api-config";
+import ImagenUploader from "@/components/common/ImagenUploader";
 import api from "@/lib/api";
 import {
   User,
@@ -18,6 +21,7 @@ import {
   Users,
   Puzzle,
   Settings,
+  Building2,
 } from "lucide-react";
 import UsersTab from "./_components/UsersTab";
 import FeaturesTab from "./_components/FeaturesTab";
@@ -74,6 +78,19 @@ export default function ConfiguracionPage() {
   const [isSavingPdf, setIsSavingPdf] = useState(false);
   const [pdfMessage, setPdfMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Marca del PDF (tenant)
+  const { tenant } = useTenant();
+  const [pdfBrand, setPdfBrand] = useState({
+    logo_url: "",
+    nombre_marca: "",
+    tagline: "",
+    email: "",
+    telefono: "",
+    footer: "",
+  });
+  const [isSavingBrand, setIsSavingBrand] = useState(false);
+  const [brandMessage, setBrandMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
   // Cargar datos del usuario
   useEffect(() => {
     const fetchProfile = async () => {
@@ -100,6 +117,21 @@ export default function ConfiguracionPage() {
 
     fetchProfile();
   }, []);
+
+  // Cargar marca del PDF desde la configuración del tenant
+  useEffect(() => {
+    const pb = tenant?.configuracion?.pdf_brand;
+    if (pb) {
+      setPdfBrand({
+        logo_url: pb.logo_url || "",
+        nombre_marca: pb.nombre_marca || "",
+        tagline: pb.tagline || "",
+        email: pb.email || "",
+        telefono: pb.telefono || "",
+        footer: pb.footer || "",
+      });
+    }
+  }, [tenant]);
 
   const handleChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -164,6 +196,32 @@ export default function ConfiguracionPage() {
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSavePdfBrand = async () => {
+    setIsSavingBrand(true);
+    setBrandMessage(null);
+    try {
+      await configAPI.actualizarConfiguracionTenant({
+        pdf_brand: {
+          logo_url: pdfBrand.logo_url.trim(),
+          nombre_marca: pdfBrand.nombre_marca.trim(),
+          tagline: pdfBrand.tagline.trim(),
+          email: pdfBrand.email.trim(),
+          telefono: pdfBrand.telefono.trim(),
+          footer: pdfBrand.footer.trim(),
+        },
+      });
+      setBrandMessage({ type: "success", text: "Datos de marca guardados correctamente" });
+    } catch (error: any) {
+      console.error("Error guardando marca:", error);
+      setBrandMessage({
+        type: "error",
+        text: error.response?.data?.error || "Error al guardar los datos de marca",
+      });
+    } finally {
+      setIsSavingBrand(false);
     }
   };
 
@@ -486,6 +544,103 @@ export default function ConfiguracionPage() {
               {pdfMessage.text}
             </div>
           )}
+
+          <div className="glass-card rounded-2xl p-6">
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-blue-400" />
+              Datos de tu marca
+            </h3>
+            <p className="text-sm text-[var(--muted-foreground)] mb-4">
+              Estos datos aparecen en el encabezado y pie de página del PDF de tus cotizaciones.
+            </p>
+
+            {brandMessage && (
+              <div
+                className={`flex items-center gap-2 p-4 rounded-xl mb-4 ${
+                  brandMessage.type === "success"
+                    ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                    : "bg-red-500/10 text-red-400 border border-red-500/20"
+                }`}
+              >
+                {brandMessage.type === "success" ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+                {brandMessage.text}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-[var(--muted-foreground)] mb-1">Logo</label>
+                <ImagenUploader
+                  imagenUrl={pdfBrand.logo_url}
+                  onImagenSubida={(url) => setPdfBrand((prev) => ({ ...prev, logo_url: url }))}
+                  label=""
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm text-[var(--muted-foreground)] mb-1">Nombre de marca</label>
+                  <input
+                    type="text"
+                    value={pdfBrand.nombre_marca}
+                    onChange={(e) => setPdfBrand((prev) => ({ ...prev, nombre_marca: e.target.value }))}
+                    placeholder="Ej: Mi Agencia de Viajes"
+                    className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-[var(--muted-foreground)] mb-1">Tagline</label>
+                  <input
+                    type="text"
+                    value={pdfBrand.tagline}
+                    onChange={(e) => setPdfBrand((prev) => ({ ...prev, tagline: e.target.value }))}
+                    placeholder="Ej: Viajes y Turismo"
+                    className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-[var(--muted-foreground)] mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={pdfBrand.email}
+                    onChange={(e) => setPdfBrand((prev) => ({ ...prev, email: e.target.value }))}
+                    placeholder="contacto@miagencia.com"
+                    className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-[var(--muted-foreground)] mb-1">Teléfono</label>
+                  <input
+                    type="tel"
+                    value={pdfBrand.telefono}
+                    onChange={(e) => setPdfBrand((prev) => ({ ...prev, telefono: e.target.value }))}
+                    placeholder="+598 99 123 456"
+                    className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-[var(--muted-foreground)] mb-1">Texto de pie de página</label>
+                <input
+                  type="text"
+                  value={pdfBrand.footer}
+                  onChange={(e) => setPdfBrand((prev) => ({ ...prev, footer: e.target.value }))}
+                  placeholder="Ej: Mi Agencia - www.miagencia.com"
+                  className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleSavePdfBrand}
+                  disabled={isSavingBrand}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white rounded-xl font-medium transition-colors"
+                >
+                  {isSavingBrand ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  Guardar marca
+                </button>
+              </div>
+            </div>
+          </div>
 
           <div className="glass-card rounded-2xl p-6">
             <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
+import { useTenant } from '@/context/TenantContext';
 import { useFeature } from '@/hooks/useFeature';
 import HistorialPagos from '@/components/ventas/HistorialPagos';
 import AgregarPagoModal from '@/components/ventas/AgregarPagoModal';
@@ -124,6 +125,7 @@ interface Cotizacion {
   nombre_cotizacion?: string;
   destino_principal?: string;
   itinerario_manual?: string;
+  imagen_url?: string;
   itinerario?: any;
   incluye?: string[];
   no_incluye?: string[];
@@ -221,6 +223,7 @@ interface Paquete {
 
 export default function AdminCotizacionDetalle() {
   const { success: toastSuccess, error: toastError } = useToast();
+  const { tenant } = useTenant();
   const { enabled: comisionesEnabled } = useFeature('comisiones');
   const params = useParams();
   const router = useRouter();
@@ -624,6 +627,8 @@ export default function AdminCotizacionDetalle() {
     tipo_cotizacion: cotizacion.tipo_cotizacion,
     nombre_cotizacion: cotizacion.nombre_cotizacion,
     itinerario_manual: cotizacion.itinerario_manual,
+    imagen_url: cotizacion.imagen_url,
+    brand: tenant?.configuracion?.pdf_brand || undefined,
     paquete: {
       titulo: paquete?.titulo || paquete?.nombre || datosPaqueteDesdeNotas?.titulo || cotizacion.nombre_cotizacion || 'Cotización',
       destino: paquete?.destino || datosPaqueteDesdeNotas?.destino || cotizacion.destino_principal || cotizacion.hospedaje?.[0]?.ciudad || cotizacion.hospedajes?.[0]?.ciudad || 'Destino no especificado',

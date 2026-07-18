@@ -26,6 +26,16 @@ interface CotizacionData {
   tipo_cotizacion?: 'paquete' | 'manual';
   nombre_cotizacion?: string;
   itinerario_manual?: string;
+  imagen_url?: string;
+  // Branding del PDF por tenant
+  brand?: {
+    logo_url?: string;
+    nombre_marca?: string;
+    tagline?: string;
+    email?: string;
+    telefono?: string;
+    footer?: string;
+  };
   // Datos ya estructurados - el componente padre debe proporcionarlos
   paquete?: {
     titulo?: string;
@@ -160,6 +170,7 @@ export function PDFDownloadButton({ data, mostrarDesglose = true, className = ''
       itinerario_manual: data.itinerario_manual,
       tipo_cotizacion: data.tipo_cotizacion,
       nombre_cotizacion: data.nombre_cotizacion,
+      imagen_url: data.imagen_url,
       precio_total: data.precio_total,
       paquete_data: data.paquete_data
     },
@@ -214,7 +225,8 @@ export function PDFDownloadButton({ data, mostrarDesglose = true, className = ''
       email: data.vendedor?.email || '',
       telefono: data.vendedor?.telefono || '',
       iniciales: `${(data.vendedor?.nombre || '')[0] || ''}${(data.vendedor?.apellido || '')[0] || ''}`.toUpperCase()
-    }
+    },
+    brand: data.brand
   };
 
   const filename = `COT-${data.codigo}.pdf`;

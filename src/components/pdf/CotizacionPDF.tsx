@@ -57,6 +57,18 @@ function createStyles(COLORS: typeof DEFAULT_COLORS) {
     fontSize: 8,
     textAlign: 'center',
   },
+  brandLogo: {
+    height: 40,
+    maxWidth: 120,
+    objectFit: 'contain',
+  },
+  coverImage: {
+    width: '100%',
+    height: 140,
+    objectFit: 'cover',
+    borderRadius: 6,
+    marginBottom: 12,
+  },
   companyName: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -697,6 +709,7 @@ interface CotizacionPDFProps {
       tipo_cotizacion?: 'paquete' | 'manual';
       nombre_cotizacion?: string;
       itinerario_manual?: string;
+      imagen_url?: string;
       paquete_data?: {
         itinerario?: any;
         incluye?: string[];
@@ -757,6 +770,14 @@ interface CotizacionPDFProps {
       telefono?: string;
       iniciales?: string;
     };
+    brand?: {
+      logo_url?: string;
+      nombre_marca?: string;
+      tagline?: string;
+      email?: string;
+      telefono?: string;
+      footer?: string;
+    };
   };
   colors?: Partial<typeof DEFAULT_COLORS>;
 }
@@ -783,8 +804,9 @@ function formatPrice(value: string | number): string {
 export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDesgloseProp }: CotizacionPDFProps) {
   const COLORS = { ...DEFAULT_COLORS, ...colors };
   const styles = createStyles(COLORS);
-  const { cotizacion, cliente, paquete, pasajeros, hospedaje, traslados, seguros, extras, vuelos, vendedor } = data;
+  const { cotizacion, cliente, paquete, pasajeros, hospedaje, traslados, seguros, extras, vuelos, vendedor, brand } = data;
   const mostrarDesglose = mostrarDesgloseProp !== false;
+  const hasBrand = !!(brand && (brand.logo_url || brand.nombre_marca || brand.tagline || brand.email || brand.telefono || brand.footer));
   
   // Calcular duración del viaje
   const calcularDuracion = () => {
@@ -860,12 +882,25 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
           PÁGINA 1: RESUMEN Y PRECIO
           ============================================ */}
       <Page size="A4" style={styles.page}>
-        {/* Header - Título es el nombre del vendedor */}
+        {/* Header - Marca del tenant o nombre del vendedor */}
         <View style={styles.header}>
           <View style={styles.logoSection}>
+            {hasBrand && brand?.logo_url ? (
+              <Image src={brand.logo_url} style={styles.brandLogo} />
+            ) : null}
             <View>
-              <Text style={styles.companyName}>{vendedor.nombre} {vendedor.apellido}</Text>
-              <Text style={styles.companyTagline}>Viajes y Turismo • tripconecta.com</Text>
+              {hasBrand && brand?.nombre_marca ? (
+                <Text style={styles.companyName}>{brand.nombre_marca}</Text>
+              ) : null}
+              {hasBrand && brand?.tagline ? (
+                <Text style={styles.companyTagline}>{brand.tagline}</Text>
+              ) : null}
+              {!hasBrand ? (
+                <Text style={styles.companyName}>{vendedor.nombre} {vendedor.apellido}</Text>
+              ) : null}
+              {!hasBrand ? (
+                <Text style={styles.companyTagline}>Viajes y Turismo • tripconecta.com</Text>
+              ) : null}
             </View>
           </View>
           <View style={styles.quoteInfo}>
@@ -874,6 +909,11 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
             <Text style={styles.quoteDate}>Válida hasta: {cotizacion.fecha_expiracion}</Text>
           </View>
         </View>
+
+        {/* Imagen de portada (cotizaciones manuales) */}
+        {cotizacion.imagen_url ? (
+          <Image src={cotizacion.imagen_url} style={styles.coverImage} />
+        ) : null}
 
         {/* Datos del Cliente (Pasajero 1 - Titular) y Configuración */}
         <View style={styles.section}>
@@ -1381,10 +1421,28 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
         {/* Footer - Solo al final */}
         <View style={styles.footerWithLogo} wrap={false}>
           <View style={styles.footerLogoSection}>
-            <Image src="/logo-trip-conecta.png" style={styles.footerLogoImage} />
+            {hasBrand && brand?.logo_url ? (
+              <Image src={brand.logo_url} style={styles.footerLogoImage} />
+            ) : null}
+            {!hasBrand ? (
+              <Image src="/logo-trip-conecta.png" style={styles.footerLogoImage} />
+            ) : null}
             <View style={styles.footerLogoText}>
-              <Text style={styles.footerText}>Trip Conecta - www.tripconecta.com</Text>
-              <Text style={styles.footerText}>soporte@tripconecta.com</Text>
+              {hasBrand && brand?.footer ? (
+                <Text style={styles.footerText}>{brand.footer}</Text>
+              ) : null}
+              {hasBrand && brand?.email ? (
+                <Text style={styles.footerText}>{brand.email}</Text>
+              ) : null}
+              {hasBrand && brand?.telefono ? (
+                <Text style={styles.footerText}>{brand.telefono}</Text>
+              ) : null}
+              {!hasBrand ? (
+                <Text style={styles.footerText}>Trip Conecta - www.tripconecta.com</Text>
+              ) : null}
+              {!hasBrand ? (
+                <Text style={styles.footerText}>soporte@tripconecta.com</Text>
+              ) : null}
             </View>
           </View>
           <View style={styles.footerVendedorSection}>

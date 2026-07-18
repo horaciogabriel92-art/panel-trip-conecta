@@ -20,7 +20,8 @@ import {
   BedDouble,
   Bus,
   Shield,
-  Ticket
+  Ticket,
+  ImageIcon
 } from 'lucide-react';
 import { parseAmadeusPNR } from '@/lib/amadeus-parser';
 import { AirlineLogo } from '@/components/flights/AirlineLogo';
@@ -32,6 +33,7 @@ import CrearClienteModal from '@/components/cotizaciones/CrearClienteModal';
 import ManualFlightForm from '@/components/cotizaciones/ManualFlightForm';
 import ServiciosStep from '@/components/cotizaciones/servicios/ServiciosStep';
 import CurrencySelector from '@/components/CurrencySelector';
+import ImagenUploader from '@/components/common/ImagenUploader';
 import { useCotizacionPricing, toMoney } from '@/components/cotizaciones/hooks/useCotizacionPricing';
 import { Cliente, clientesAPI } from '@/lib/api-clientes';
 import { getSimboloMoneda, parsePrecioInput } from '@/lib/utils';
@@ -105,6 +107,7 @@ export default function AdminNuevaCotizacion() {
   
   // Itinerario y condiciones
   const [itinerario, setItinerario] = useState('');
+  const [imagenUrl, setImagenUrl] = useState('');
   const [incluye, setIncluye] = useState<string[]>(['Traslados aeropuerto-hotel-aeropuerto']);
   const [noIncluye, setNoIncluye] = useState<string[]>(['Gastos personales', 'Propinas']);
   const [politicasCancelacion, setPoliticasCancelacion] = useState('');
@@ -299,6 +302,7 @@ export default function AdminNuevaCotizacion() {
         seguros: seguros,
         extras: extras,
         itinerario: itinerario,
+        imagen_url: imagenUrl || null,
         incluye: incluye.filter(i => i.trim() !== ''),
         no_incluye: noIncluye.filter(i => i.trim() !== ''),
         politicas_cancelacion: politicasCancelacion,
@@ -844,6 +848,19 @@ RP/DZOUY2100/
           onChange={(e) => setItinerario(e.target.value)}
           placeholder="Describe el itinerario día por día..."
           className="w-full h-40 bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] text-sm outline-none focus:border-amber-500 resize-none"
+        />
+      </div>
+
+      {/* Imagen de portada */}
+      <div className="glass-card rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+          <ImageIcon className="w-5 h-5 text-teal-400" />
+          Imagen de portada (opcional)
+        </h3>
+        <ImagenUploader
+          imagenUrl={imagenUrl}
+          onImagenSubida={setImagenUrl}
+          label=""
         />
       </div>
 
