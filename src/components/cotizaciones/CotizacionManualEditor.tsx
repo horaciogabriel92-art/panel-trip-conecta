@@ -97,7 +97,29 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
   const [noIncluye, setNoIncluye] = useState<string[]>([]);
   const [politicas, setPoliticas] = useState('');
   const [moneda, setMoneda] = useState<'USD' | 'UYU'>('USD');
-  const [pasajerosIds, setPasajerosIds] = useState<string[]>([]);
+  const [pasajerosActuales, setPasajerosActuales] = useState<Array<{
+    pasajero_id: string;
+    nombre: string;
+    apellido: string;
+    documento?: string;
+    es_titular?: boolean;
+  }>>([]);
+  const [pasajerosNuevos, setPasajerosNuevos] = useState<Array<{
+    nombre: string;
+    apellido: string;
+    documento: string;
+    fecha_nacimiento: string;
+    nacionalidad: string;
+  }>>([]);
+  const [pasajerosFrecuentes, setPasajerosFrecuentes] = useState<any[]>([]);
+  const [showNuevoPasajero, setShowNuevoPasajero] = useState(false);
+  const [nuevoPasajero, setNuevoPasajero] = useState({
+    nombre: '',
+    apellido: '',
+    documento: '',
+    fecha_nacimiento: '',
+    nacionalidad: 'Uruguay',
+  });
   const [margenMonto, setMargenMonto] = useState<number>(0);
   const [notasInternas, setNotasInternas] = useState<string>('');
   const [mostrarDesglosePdf, setMostrarDesglosePdf] = useState<boolean>(true);
@@ -147,7 +169,24 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
         setNotasInternas(data.notas_internas || '');
         setMostrarDesglosePdf(data.mostrar_desglose_pdf !== false);
 
-        setPasajerosIds((data.pasajeros || []).map((p: any) => p.pasajero_id || p.pasajero?.id || p.id));
+        const vinculados = (data.pasajeros || []).map((p: any) => ({
+          pasajero_id: p.pasajero_id || p.pasajero?.id || p.id,
+          nombre: p.nombre_snapshot || p.pasajero?.nombre || '',
+          apellido: p.apellido_snapshot || p.pasajero?.apellido || '',
+          documento: p.documento_snapshot || p.pasajero?.documento || '',
+          es_titular: p.es_titular || false,
+        })).filter((p: any) => p.pasajero_id);
+        setPasajerosActuales(vinculados);
+
+        // Pasajeros frecuentes del cliente (para re-agregar existentes)
+        if (data.cliente_id) {
+          try {
+            const resP = await api.get(`/clientes/${data.cliente_id}/pasajeros`);
+            setPasajerosFrecuentes(resP.data || []);
+          } catch {
+            setPasajerosFrecuentes([]);
+          }
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -164,7 +203,7 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
     fetchData();
   }, [cotizacionId, isAdmin]);
 
-  const numPasajeros = Math.max(1, cotizacion?.num_pasajeros || 1);
+  const numPasajeros = Math.max(1, pasajerosActuales.length + pasajerosNuevos.length);
 
   const { values } = useCotizacionPricing({
     vuelos,
@@ -216,6 +255,35 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
     setNoIncluye(updated);
   };
 
+  const quitarPasajeroActual = (pasajeroId: string) => {
+    setPasajerosActuales((prev) => prev.filter((p) => p.pasajero_id !== pasajeroId || p.es_titular));
+  };
+
+  const agregarPasajeroFrecuente = (p: any) => {
+    if (pasajerosActuales.some((a) => a.pasajero_id === p.id)) return;
+    setPasajerosActuales((prev) => [
+      ...prev,
+      {
+        pasajero_id: p.id,
+        nombre: p.nombre || '',
+        apellido: p.apellido || '',
+        documento: p.documento || '',
+        es_titular: false,
+      },
+    ]);
+  };
+
+  const agregarPasajeroNuevo = () => {
+    if (!nuevoPasajero.nombre.trim() || !nuevoPasajero.apellido.trim()) return;
+    setPasajerosNuevos((prev) => [...prev, { ...nuevoPasajero }]);
+    setNuevoPasajero({ nombre: '', apellido: '', documento: '', fecha_nacimiento: '', nacionalidad: 'Uruguay' });
+    setShowNuevoPasajero(false);
+  };
+
+  const quitarPasajeroNuevo = (index: number) => {
+    setPasajerosNuevos((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -242,7 +310,8 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
           impuestos: 0,
           total: totalCalculado,
         },
-        pasajeros_ids: pasajerosIds,
+        pasajeros_ids: pasajerosActuales.map((p) => p.pasajero_id),
+        pasajeros_nuevos: pasajerosNuevos,
         num_pasajeros: numPasajeros,
         costo_neto: subtotalCalculado,
         margen_agencia_porcentaje: 0,
@@ -341,6 +410,126 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
               </select>
             </div>
           )}
+        </div>
+      </Section>
+
+      {/* Pasajeros */}
+      <Section title={`Pasajeros (${numPasajeros})`} icon={<Users className="w-5 h-5 text-indigo-400" />}>
+        <div className="space-y-4">
+          {/* Vinculados actuales */}
+          <div className="space-y-2">
+            {pasajerosActuales.map((p) => (
+              <div key={p.pasajero_id} className="flex items-center justify-between p-3 bg-[var(--muted)] rounded-xl">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-[var(--foreground)]">{p.nombre} {p.apellido}</span>
+                  {p.documento && <span className="text-xs text-[var(--muted-foreground)]">Doc: {p.documento}</span>}
+                  {p.es_titular && (
+                    <span className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full font-bold">Titular</span>
+                  )}
+                </div>
+                {!p.es_titular && (
+                  <button type="button" onClick={() => quitarPasajeroActual(p.pasajero_id)} className="p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-all">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+            {/* Nuevos (aún no guardados) */}
+            {pasajerosNuevos.map((p, idx) => (
+              <div key={`nuevo-${idx}`} className="flex items-center justify-between p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-[var(--foreground)]">{p.nombre} {p.apellido}</span>
+                  {p.documento && <span className="text-xs text-[var(--muted-foreground)]">Doc: {p.documento}</span>}
+                  <span className="text-xs px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full font-bold">Nuevo</span>
+                </div>
+                <button type="button" onClick={() => quitarPasajeroNuevo(idx)} className="p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-all">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Agregar existente */}
+          {pasajerosFrecuentes.filter((f: any) => !pasajerosActuales.some((a) => a.pasajero_id === f.id)).length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-[var(--muted-foreground)] uppercase">Agregar pasajero del cliente</p>
+              {pasajerosFrecuentes
+                .filter((f: any) => !pasajerosActuales.some((a) => a.pasajero_id === f.id))
+                .map((f: any) => (
+                  <button
+                    type="button"
+                    key={f.id}
+                    onClick={() => agregarPasajeroFrecuente(f)}
+                    className="w-full flex items-center justify-between p-3 bg-[var(--muted)] hover:bg-[var(--border)] rounded-xl transition-all text-left"
+                  >
+                    <span className="text-sm text-[var(--foreground)]">{f.nombre} {f.apellido}</span>
+                    <Plus className="w-4 h-4 text-emerald-400" />
+                  </button>
+                ))}
+            </div>
+          )}
+
+          {/* Crear nuevo */}
+          {showNuevoPasajero ? (
+            <div className="p-4 bg-[var(--muted)] rounded-xl space-y-3 border border-[var(--border)]">
+              <p className="text-xs font-medium text-[var(--muted-foreground)] uppercase">Nuevo pasajero</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input
+                  placeholder="Nombre *"
+                  value={nuevoPasajero.nombre}
+                  onChange={(e) => setNuevoPasajero({ ...nuevoPasajero, nombre: e.target.value })}
+                  className="bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
+                />
+                <input
+                  placeholder="Apellido *"
+                  value={nuevoPasajero.apellido}
+                  onChange={(e) => setNuevoPasajero({ ...nuevoPasajero, apellido: e.target.value })}
+                  className="bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
+                />
+                <input
+                  placeholder="Documento"
+                  value={nuevoPasajero.documento}
+                  onChange={(e) => setNuevoPasajero({ ...nuevoPasajero, documento: e.target.value })}
+                  className="bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
+                />
+                <input
+                  type="date"
+                  value={nuevoPasajero.fecha_nacimiento}
+                  onChange={(e) => setNuevoPasajero({ ...nuevoPasajero, fecha_nacimiento: e.target.value })}
+                  className="bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={agregarPasajeroNuevo}
+                  disabled={!nuevoPasajero.nombre.trim() || !nuevoPasajero.apellido.trim()}
+                  className="px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 disabled:opacity-50 text-emerald-400 rounded-lg text-sm font-bold transition-all"
+                >
+                  Agregar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNuevoPasajero(false)}
+                  className="px-4 py-2 bg-[var(--background)] text-[var(--muted-foreground)] rounded-lg text-sm transition-all"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowNuevoPasajero(true)}
+              className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 font-medium transition-all"
+            >
+              <Plus className="w-4 h-4" /> Crear pasajero nuevo
+            </button>
+          )}
+
+          <p className="text-xs text-[var(--muted-foreground)]">
+            El total se recalcula automáticamente: costo por persona × {numPasajeros} pasajero{numPasajeros !== 1 ? 's' : ''}.
+          </p>
         </div>
       </Section>
 

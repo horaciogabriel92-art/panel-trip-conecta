@@ -451,6 +451,13 @@ function createStyles(COLORS: typeof DEFAULT_COLORS) {
     marginTop: 3,
     lineHeight: 1.5,
   },
+  cardTitle: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: COLORS.dark,
+    lineHeight: 1.4,
+    marginBottom: 3,
+  },
   
   // Vuelos - Mejorado con fechas claras
   flightCard: {
@@ -1064,7 +1071,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
             <Text style={styles.sectionTitle}>Transfers</Text>
             {traslados.map((t, idx) => (
               <View key={idx} style={styles.hotelCard}>
-                <Text style={styles.hotelName}>{t.nombre || `Transfer ${idx + 1}`}</Text>
+                <Text style={styles.cardTitle}>{t.nombre || `Transfer ${idx + 1}`}</Text>
                 <Text style={styles.hotelInfo}>{t.origen || '-'} → {t.destino || '-'}</Text>
                 {(t.fecha || t.hora) && (
                   <Text style={styles.hotelInfo}>{t.fecha}{t.fecha && t.hora ? ' · ' : ''}{t.hora}</Text>
@@ -1084,7 +1091,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
             <Text style={styles.sectionTitle}>Seguro de viaje</Text>
             {seguros.map((s, idx) => (
               <View key={idx} style={styles.hotelCard}>
-                <Text style={styles.hotelName}>{s.compania || 'Seguro'}</Text>
+                <Text style={styles.cardTitle}>{s.compania || 'Seguro'}</Text>
                 {s.tipo_cobertura && <Text style={styles.hotelInfo}>Cobertura: {s.tipo_cobertura}</Text>}
                 {(s.fecha_inicio || s.fecha_fin) && (
                   <Text style={styles.hotelInfo}>Vigencia: {s.fecha_inicio || '-'} al {s.fecha_fin || '-'}</Text>
@@ -1104,7 +1111,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
             <Text style={styles.sectionTitle}>Extras</Text>
             {extras.map((e, idx) => (
               <View key={idx} style={styles.hotelCard}>
-                <Text style={styles.hotelName}>{e.nombre || `Extra ${idx + 1}`}</Text>
+                <Text style={styles.cardTitle}>{e.nombre || `Extra ${idx + 1}`}</Text>
                 {e.descripcion && <Text style={styles.hotelInfo}>{e.descripcion}</Text>}
                 {e.fecha && <Text style={styles.hotelInfo}>Fecha: {e.fecha}</Text>}
                 {mostrarDesglose && e.precio_por_persona > 0 && (
