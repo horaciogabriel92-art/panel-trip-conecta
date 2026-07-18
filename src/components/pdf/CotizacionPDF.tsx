@@ -842,9 +842,15 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
     total: totalFinal,
   };
 
-  // Opciones de hoteles: cada opción muestra el precio del hotel (por persona y total).
+  // Opciones de hoteles: cada opción muestra el total del viaje con ESE hotel.
+  // Base = servicios comunes por persona (vuelos, transfers, seguros, extras).
+  const basePorPersona =
+    preciosPdf.vuelos +
+    preciosPdf.traslados +
+    preciosPdf.seguros +
+    preciosPdf.extras;
   const calcularTotalOpcion = (hotel: any) => {
-    return (hotel.precio_por_persona || 0) * numPasajerosPdf;
+    return (basePorPersona + (hotel.precio_por_persona || 0)) * numPasajerosPdf;
   };
   const mostrarOpciones = (hospedaje || []).length > 1;
 
