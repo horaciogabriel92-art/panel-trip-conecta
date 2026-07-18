@@ -578,7 +578,7 @@ export default function AdminCotizacionDetalle() {
   const vuelos = cotizacion.vuelos || [];
   const paquete = cotizacion.paquete;
   const numPasajerosReal = cotizacion.pasajeros?.length || cotizacion.num_pasajeros || 1;
-  const imagen = paquete?.imagen_url || paquete?.imagen_principal || datosPaqueteDesdeNotas?.imagen_principal || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800';
+  const imagen = cotizacion.imagen_url || paquete?.imagen_url || paquete?.imagen_principal || datosPaqueteDesdeNotas?.imagen_principal || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800';
 
   const calcularDuracionDias = () => {
     if (paquete?.duracion_dias || paquete?.duracion || datosPaqueteDesdeNotas?.duracion_dias) {
