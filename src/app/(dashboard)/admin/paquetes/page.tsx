@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
-import { Package, Search, Filter, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Download, Upload, X, ImageIcon } from 'lucide-react';
+import { Package, Search, Filter, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Download, Upload, X, ImageIcon, Eye } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { parseAmadeusPNR } from '@/lib/amadeus-parser';
 import { AirlineLogo } from '@/components/flights/AirlineLogo';
@@ -237,6 +238,7 @@ function parseAmadeusPNRToVuelos(pnrText: string): Vuelo[] {
 }
 
 export default function PaquetesAdmin() {
+  const router = useRouter();
   const { success: toastSuccess, error: toastError } = useToast();
   const [paquetes, setPaquetes] = useState<Paquete[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -449,6 +451,13 @@ export default function PaquetesAdmin() {
           <Plus className="w-5 h-5" />
           Nuevo Paquete
         </button>
+        <button
+          onClick={() => router.push('/paquetes')}
+          className="bg-[var(--muted)] hover:bg-[var(--muted)]/80 border border-[var(--border)] text-[var(--foreground)] font-bold px-6 py-3 rounded-2xl transition-all flex items-center gap-2"
+        >
+          <Eye className="w-5 h-5" />
+          Ver Catálogo
+        </button>
       </div>
 
       <div className="glass-card rounded-3xl overflow-hidden">
@@ -506,6 +515,13 @@ export default function PaquetesAdmin() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+                       <button 
+                         onClick={() => p.id && router.push(`/paquetes/${p.id}`)}
+                         className="p-2 hover:bg-blue-500/10 rounded-lg text-[var(--muted-foreground)] hover:text-blue-400 transition-all"
+                         title="Ver paquete"
+                       >
+                         <Eye className="w-4 h-4" />
+                       </button>
                        <button 
                          onClick={() => handleOpenModal(p)}
                          className="p-2 hover:bg-[var(--muted)] rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all"
