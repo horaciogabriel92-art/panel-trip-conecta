@@ -96,6 +96,12 @@ export const clientesAPI = {
     return response.data;
   },
 
+  // Eliminar cliente
+  eliminar: async (id: string): Promise<{ message: string }> => {
+    const response = await api.delete(`/clientes/${id}`);
+    return response.data;
+  },
+
   // Obtener pasajeros de un cliente
   getPasajeros: async (clienteId: string): Promise<{ data: Pasajero[] }> => {
     const response = await api.get(`/clientes/${clienteId}/pasajeros`);

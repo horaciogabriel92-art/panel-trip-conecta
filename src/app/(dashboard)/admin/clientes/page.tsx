@@ -2,12 +2,14 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Plus, User, Phone, Mail, Loader2, ChevronRight } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { Search, Plus, User, Phone, Mail, Loader2, ChevronRight, Trash2 } from "lucide-react";
 import { clientesAPI, Cliente } from "@/lib/api-clientes";
 import { debounce } from "@/lib/utils";
 
 export default function AdminClientesPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,6 +38,20 @@ export default function AdminClientesPage() {
     }, 300),
     [fetchClientes]
   );
+
+  const handleEliminar = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("¿Estás seguro de eliminar este cliente? Se borrarán también sus pasajeros, cotizaciones e historial.")) return;
+
+    try {
+      await clientesAPI.eliminar(id);
+      setClientes((prev) => prev.filter((c) => c.id !== id));
+      setMeta((prev) => ({ ...prev, total: Math.max(0, prev.total - 1) }));
+    } catch (err: any) {
+      console.error("Error eliminando cliente:", err);
+      alert(err.response?.data?.error || "Error al eliminar cliente");
+    }
+  };
 
   useEffect(() => {
     fetchClientes();
@@ -90,10 +106,13 @@ export default function AdminClientesPage() {
       ) : (
         <div className="space-y-3">
           {clientes.map((cliente) => (
-            <button
+            <div
               key={cliente.id}
               onClick={() => router.push(`/admin/clientes/${cliente.id}`)}
-              className="w-full flex items-center gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-xl hover:border-blue-500/50 transition-all text-left group"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && router.push(`/admin/clientes/${cliente.id}`)}
+              className="w-full flex items-center gap-4 p-4 bg-[var(--card)] border border-[var(--border)] rounded-xl hover:border-blue-500/50 transition-all text-left group cursor-pointer"
             >
               <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/20">
                 <User className="w-6 h-6 text-blue-400" />
@@ -120,8 +139,20 @@ export default function AdminClientesPage() {
                   </span>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-[var(--muted-foreground)] group-hover:text-blue-400" />
-            </button>
+              <div className="flex items-center gap-2">
+                {user?.rol === "admin" && (
+                  <button
+                    onClick={(e) => handleEliminar(cliente.id, e)}
+                    className="p-2 rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+                    title="Eliminar cliente"
+                    type="button"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
+                <ChevronRight className="w-5 h-5 text-[var(--muted-foreground)] group-hover:text-blue-400" />
+              </div>
+            </div>
           ))}
         </div>
       )}

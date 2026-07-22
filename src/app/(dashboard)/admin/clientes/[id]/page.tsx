@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import api, { recordatoriosAPI, Recordatorio } from "@/lib/api";
 import {
   ArrowLeft,
@@ -106,6 +107,7 @@ interface HistorialItem {
 export default function ClienteDetallePage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [pasajeros, setPasajeros] = useState<Pasajero[]>([]);
   const [cotizaciones, setCotizaciones] = useState<CotizacionResumen[]>([]);
@@ -323,6 +325,19 @@ export default function ClienteDetallePage() {
     }
   };
 
+  const handleEliminar = async () => {
+    if (!cliente) return;
+    if (!confirm("¿Estás seguro de eliminar este cliente? Se borrarán también sus pasajeros, cotizaciones e historial.")) return;
+
+    try {
+      await api.delete(`/clientes/${cliente.id}`);
+      router.push("/admin/clientes");
+    } catch (error: any) {
+      console.error("Error eliminando cliente:", error);
+      alert(error.response?.data?.error || "Error al eliminar cliente");
+    }
+  };
+
   // Handlers para recordatorios
   const handleCrearRecordatorio = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -435,13 +450,25 @@ export default function ClienteDetallePage() {
             Cliente desde {formatDate(cliente.created_at)}
           </p>
         </div>
-        <Link
-          href={`/admin/clientes/${cliente.id}/editar`}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors"
-        >
-          <Edit className="w-4 h-4" />
-          Editar
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/admin/clientes/${cliente.id}/editar`}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors"
+          >
+            <Edit className="w-4 h-4" />
+            Editar
+          </Link>
+          {user?.rol === "admin" && (
+            <button
+              onClick={handleEliminar}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-600/20 rounded-xl font-medium transition-colors"
+              type="button"
+            >
+              <Trash2 className="w-4 h-4" />
+              Eliminar
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}
