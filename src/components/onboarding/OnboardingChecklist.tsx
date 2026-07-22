@@ -41,13 +41,20 @@ export default function OnboardingChecklist() {
     if (localStorage.getItem(dismissedKey)) return;
 
     const verificar = async () => {
-      try {
-        const [cotRes, tenantRes] = await Promise.all([
-          api.get('/cotizaciones'),
-          api.get('/config/tenant/me')
-        ]);
+      // Cada fetch es independiente: si uno falla, no bloquea el checklist
+      const [cotRes, tenantRes] = await Promise.all([
+        api.get('/cotizaciones').catch((err) => {
+          console.warn('[Onboarding] Error cargando cotizaciones:', err?.response?.status);
+          return null;
+        }),
+        api.get('/config/tenant/me').catch((err) => {
+          console.warn('[Onboarding] Error cargando tenant:', err?.response?.status);
+          return null;
+        })
+      ]);
 
-        const cotizaciones = cotRes.data || [];
+      try {
+        const cotizaciones = cotRes?.data || [];
         const tieneDemo = cotizaciones.some((c: any) => c.codigo?.startsWith('DEMO-'));
         const tieneReal = cotizaciones.some((c: any) => !c.codigo?.startsWith('DEMO-'));
 
@@ -61,7 +68,7 @@ export default function OnboardingChecklist() {
         setExploroPaquetes(!!localStorage.getItem(exploradoKey));
         setDescargoPdf(!!localStorage.getItem(pdfKey));
 
-        const pdfBrand = tenantRes.data?.configuracion?.pdf_brand;
+        const pdfBrand = tenantRes?.data?.configuracion?.pdf_brand;
         setMarcaConfigurada(!!(pdfBrand && (pdfBrand.logo_url || pdfBrand.nombre_marca)));
 
         setVisible(true);

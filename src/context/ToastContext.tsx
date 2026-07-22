@@ -5,15 +5,23 @@ import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'info';
 
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface Toast {
   id: string;
   type: ToastType;
   title?: string;
   message: string;
+  action?: ToastAction;
+  persistent?: boolean;
 }
 
 interface ToastContextValue {
   toast: (type: ToastType, message: string, title?: string) => void;
+  custom: (type: ToastType, message: string, action: ToastAction, title?: string) => void;
   success: (message: string, title?: string) => void;
   error: (message: string, title?: string) => void;
   info: (message: string, title?: string) => void;
@@ -35,12 +43,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => removeToast(id), 4000);
   }, [removeToast]);
 
+  const custom = useCallback((type: ToastType, message: string, action: ToastAction, title?: string) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, type, message, title, action, persistent: true }]);
+  }, [removeToast]);
+
   const success = useCallback((message: string, title?: string) => toast('success', message, title), [toast]);
   const error = useCallback((message: string, title?: string) => toast('error', message, title), [toast]);
   const info = useCallback((message: string, title?: string) => toast('info', message, title), [toast]);
 
   return (
-    <ToastContext.Provider value={{ toast, success, error, info }}>
+    <ToastContext.Provider value={{ toast, custom, success, error, info }}>
       {children}
       {/* Portal de Toasts */}
       {toasts.length > 0 && (
@@ -114,19 +127,32 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   </div>
 
                   {/* Botón de acción / Cerrar */}
-                  <div className="mt-5 flex justify-end">
-                    <button
-                      onClick={() => removeToast(t.id)}
-                      className={`rounded-xl px-5 py-2 text-sm font-bold transition-colors ${
-                        t.type === 'success'
-                          ? 'bg-green-600 text-white hover:bg-green-500'
-                          : t.type === 'error'
-                          ? 'bg-red-600 text-white hover:bg-red-500'
-                          : 'bg-blue-600 text-white hover:bg-blue-500'
-                      }`}
-                    >
-                      Aceptar
-                    </button>
+                  <div className="mt-5 flex justify-end gap-3">
+                    {t.action && (
+                      <button
+                        onClick={() => {
+                          t.action?.onClick();
+                          removeToast(t.id);
+                        }}
+                        className={`rounded-xl px-5 py-2 text-sm font-bold transition-colors ${
+                          t.type === 'success'
+                            ? 'bg-green-600 text-white hover:bg-green-500'
+                            : t.type === 'error'
+                            ? 'bg-red-600 text-white hover:bg-red-500'
+                            : 'bg-blue-600 text-white hover:bg-blue-500'
+                        }`}
+                      >
+                        {t.action.label}
+                      </button>
+                    )}
+                    {!t.persistent && (
+                      <button
+                        onClick={() => removeToast(t.id)}
+                        className="rounded-xl px-5 py-2 text-sm font-bold transition-colors bg-white/10 text-white hover:bg-white/20"
+                      >
+                        Aceptar
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

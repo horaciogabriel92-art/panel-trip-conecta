@@ -110,6 +110,8 @@ export default function ConfiguracionPage() {
     try {
       await api.post('/config/demo-data');
       setTieneDemo(true);
+      // Reactivar el checklist de onboarding por si el usuario lo había cerrado
+      if (user?.id) localStorage.removeItem(`onboarding_dismissed_${user.id}`);
       setDemoMessage({ type: 'success', text: 'Datos de ejemplo cargados. Revisá el dashboard para ver los primeros pasos.' });
     } catch (err: any) {
       setDemoMessage({ type: 'error', text: err.response?.data?.error || 'Error al cargar los datos de ejemplo' });

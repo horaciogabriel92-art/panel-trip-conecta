@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { emitSessionExpired } from './sessionEvents';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -34,7 +35,7 @@ api.interceptors.response.use(
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        emitSessionExpired();
       }
     }
     return Promise.reject(error);

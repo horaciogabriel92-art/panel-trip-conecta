@@ -17,6 +17,8 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { ToastProvider } from '@/context/ToastContext';
 import { TenantProvider } from '@/context/TenantContext';
 
+import { SessionExpiredHandler } from '@/components/auth/SessionExpiredHandler';
+
 export const metadata: Metadata = {
   title: "Quotix Travel - Panel de Agentes",
   description: "Plataforma de gestión de cotizaciones y ventas para agencias de viajes",
@@ -36,7 +38,9 @@ export default function RootLayout({
           <TenantProvider>
             <AuthProvider>
               <ToastProvider>
-                {children}
+                <SessionExpiredHandler>
+                  {children}
+                </SessionExpiredHandler>
               </ToastProvider>
             </AuthProvider>
           </TenantProvider>
