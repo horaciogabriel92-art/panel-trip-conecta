@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 interface TenantFooterProps {
   tenant: any;
   landing: any;
@@ -7,6 +9,7 @@ export default function TenantFooter({ tenant, landing }: TenantFooterProps) {
   const redes = landing?.redes_sociales || {};
   const footerLinks = landing?.footer_links || [];
   const year = new Date().getFullYear();
+  const logoUrl = landing?.imagen_og || tenant?.logo_url;
 
   return (
     <footer
@@ -17,14 +20,14 @@ export default function TenantFooter({ tenant, landing }: TenantFooterProps) {
       }}
     >
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
           {/* Marca */}
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              {tenant?.logo_url ? (
+            <div className="flex items-center justify-center md:justify-start gap-3">
+              {logoUrl ? (
                 <img
-                  src={tenant.logo_url}
-                  alt={tenant.nombre}
+                  src={logoUrl}
+                  alt={tenant?.nombre}
                   className="h-8 w-auto object-contain"
                 />
               ) : (
@@ -84,7 +87,7 @@ export default function TenantFooter({ tenant, landing }: TenantFooterProps) {
               ))}
             </ul>
             {Object.keys(redes).length > 0 && (
-              <div className="flex items-center gap-3 pt-2">
+              <div className="flex items-center justify-center md:justify-start gap-3 pt-2">
                 {Object.entries(redes).map(([key, url]: [string, any]) =>
                   url ? (
                     <a
@@ -111,7 +114,16 @@ export default function TenantFooter({ tenant, landing }: TenantFooterProps) {
             © {year} {landing?.titulo || tenant?.nombre}.{" "}
             {landing?.footer_texto || "Todos los derechos reservados."}
           </p>
-          <p className="mt-1">Powered by Quotix</p>
+          <p className="mt-1">
+            <a
+              href="https://www.quotixos.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
+              Powered by Quotix
+            </a>
+          </p>
         </div>
       </div>
     </footer>
