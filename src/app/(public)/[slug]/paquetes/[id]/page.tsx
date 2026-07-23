@@ -4,6 +4,7 @@ import Link from "next/link";
 import { PUBLIC_API_URL } from "@/lib/publicApi";
 import TenantHeader from "@/components/tenant/TenantHeader";
 import TenantFooter from "@/components/tenant/TenantFooter";
+import DescripcionFormateada from "@/components/tenant/DescripcionFormateada";
 import CotizacionForm from "@/components/tenant/CotizacionForm";
 
 interface PageProps {
@@ -146,15 +147,11 @@ export default async function PaquetePage({ params }: PageProps) {
             {/* Columna izquierda: detalles */}
             <div className="lg:col-span-2 space-y-10">
               {paquete?.descripcion && (
-                <div className="bg-white rounded-2xl border border-black/10 p-6 md:p-8">
-                  <h2
-                    className="text-xl font-bold mb-4"
-                    style={{ color: colors.text }}
-                  >
-                    Descripción
-                  </h2>
-                  <p className="opacity-70 whitespace-pre-line">{paquete.descripcion}</p>
-                </div>
+                <DescripcionFormateada
+                  texto={paquete.descripcion}
+                  colors={colors}
+                  titulo="Itinerario detallado"
+                />
               )}
 
               {paquete?.incluye?.length > 0 && (
