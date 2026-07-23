@@ -59,7 +59,7 @@ export default function LandingTab({ tenantSlug }: LandingTabProps) {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await api.get("/config/landing");
+        const res = await api.get("/public/config/landing");
         setSlug(res.data.slug || tenantSlug);
         setLanding({ ...DEFAULT_LANDING, ...(res.data.landing || {}) });
       } catch (error: any) {
@@ -140,7 +140,7 @@ export default function LandingTab({ tenantSlug }: LandingTabProps) {
     setIsSaving(true);
     setMessage(null);
     try {
-      await api.put("/config/landing", { landing });
+      await api.put("/public/config/landing", { landing });
       setMessage({ type: "success", text: "Landing guardada correctamente" });
     } catch (error: any) {
       console.error("Error guardando landing:", error);
