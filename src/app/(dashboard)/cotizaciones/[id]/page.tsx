@@ -519,7 +519,7 @@ export default function CotizacionDetalle() {
 
   const { isVendedorAutoconfirma } = useWorkflowMode();
   const imagen = cotizacion.imagen_url || paquete?.imagen_url || paquete?.imagen_principal || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800';
-  const puedeEditar = cotizacion.estado === 'nueva' && user?.rol === 'vendedor';
+  const puedeEditar = (cotizacion.estado === 'nueva' || cotizacion.estado === 'enviada') && user?.rol === 'vendedor';
   const puedeConvertir =
     (cotizacion.estado === 'nueva' || cotizacion.estado === 'enviada') &&
     (user?.rol === 'admin' || isVendedorAutoconfirma);
