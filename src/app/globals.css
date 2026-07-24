@@ -65,6 +65,7 @@
 
 @theme {
   --font-sans: 'Inter', var(--font-geist-sans);
+  --font-serif: var(--font-playfair), Georgia, serif;
   
   --color-border: var(--border);
   --color-input: var(--input);

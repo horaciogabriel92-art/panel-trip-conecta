@@ -19,14 +19,38 @@ import {
   Clock,
   Type,
   ToggleRight,
-  Instagram,
-  Facebook,
 } from "lucide-react";
+import type { Landing, Hero, CtaFinal, Features, FeatureItem } from "@/components/tenant/templates/types";
 
 const DEFAULT_LANDING = {
   activo: true,
+  template: "classic",
   titulo: "",
   descripcion: "",
+  hero: {
+    imagen_url: "",
+    eyebrow: "",
+    titulo: "",
+    subtitulo: "",
+    cta_texto: "",
+    cta_url: "",
+  },
+  cta_final: {
+    imagen_url: "",
+    titulo: "",
+    subtitulo: "",
+    cta_texto: "",
+  },
+  features: {
+    titulo: "",
+    subtitulo: "",
+    items: [
+      { icono: "Shield", titulo: "Seguridad", descripcion: "Operadores certificados y asistencia 24hs." },
+      { icono: "Users", titulo: "Asesores", descripcion: "Especialistas que te acompañan en todo." },
+      { icono: "CreditCard", titulo: "Flexibilidad", descripcion: "Reservá con señal y pagá en cuotas." },
+      { icono: "Gem", titulo: "Exclusividad", descripcion: "Alojamientos seleccionados a mano." },
+    ],
+  },
   whatsapp: "",
   telefono: "",
   email: "",
@@ -50,7 +74,7 @@ interface LandingTabProps {
 }
 
 export default function LandingTab({ tenantSlug }: LandingTabProps) {
-  const [landing, setLanding] = useState<any>(DEFAULT_LANDING);
+  const [landing, setLanding] = useState<Landing>(DEFAULT_LANDING);
   const [slug, setSlug] = useState(tenantSlug);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -62,7 +86,7 @@ export default function LandingTab({ tenantSlug }: LandingTabProps) {
         const res = await api.get("/public/config/landing");
         setSlug(res.data.slug || tenantSlug);
         setLanding({ ...DEFAULT_LANDING, ...(res.data.landing || {}) });
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error cargando landing config:", error);
         setMessage({ type: "error", text: "Error al cargar la configuración de la landing" });
       } finally {
@@ -72,67 +96,100 @@ export default function LandingTab({ tenantSlug }: LandingTabProps) {
     fetchConfig();
   }, [tenantSlug]);
 
-  const updateField = (field: string, value: any) => {
-    setLanding((prev: any) => ({ ...prev, [field]: value }));
+  const updateField = (field: keyof Landing, value: Landing[keyof Landing]) => {
+    setLanding((prev) => ({ ...prev, [field]: value }));
   };
 
   const updateRed = (key: string, value: string) => {
-    setLanding((prev: any) => ({
+    setLanding((prev) => ({
       ...prev,
-      redes_sociales: { ...prev.redes_sociales, [key]: value },
+      redes_sociales: { ...(prev.redes_sociales || {}), [key]: value },
     }));
   };
 
-  const updateSeo = (key: string, value: string) => {
-    setLanding((prev: any) => ({
+  const updateSeo = (key: "title" | "description" | "keywords", value: string) => {
+    setLanding((prev) => ({
       ...prev,
-      seo: { ...prev.seo, [key]: value },
+      seo: { ...(prev.seo || {}), [key]: value },
+    }));
+  };
+
+  const updateHero = (key: keyof Hero, value: Hero[keyof Hero]) => {
+    setLanding((prev) => ({
+      ...prev,
+      hero: { ...(prev.hero || {}), [key]: value },
+    }));
+  };
+
+  const updateCtaFinal = (key: keyof CtaFinal, value: CtaFinal[keyof CtaFinal]) => {
+    setLanding((prev) => ({
+      ...prev,
+      cta_final: { ...(prev.cta_final || {}), [key]: value },
+    }));
+  };
+
+  const updateFeatures = (key: keyof Features, value: Features[keyof Features]) => {
+    setLanding((prev) => ({
+      ...prev,
+      features: { ...(prev.features || {}), [key]: value },
+    }));
+  };
+
+  const updateFeatureItem = (idx: number, key: keyof FeatureItem, value: FeatureItem[keyof FeatureItem]) => {
+    setLanding((prev) => ({
+      ...prev,
+      features: {
+        ...(prev.features || {}),
+        items: (prev.features?.items || []).map((item, i) =>
+          i === idx ? { ...item, [key]: value } : item
+        ),
+      },
     }));
   };
 
   const addFooterLink = () => {
-    setLanding((prev: any) => ({
+    setLanding((prev) => ({
       ...prev,
-      footer_links: [...prev.footer_links, { label: "", url: "" }],
+      footer_links: [...(prev.footer_links || []), { label: "", url: "" }],
     }));
   };
 
-  const updateFooterLink = (idx: number, field: string, value: string) => {
-    setLanding((prev: any) => ({
+  const updateFooterLink = (idx: number, field: "label" | "url", value: string) => {
+    setLanding((prev) => ({
       ...prev,
-      footer_links: prev.footer_links.map((l: any, i: number) =>
+      footer_links: (prev.footer_links || []).map((l, i) =>
         i === idx ? { ...l, [field]: value } : l
       ),
     }));
   };
 
   const removeFooterLink = (idx: number) => {
-    setLanding((prev: any) => ({
+    setLanding((prev) => ({
       ...prev,
-      footer_links: prev.footer_links.filter((_: any, i: number) => i !== idx),
+      footer_links: (prev.footer_links || []).filter((_, i) => i !== idx),
     }));
   };
 
   const addBotonExtra = () => {
-    setLanding((prev: any) => ({
+    setLanding((prev) => ({
       ...prev,
-      botones_extra: [...prev.botones_extra, { label: "", url: "", tipo: "link" }],
+      botones_extra: [...(prev.botones_extra || []), { label: "", url: "", tipo: "link" }],
     }));
   };
 
-  const updateBotonExtra = (idx: number, field: string, value: string) => {
-    setLanding((prev: any) => ({
+  const updateBotonExtra = (idx: number, field: "label" | "url" | "tipo", value: string) => {
+    setLanding((prev) => ({
       ...prev,
-      botones_extra: prev.botones_extra.map((b: any, i: number) =>
+      botones_extra: (prev.botones_extra || []).map((b, i) =>
         i === idx ? { ...b, [field]: value } : b
       ),
     }));
   };
 
   const removeBotonExtra = (idx: number) => {
-    setLanding((prev: any) => ({
+    setLanding((prev) => ({
       ...prev,
-      botones_extra: prev.botones_extra.filter((_: any, i: number) => i !== idx),
+      botones_extra: (prev.botones_extra || []).filter((_, i) => i !== idx),
     }));
   };
 
@@ -142,11 +199,11 @@ export default function LandingTab({ tenantSlug }: LandingTabProps) {
     try {
       await api.put("/public/config/landing", { landing });
       setMessage({ type: "success", text: "Landing guardada correctamente" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error guardando landing:", error);
       setMessage({
         type: "error",
-        text: error.response?.data?.error || "Error al guardar la landing",
+        text: (error as { response?: { data?: { error?: string } } })?.response?.data?.error || "Error al guardar la landing",
       });
     } finally {
       setIsSaving(false);
@@ -208,6 +265,42 @@ export default function LandingTab({ tenantSlug }: LandingTabProps) {
         </p>
       </div>
 
+      {/* Template */}
+      <div className="glass-card rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+          <Palette className="w-5 h-5 text-purple-400" />
+          Plantilla del marketplace
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            { key: "classic", label: "Clásico", desc: "Hero simple + grid de tarjetas" },
+            { key: "lista", label: "Lista", desc: "Hero con imagen + listado de paquetes" },
+            { key: "magazine", label: "Magazine", desc: "Hero split + destacados + masonry" },
+            { key: "shell", label: "Shell", desc: "Hero full + buscador + grid" },
+          ].map((t) => (
+            <label
+              key={t.key}
+              className={`cursor-pointer rounded-xl border p-4 transition-all ${
+                landing.template === t.key
+                  ? "border-blue-500 bg-blue-500/10"
+                  : "border-[var(--border)] hover:border-blue-500/50"
+              }`}
+            >
+              <input
+                type="radio"
+                name="template"
+                value={t.key}
+                checked={landing.template === t.key}
+                onChange={() => updateField("template", t.key)}
+                className="hidden"
+              />
+              <p className="font-semibold text-[var(--foreground)]">{t.label}</p>
+              <p className="text-xs text-[var(--muted-foreground)] mt-1">{t.desc}</p>
+            </label>
+          ))}
+        </div>
+      </div>
+
       {/* General */}
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
@@ -260,6 +353,193 @@ export default function LandingTab({ tenantSlug }: LandingTabProps) {
         </div>
       </div>
 
+      {/* Hero */}
+      <div className="glass-card rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+          <Type className="w-5 h-5 text-blue-400" />
+          Banner principal
+        </h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-[var(--muted-foreground)] mb-1">Imagen de portada</label>
+            <ImagenUploader
+              imagenUrl={landing.hero?.imagen_url || ""}
+              onImagenSubida={(url) => updateHero("imagen_url", url)}
+              label=""
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-[var(--muted-foreground)] mb-1">Eyebrow (etiqueta arriba del título)</label>
+              <input
+                type="text"
+                value={landing.hero?.eyebrow || ""}
+                onChange={(e) => updateHero("eyebrow", e.target.value)}
+                placeholder="Ej: Experiencias exclusivas"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[var(--muted-foreground)] mb-1">Título del banner</label>
+              <input
+                type="text"
+                value={landing.hero?.titulo || ""}
+                onChange={(e) => updateHero("titulo", e.target.value)}
+                placeholder="Ej: Viajes que definen estilo"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm text-[var(--muted-foreground)] mb-1">Subtítulo</label>
+            <textarea
+              value={landing.hero?.subtitulo || ""}
+              onChange={(e) => updateHero("subtitulo", e.target.value)}
+              rows={2}
+              placeholder="Breve descripción debajo del título..."
+              className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none resize-none"
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-[var(--muted-foreground)] mb-1">Texto del botón</label>
+              <input
+                type="text"
+                value={landing.hero?.cta_texto || ""}
+                onChange={(e) => updateHero("cta_texto", e.target.value)}
+                placeholder="Ej: Ver catálogo"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[var(--muted-foreground)] mb-1">URL del botón</label>
+              <input
+                type="text"
+                value={landing.hero?.cta_url || ""}
+                onChange={(e) => updateHero("cta_url", e.target.value)}
+                placeholder="#paquetes"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA final */}
+      <div className="glass-card rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+          <Type className="w-5 h-5 text-blue-400" />
+          Sección final (CTA)
+        </h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-[var(--muted-foreground)] mb-1">Imagen de fondo</label>
+            <ImagenUploader
+              imagenUrl={landing.cta_final?.imagen_url || ""}
+              onImagenSubida={(url) => updateCtaFinal("imagen_url", url)}
+              label=""
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-[var(--muted-foreground)] mb-1">Título</label>
+              <input
+                type="text"
+                value={landing.cta_final?.titulo || ""}
+                onChange={(e) => updateCtaFinal("titulo", e.target.value)}
+                placeholder="Ej: ¿Buscás algo exclusivo?"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[var(--muted-foreground)] mb-1">Texto del botón</label>
+              <input
+                type="text"
+                value={landing.cta_final?.cta_texto || ""}
+                onChange={(e) => updateCtaFinal("cta_texto", e.target.value)}
+                placeholder="Ej: Solicitar cotización"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm text-[var(--muted-foreground)] mb-1">Subtítulo</label>
+            <textarea
+              value={landing.cta_final?.subtitulo || ""}
+              onChange={(e) => updateCtaFinal("subtitulo", e.target.value)}
+              rows={2}
+              placeholder="Breve descripción del CTA final..."
+              className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none resize-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Features */}
+      <div className="glass-card rounded-2xl p-6">
+        <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+          <Type className="w-5 h-5 text-blue-400" />
+          Diferenciales
+        </h3>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-[var(--muted-foreground)] mb-1">Título de la sección</label>
+              <input
+                type="text"
+                value={landing.features?.titulo || ""}
+                onChange={(e) => updateFeatures("titulo", e.target.value)}
+                placeholder="Ej: ¿Por qué elegirnos?"
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[var(--muted-foreground)] mb-1">Subtítulo</label>
+              <input
+                type="text"
+                value={landing.features?.subtitulo || ""}
+                onChange={(e) => updateFeatures("subtitulo", e.target.value)}
+                placeholder="Ej: Más de 10 años conectando viajeros..."
+                className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {(landing.features?.items || []).map((item: FeatureItem, idx: number) => (
+              <div key={idx} className="p-4 bg-[var(--muted)] rounded-xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-[var(--foreground)]">Diferencial {idx + 1}</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <input
+                    type="text"
+                    value={item.icono || ""}
+                    onChange={(e) => updateFeatureItem(idx, "icono", e.target.value)}
+                    placeholder="Icono (Shield, Users, CreditCard, Gem...)"
+                    className="bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={item.titulo || ""}
+                    onChange={(e) => updateFeatureItem(idx, "titulo", e.target.value)}
+                    placeholder="Título"
+                    className="bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={item.descripcion || ""}
+                    onChange={(e) => updateFeatureItem(idx, "descripcion", e.target.value)}
+                    placeholder="Descripción"
+                    className="bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Marca */}
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
@@ -267,21 +547,23 @@ export default function LandingTab({ tenantSlug }: LandingTabProps) {
           Apariencia
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {[
-            { key: "color_primario", label: "Color primario" },
-            { key: "color_secundario", label: "Color secundario" },
-            { key: "color_fondo", label: "Color de fondo" },
-            { key: "color_texto", label: "Color de texto" },
-          ].map((c: any) => (
+          {(
+            [
+              { key: "color_primario", label: "Color primario" },
+              { key: "color_secundario", label: "Color secundario" },
+              { key: "color_fondo", label: "Color de fondo" },
+              { key: "color_texto", label: "Color de texto" },
+            ] as { key: "color_primario" | "color_secundario" | "color_fondo" | "color_texto"; label: string }[]
+          ).map((c) => (
             <div key={c.key} className="flex items-center justify-between p-3 bg-[var(--muted)] rounded-xl">
               <span className="text-sm text-[var(--foreground)]">{c.label}</span>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono uppercase text-[var(--muted-foreground)]">
-                  {(landing as any)[c.key]}
+                  {landing[c.key]}
                 </span>
                 <input
                   type="color"
-                  value={(landing as any)[c.key] || "#000000"}
+                  value={landing[c.key] || "#000000"}
                   onChange={(e) => updateField(c.key, e.target.value)}
                   className="w-8 h-8 rounded-lg border-0 p-0 cursor-pointer bg-transparent"
                 />
@@ -395,7 +677,7 @@ export default function LandingTab({ tenantSlug }: LandingTabProps) {
           <div>
             <label className="block text-sm text-[var(--muted-foreground)] mb-1">Links del footer</label>
             <div className="space-y-2">
-              {landing.footer_links.map((link: any, idx: number) => (
+              {(landing.footer_links || []).map((link, idx: number) => (
                 <div key={idx} className="flex gap-2">
                   <input
                     type="text"
@@ -436,7 +718,7 @@ export default function LandingTab({ tenantSlug }: LandingTabProps) {
       <div className="glass-card rounded-2xl p-6">
         <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Botones extra</h3>
         <div className="space-y-2">
-          {landing.botones_extra.map((btn: any, idx: number) => (
+          {(landing.botones_extra || []).map((btn, idx: number) => (
             <div key={idx} className="flex gap-2">
               <input
                 type="text"
