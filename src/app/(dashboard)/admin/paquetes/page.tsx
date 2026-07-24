@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
-import { Package, Search, Filter, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Download, Upload, X, ImageIcon, Eye } from 'lucide-react';
+import { Package, Search, Filter, Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle, Download, Upload, X, ImageIcon, Eye, EyeOff } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { parseAmadeusPNR } from '@/lib/amadeus-parser';
 import { AirlineLogo } from '@/components/flights/AirlineLogo';
@@ -173,6 +173,8 @@ interface Paquete {
   fecha_salida?: string;
   duracion: number;
   status: 'activo' | 'inactivo';
+  estado?: string;
+  visible?: boolean;
   imagen_url?: string;
   incluye: string[];
   no_incluye: string[];
@@ -195,6 +197,8 @@ const emptyPaquete: Paquete = {
   cupos_disponibles: 0,
   duracion: 7,
   status: 'activo',
+  estado: 'activo',
+  visible: true,
   incluye: [],
   no_incluye: [],
   recursos_vendedores: [],
@@ -284,11 +288,17 @@ export default function PaquetesAdmin() {
     e.preventDefault();
     
     try {
+      // status es un campo virtual del UI; en BD se guarda como visible (boolean) y estado (operativo)
+      const payload: any = { ...formData };
+      payload.visible = payload.status !== 'inactivo';
+      payload.estado = payload.estado || 'activo';
+      delete payload.status;
+
       let response;
       if (editingPaquete) {
-        response = await api.put(`/paquetes/${editingPaquete.id}`, formData);
+        response = await api.put(`/paquetes/${editingPaquete.id}`, payload);
       } else {
-        response = await api.post('/paquetes', formData);
+        response = await api.post('/paquetes', payload);
       }
       setShowModal(false);
       // Limpiar estados del modo itinerario
@@ -310,6 +320,23 @@ export default function PaquetesAdmin() {
       fetchPaquetes();
     } catch (err: any) {
       toastError(err.response?.data?.error || 'Error al eliminar paquete', 'Error');
+    }
+  };
+
+  const handleToggleVisible = async (paquete: Paquete) => {
+    if (!paquete.id) return;
+    try {
+      await api.put(`/paquetes/${paquete.id}`, {
+        visible: !paquete.visible,
+        estado: paquete.estado || 'activo'
+      });
+      toastSuccess(
+        paquete.visible ? 'Paquete ocultado del catálogo y la web' : 'Paquete visible en el catálogo y la web',
+        'Listo'
+      );
+      fetchPaquetes();
+    } catch (err: any) {
+      toastError(err.response?.data?.error || 'Error al cambiar visibilidad', 'Error');
     }
   };
 
@@ -522,6 +549,18 @@ export default function PaquetesAdmin() {
                        >
                          <Eye className="w-4 h-4" />
                        </button>
+                       <button
+                         onClick={() => handleToggleVisible(p)}
+                         className={cn(
+                           "p-2 rounded-lg transition-all",
+                           p.visible === false
+                             ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                             : "text-green-400 hover:bg-green-500/10 hover:text-green-300"
+                         )}
+                         title={p.visible === false ? "Mostrar en catálogo y web" : "Ocultar del catálogo y web"}
+                       >
+                         {p.visible === false ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                       </button>
                        <button 
                          onClick={() => handleOpenModal(p)}
                          className="p-2 hover:bg-[var(--muted)] rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-all"
@@ -678,14 +717,14 @@ export default function PaquetesAdmin() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Estado</label>
+                    <label className="text-sm text-[var(--muted-foreground)] mb-1 block">Visible en catálogo y web</label>
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({...formData, status: e.target.value as 'activo' | 'inactivo'})}
                       className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
                     >
-                      <option value="activo">Activo</option>
-                      <option value="inactivo">Inactivo</option>
+                      <option value="activo">Visible</option>
+                      <option value="inactivo">Oculto</option>
                     </select>
                   </div>
                 </div>

@@ -14,7 +14,7 @@ export default function PaquetesCatalogo() {
     const fetchPaquetes = async () => {
       try {
         const res = await api.get('/paquetes');
-        setPaquetes(res.data.filter((p: any) => p.status === 'activo'));
+        setPaquetes(res.data);
       } catch (err) {
         console.error(err);
       } finally {
