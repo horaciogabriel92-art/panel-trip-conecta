@@ -29,6 +29,7 @@ interface Hotel {
   nombre: string;
   link?: string;
   ciudad?: string;
+  incluido?: boolean;
   precios: {
     doble: number;
     triple: number;
@@ -51,6 +52,7 @@ interface Paquete {
   fecha_inicio?: string;
   duracion_dias?: number;
   hoteles?: Hotel[];
+  hoteles_incluidos?: Hotel[];
 }
 
 interface Pasajero {
@@ -95,9 +97,15 @@ export default function CotizarPaquete() {
         const paqueteData = res.data;
         setPaquete(paqueteData);
         
-        // Seleccionar primer hotel automáticamente si existe
-        if (paqueteData.hoteles && paqueteData.hoteles.length > 0) {
-          setHotelSeleccionado(paqueteData.hoteles[0]);
+        // Separar hoteles incluidos y opcionales; por defecto todos son incluidos
+        const todosHoteles = paqueteData.hoteles || [];
+        const opcionales = todosHoteles.filter((h: Hotel) => h.incluido === false);
+        
+        // Seleccionar primer hotel opcional automáticamente si existe
+        if (opcionales.length > 0) {
+          setHotelSeleccionado(opcionales[0]);
+        } else {
+          setHotelSeleccionado(null);
         }
         
         // Tomar fecha de salida del paquete automáticamente
@@ -142,13 +150,13 @@ export default function CotizarPaquete() {
   const calcularPrecio = () => {
     if (!paquete) return 0;
     
-    // Si hay hotel seleccionado, usar precios del hotel
-    if (hotelSeleccionado) {
+    // Si hay un hotel opcional seleccionado, usar su precio; sino, precio base del paquete
+    if (hotelSeleccionado && hotelSeleccionado.incluido === false) {
       const precioPorPersona = hotelSeleccionado.precios[config.tipo_habitacion] || 0;
       return precioPorPersona * config.num_pasajeros;
     }
     
-    // Fallback a precios del paquete (legacy)
+    // Precios base del paquete (hoteles incluidos ya están contemplados)
     const precioPorPersona = 
       config.tipo_habitacion === 'doble' ? paquete.precio_doble :
       config.tipo_habitacion === 'triple' ? paquete.precio_triple :
@@ -167,6 +175,8 @@ export default function CotizarPaquete() {
     setIsSubmitting(true);
 
     try {
+      const hotelesIncluidos = (paquete?.hoteles || []).filter((h: Hotel) => h.incluido !== false);
+
       // Formato CRM nuevo
       const cotizacionData = {
         cliente_id: clienteSeleccionado.id,
@@ -180,7 +190,8 @@ export default function CotizarPaquete() {
         })),
         pasajero_titular_id: null,
         paquete_id: params.id,
-        hotel_seleccionado_id: hotelSeleccionado?.id,
+        hotel_seleccionado_id: hotelSeleccionado?.incluido === false ? hotelSeleccionado?.id : null,
+        hoteles_incluidos: hotelesIncluidos.map(h => ({ id: h.id, nombre: h.nombre, ciudad: h.ciudad, link: h.link })),
         tipo_habitacion: config.tipo_habitacion,
         nombre_cotizacion: `Viaje a ${paquete?.destino || 'Destino'} - ${paquete?.titulo || 'Paquete'}`,
         tipo_cotizacion: 'paquete',
@@ -314,75 +325,111 @@ export default function CotizarPaquete() {
             <div className="glass-card rounded-2xl p-6">
               <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
                 <BedDouble className="w-5 h-5 text-blue-400" />
-                Selección de Hotel
+                Hospedaje
               </h3>
-              
-              {/* Selector de Hotel */}
-              <div className="mb-4">
-                <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">
-                  Hotel
-                </label>
-                <select
-                  value={hotelSeleccionado?.id || ''}
-                  onChange={(e) => {
-                    const hotel = paquete.hoteles?.find(h => h.id === e.target.value);
-                    setHotelSeleccionado(hotel || null);
-                  }}
-                  className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500"
-                >
-                  {paquete.hoteles.map(hotel => (
-                    <option key={hotel.id} value={hotel.id}>
-                      {hotel.nombre} {hotel.ciudad ? `(${hotel.ciudad})` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
 
-              {/* Detalles del hotel seleccionado */}
-              {hotelSeleccionado && (
-                <div className="bg-[var(--muted)] rounded-xl p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-[var(--foreground)]">{hotelSeleccionado.nombre}</span>
-                    {hotelSeleccionado.link && (
-                      <a 
-                        href={hotelSeleccionado.link} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
-                      >
-                        Ver hotel →
-                      </a>
-                    )}
+              {/* Hoteles incluidos: siempre parte del paquete */}
+              {(paquete.hoteles || []).filter((h: Hotel) => h.incluido !== false).length > 0 && (
+                <div className="mb-6">
+                  <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">
+                    Hoteles incluidos
+                  </label>
+                  <div className="space-y-3">
+                    {(paquete.hoteles || []).filter((h: Hotel) => h.incluido !== false).map((hotel) => (
+                      <div key={hotel.id} className="bg-[var(--muted)] rounded-xl p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-[var(--foreground)]">{hotel.nombre}</span>
+                          {hotel.link && (
+                            <a
+                              href={hotel.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                            >
+                              Ver hotel →
+                            </a>
+                          )}
+                        </div>
+                        {hotel.ciudad && (
+                          <p className="text-sm text-[var(--muted-foreground)]">📍 {hotel.ciudad}</p>
+                        )}
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-black uppercase bg-green-500/10 text-green-400 border border-green-500/20">
+                          Incluido
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                  
-                  {hotelSeleccionado.ciudad && (
-                    <p className="text-sm text-[var(--muted-foreground)]">
-                      📍 {hotelSeleccionado.ciudad}
-                    </p>
-                  )}
-                  
-                  {/* Precios por tipo de habitación */}
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[var(--border)]">
-                    <div className="text-center p-2 bg-[var(--background)] rounded-lg">
-                      <p className="text-xs text-[var(--muted-foreground)]">Doble</p>
-                      <p className="font-bold text-[var(--foreground)]">${formatCurrency(hotelSeleccionado.precios.doble)}</p>
-                      <p className="text-xs text-[var(--muted-foreground)]">por persona</p>
+                </div>
+              )}
+
+              {/* Hoteles opcionales: selector de upgrade */}
+              {(paquete.hoteles || []).filter((h: Hotel) => h.incluido === false).length > 0 && (
+                <div>
+                  <label className="block text-xs font-bold text-[var(--muted-foreground)] uppercase mb-2">
+                    Opciones de upgrade
+                  </label>
+                  <select
+                    value={hotelSeleccionado?.id || ''}
+                    onChange={(e) => {
+                      const hotel = paquete.hoteles?.find(h => h.id === e.target.value);
+                      setHotelSeleccionado(hotel || null);
+                    }}
+                    className="w-full bg-[var(--muted)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--foreground)] outline-none focus:border-blue-500 mb-4"
+                  >
+                    {(paquete.hoteles || []).filter((h: Hotel) => h.incluido === false).map(hotel => (
+                      <option key={hotel.id} value={hotel.id}>
+                        {hotel.nombre} {hotel.ciudad ? `(${hotel.ciudad})` : ''}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Detalles del hotel opcional seleccionado */}
+                  {hotelSeleccionado && (
+                    <div className="bg-[var(--muted)] rounded-xl p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-[var(--foreground)]">{hotelSeleccionado.nombre}</span>
+                        {hotelSeleccionado.link && (
+                          <a
+                            href={hotelSeleccionado.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                          >
+                            Ver hotel →
+                          </a>
+                        )}
+                      </div>
+
+                      {hotelSeleccionado.ciudad && (
+                        <p className="text-sm text-[var(--muted-foreground)]">
+                          📍 {hotelSeleccionado.ciudad}
+                        </p>
+                      )}
+
+                      {/* Precios por tipo de habitación */}
+                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[var(--border)]">
+                        <div className="text-center p-2 bg-[var(--background)] rounded-lg">
+                          <p className="text-xs text-[var(--muted-foreground)]">Doble</p>
+                          <p className="font-bold text-[var(--foreground)]">${formatCurrency(hotelSeleccionado.precios.doble)}</p>
+                          <p className="text-xs text-[var(--muted-foreground)]">por persona</p>
+                        </div>
+                        {hotelSeleccionado.precios.triple > 0 && (
+                          <div className="text-center p-2 bg-[var(--background)] rounded-lg">
+                            <p className="text-xs text-[var(--muted-foreground)]">Triple</p>
+                            <p className="font-bold text-[var(--foreground)]">${formatCurrency(hotelSeleccionado.precios.triple)}</p>
+                            <p className="text-xs text-[var(--muted-foreground)]">por persona</p>
+                          </div>
+                        )}
+                        {hotelSeleccionado.precios.cuadruple > 0 && (
+                          <div className="text-center p-2 bg-[var(--background)] rounded-lg">
+                            <p className="text-xs text-[var(--muted-foreground)]">Cuádruple</p>
+                            <p className="font-bold text-[var(--foreground)]">${formatCurrency(hotelSeleccionado.precios.cuadruple)}</p>
+                            <p className="text-xs text-[var(--muted-foreground)]">por persona</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    {hotelSeleccionado.precios.triple > 0 && (
-                      <div className="text-center p-2 bg-[var(--background)] rounded-lg">
-                        <p className="text-xs text-[var(--muted-foreground)]">Triple</p>
-                        <p className="font-bold text-[var(--foreground)]">${formatCurrency(hotelSeleccionado.precios.triple)}</p>
-                        <p className="text-xs text-[var(--muted-foreground)]">por persona</p>
-                      </div>
-                    )}
-                    {hotelSeleccionado.precios.cuadruple > 0 && (
-                      <div className="text-center p-2 bg-[var(--background)] rounded-lg">
-                        <p className="text-xs text-[var(--muted-foreground)]">Cuádruple</p>
-                        <p className="font-bold text-[var(--foreground)]">${formatCurrency(hotelSeleccionado.precios.cuadruple)}</p>
-                        <p className="text-xs text-[var(--muted-foreground)]">por persona</p>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
               )}
             </div>

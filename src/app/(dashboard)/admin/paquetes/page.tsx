@@ -152,6 +152,7 @@ interface Hotel {
   nombre: string;
   link?: string;
   ciudad?: string;
+  incluido?: boolean;
   precios: {
     doble: number;
     triple: number;
@@ -437,6 +438,7 @@ export default function PaquetesAdmin() {
       nombre: '',
       link: '',
       ciudad: formData.destino || '',
+      incluido: true,
       precios: {
         doble: formData.precio_doble || 0,
         triple: formData.precio_triple || 0,
@@ -446,7 +448,7 @@ export default function PaquetesAdmin() {
     setFormData({ ...formData, hoteles: [...(formData.hoteles || []), nuevoHotel] });
   };
 
-  const updateHotel = (index: number, field: keyof Hotel | 'precio_doble' | 'precio_triple' | 'precio_cuadruple', value: string | number) => {
+  const updateHotel = (index: number, field: keyof Hotel | 'precio_doble' | 'precio_triple' | 'precio_cuadruple', value: string | number | boolean) => {
     const hoteles = [...(formData.hoteles || [])];
     if (field.startsWith('precio_')) {
       const tipo = field.replace('precio_', '') as 'doble' | 'triple' | 'cuadruple';
@@ -1221,13 +1223,37 @@ Ejemplo:
                     <div key={hotel.id} className="bg-[var(--muted)] rounded-xl p-4 space-y-4">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-blue-400 uppercase">Hotel {index + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeHotel(index)}
-                          className="text-red-400 hover:text-red-300 text-sm"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => updateHotel(index, 'incluido', !hotel.incluido)}
+                            className={cn(
+                              "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                              hotel.incluido !== false ? "bg-blue-500" : "bg-slate-500"
+                            )}
+                            title={hotel.incluido !== false ? "Incluido en el paquete" : "Opcional / upgrade"}
+                          >
+                            <span
+                              className={cn(
+                                "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                                hotel.incluido !== false ? "translate-x-6" : "translate-x-1"
+                              )}
+                            />
+                          </button>
+                          <span className={cn(
+                            "text-xs font-medium",
+                            hotel.incluido !== false ? "text-blue-400" : "text-slate-400"
+                          )}>
+                            {hotel.incluido !== false ? 'Incluido' : 'Opcional'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeHotel(index)}
+                            className="text-red-400 hover:text-red-300 text-sm"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

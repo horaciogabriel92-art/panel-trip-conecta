@@ -1055,7 +1055,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
         {/* Hotel desde Paquete - Después de Vuelos */}
         {(cotizacion.paquete_data as any)?.hotel_seleccionado && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Hospedaje</Text>
+            <Text style={styles.sectionTitle}>Hotel upgrade</Text>
             <View style={styles.hotelCard}>
               <View style={styles.hotelHeader}>
                 <Text style={styles.hotelName}>{(cotizacion.paquete_data as any).hotel_seleccionado.nombre}</Text>
@@ -1072,6 +1072,28 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                 <Text style={styles.hotelInfo}>Habitación: {(cotizacion.paquete_data as any).hotel_seleccionado.tipo_habitacion}</Text>
               )}
             </View>
+          </View>
+        )}
+
+        {/* Hoteles incluidos en el paquete */}
+        {(cotizacion.paquete_data as any)?.hoteles_incluidos && (cotizacion.paquete_data as any).hoteles_incluidos.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Hoteles incluidos</Text>
+            {(cotizacion.paquete_data as any).hoteles_incluidos.map((hotel: any, idx: number) => (
+              <View key={hotel.id || idx} style={styles.hotelCard}>
+                <View style={styles.hotelHeader}>
+                  <Text style={styles.hotelName}>{hotel.nombre}</Text>
+                  {hotel.link && (
+                    <Link src={hotel.link}>
+                      <View style={styles.hotelButton}>
+                        <Text style={styles.hotelButtonText}>Ver Hotel</Text>
+                      </View>
+                    </Link>
+                  )}
+                </View>
+                <Text style={styles.hotelInfo}>Ciudad: {hotel.ciudad || 'No especificada'}</Text>
+              </View>
+            ))}
           </View>
         )}
 

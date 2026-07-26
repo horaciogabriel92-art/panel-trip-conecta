@@ -856,7 +856,11 @@ export default function AdminCotizacionDetalle() {
                 <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Habitación</p>
                 <p className="text-xl font-black text-[var(--foreground)] capitalize">
                   {cotizacion.tipo_habitacion ||
+                   (cotizacion.paquete_data as any)?.tipo_habitacion ||
                    (cotizacion.paquete_data as any)?.hotel_seleccionado?.tipo_habitacion ||
+                   cotizacion.hospedajes?.[0]?.tipo_habitacion ||
+                   cotizacion.hospedaje?.[0]?.tipo_habitacion ||
+                   cotizacion.pasajeros?.[0]?.tipo_habitacion ||
                    'No especificada'}
                 </p>
               </div>

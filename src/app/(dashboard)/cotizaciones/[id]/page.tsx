@@ -211,6 +211,14 @@ export default function CotizacionDetalle() {
   
   // Calcular número real de pasajeros desde los datos vinculados
   const numPasajerosReal = cotizacion?.pasajeros?.length || cotizacion?.num_pasajeros || 1;
+  const tipoHabitacion =
+    cotizacion?.tipo_habitacion ||
+    (cotizacion?.paquete_data as any)?.tipo_habitacion ||
+    (cotizacion?.paquete_data as any)?.hotel_seleccionado?.tipo_habitacion ||
+    cotizacion?.hospedajes?.[0]?.tipo_habitacion ||
+    cotizacion?.hospedaje?.[0]?.tipo_habitacion ||
+    cotizacion?.pasajeros?.[0]?.tipo_habitacion ||
+    null;
   const [paquete, setPaquete] = useState<Paquete | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isConverting, setIsConverting] = useState(false);
@@ -750,9 +758,7 @@ export default function CotizacionDetalle() {
               <div className="p-4 bg-[var(--muted)] rounded-xl">
                 <p className="text-xs text-[var(--muted-foreground)] uppercase font-black mb-1">Habitación</p>
                 <p className="text-xl font-black text-[var(--foreground)] capitalize">
-                  {cotizacion.tipo_habitacion || 
-                   cotizacion.paquete_data?.hotel_seleccionado?.tipo_habitacion || 
-                   'No especificada'}
+                  {tipoHabitacion || 'No especificada'}
                 </p>
               </div>
               <div className="p-4 bg-[var(--muted)] rounded-xl">
@@ -1274,10 +1280,10 @@ export default function CotizacionDetalle() {
           <div className="glass-card rounded-2xl p-6 sticky top-6">
             <h3 className="text-lg font-bold text-[var(--foreground)] mb-4">Resumen</h3>
             <div className="space-y-3 mb-6">
-              {/* Hotel seleccionado */}
+              {/* Hotel opcional seleccionado */}
               {cotizacion.paquete_data?.hotel_seleccionado && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--muted-foreground)]">Hotel</span>
+                  <span className="text-[var(--muted-foreground)]">Hotel upgrade</span>
                   <div className="text-right">
                     <span className="text-[var(--foreground)] font-medium">
                       {cotizacion.paquete_data.hotel_seleccionado.nombre}
@@ -1295,9 +1301,33 @@ export default function CotizacionDetalle() {
                   </div>
                 </div>
               )}
+
+              {/* Hoteles incluidos */}
+              {(cotizacion.paquete_data as any)?.hoteles_incluidos && ((cotizacion.paquete_data as any).hoteles_incluidos as any[]).length > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-[var(--muted-foreground)]">Hoteles incluidos</span>
+                  <div className="text-right space-y-1">
+                    {((cotizacion.paquete_data as any).hoteles_incluidos as any[]).map((h: any, idx: number) => (
+                      <div key={h.id || idx}>
+                        <span className="text-[var(--foreground)] font-medium">{h.nombre}</span>
+                        {h.link && (
+                          <a
+                            href={h.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block text-xs text-blue-400 hover:text-blue-300"
+                          >
+                            Ver hotel →
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="flex justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Habitación</span>
-                <span className="text-[var(--foreground)] capitalize">{cotizacion.tipo_habitacion || 'Doble'}</span>
+                <span className="text-[var(--foreground)] capitalize">{tipoHabitacion || 'No especificada'}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-[var(--muted-foreground)]">Precio por persona</span>
