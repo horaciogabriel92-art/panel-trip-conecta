@@ -1,41 +1,46 @@
 "use client";
 
 import { useState } from "react";
-import { BedDouble, Bus, Shield, Ticket, MapPin } from "lucide-react";
+import { BedDouble, Bus, Shield, Ticket, MapPin, Ship } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
   AlojamientoCotizacion,
   TransferCotizacion,
   SeguroCotizacion,
   ExtraCotizacion,
+  CruceroCotizacion,
   MonedaCotizacion,
 } from "@/types/cotizacion";
 import AlojamientoForm from "./AlojamientoForm";
 import TransferForm from "./TransferForm";
 import SeguroForm from "./SeguroForm";
 import ExtraForm from "./ExtraForm";
+import CruceroForm from "./CruceroForm";
 
 interface Props {
   alojamientos: AlojamientoCotizacion[];
   transfers: TransferCotizacion[];
   seguros: SeguroCotizacion[];
   extras: ExtraCotizacion[];
+  cruceros: CruceroCotizacion[];
   moneda?: MonedaCotizacion;
   onChange: (payload: {
     alojamientos: AlojamientoCotizacion[];
     transfers: TransferCotizacion[];
     seguros: SeguroCotizacion[];
     extras: ExtraCotizacion[];
+    cruceros: CruceroCotizacion[];
   }) => void;
 }
 
-type TabKey = "alojamiento" | "transfers" | "seguros" | "extras";
+type TabKey = "alojamiento" | "transfers" | "seguros" | "extras" | "cruceros";
 
 export default function ServiciosStep({
   alojamientos,
   transfers,
   seguros,
   extras,
+  cruceros,
   moneda = "USD",
   onChange,
 }: Props) {
@@ -46,6 +51,7 @@ export default function ServiciosStep({
     { key: "transfers", label: "Transfers", icon: Bus, count: transfers.length },
     { key: "seguros", label: "Seguro", icon: Shield, count: seguros.length },
     { key: "extras", label: "Extras", icon: Ticket, count: extras.length },
+    { key: "cruceros", label: "Cruceros", icon: Ship, count: cruceros.length },
   ];
 
   const handleChange = (field: keyof Props, value: any) => {
@@ -54,6 +60,7 @@ export default function ServiciosStep({
       transfers,
       seguros,
       extras,
+      cruceros,
       [field]: value,
     });
   };
@@ -131,6 +138,14 @@ export default function ServiciosStep({
           extras={extras}
           moneda={moneda}
           onChange={(value) => handleChange("extras", value)}
+        />
+      )}
+
+      {activeTab === "cruceros" && (
+        <CruceroForm
+          cruceros={cruceros}
+          moneda={moneda}
+          onChange={(value) => handleChange("cruceros", value)}
         />
       )}
     </div>

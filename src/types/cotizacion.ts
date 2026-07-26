@@ -50,6 +50,7 @@ export interface AlojamientoCotizacion {
   moneda?: MonedaCotizacion;
   es_opcion?: boolean;
   seleccionado?: boolean;
+  incluido?: boolean;
   notas?: string;
 }
 
@@ -89,6 +90,27 @@ export interface ExtraCotizacion {
   orden?: number;
 }
 
+export interface CruceroCotizacion {
+  id?: string;
+  nombre: string;
+  compania?: string;
+  barco?: string;
+  puerto_embarque?: string;
+  puerto_desembarque?: string;
+  fecha_embarque?: string;
+  fecha_desembarque?: string;
+  cabina?: string;
+  tipo_habitacion?: TipoHabitacion;
+  regimen?: string;
+  precio_por_persona?: number;
+  moneda?: MonedaCotizacion;
+  incluido?: boolean;
+  es_opcion?: boolean;
+  seleccionado?: boolean;
+  notas?: string;
+  orden?: number;
+}
+
 export interface PreciosCotizacion {
   moneda: MonedaCotizacion;
   vuelos: number;
@@ -96,6 +118,7 @@ export interface PreciosCotizacion {
   traslados: number;
   seguros: number;
   extras: number;
+  cruceros: number;
   subtotal: number;
   impuestos: number;
   total: number;

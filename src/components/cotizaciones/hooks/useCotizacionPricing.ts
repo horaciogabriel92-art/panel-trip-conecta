@@ -6,6 +6,7 @@ import type {
   TransferCotizacion,
   SeguroCotizacion,
   ExtraCotizacion,
+  CruceroCotizacion,
   MonedaCotizacion,
 } from "@/types/cotizacion";
 
@@ -16,6 +17,7 @@ export interface PricingValues {
   traslados: number;
   seguros: number;
   extras: number;
+  cruceros: number;
   costo_neto: number;
   subtotal: number; // alias de costo_neto (por persona)
   total: number;
@@ -48,6 +50,7 @@ export function calcularTotalesDesdeServicios({
   transfers,
   seguros,
   extras,
+  cruceros,
   numPasajeros,
 }: {
   vuelos: any[];
@@ -55,28 +58,44 @@ export function calcularTotalesDesdeServicios({
   transfers: TransferCotizacion[];
   seguros: SeguroCotizacion[];
   extras: ExtraCotizacion[];
+  cruceros: CruceroCotizacion[];
   numPasajeros: number;
 }) {
   const pasajeros = Math.max(1, numPasajeros);
 
   const vuelosPorPersona = sumBy(vuelos, (v) => v.precio_por_persona ?? v.datos_completos?.precio_por_persona);
-  const hospedajesPorPersona = sumBy(
-    alojamientos.filter((a) => a.seleccionado !== false),
-    (a) => a.precio_por_persona
-  );
+  const hospedajesPorPersona =
+    sumBy(
+      alojamientos.filter((a) => a.incluido !== false),
+      (a) => a.precio_por_persona
+    ) +
+    sumBy(
+      alojamientos.filter((a) => a.incluido === false && a.seleccionado === true),
+      (a) => a.precio_por_persona
+    );
   const trasladosPorPersona = sumBy(transfers, (t) => t.precio_por_persona);
   const segurosPorPersona = sumBy(seguros, (s) => s.precio_por_persona);
   const extrasPorPersona = sumBy(
     extras.filter((e) => e.incluido !== false),
     (e) => e.precio_por_persona
   );
+  const crucerosPorPersona =
+    sumBy(
+      (cruceros || []).filter((c) => c.incluido !== false),
+      (c) => c.precio_por_persona
+    ) +
+    sumBy(
+      (cruceros || []).filter((c) => c.incluido === false && c.seleccionado === true),
+      (c) => c.precio_por_persona
+    );
 
   const costo_neto =
     vuelosPorPersona +
     hospedajesPorPersona +
     trasladosPorPersona +
     segurosPorPersona +
-    extrasPorPersona;
+    extrasPorPersona +
+    crucerosPorPersona;
 
   return {
     vuelos: vuelosPorPersona,
@@ -84,6 +103,7 @@ export function calcularTotalesDesdeServicios({
     traslados: trasladosPorPersona,
     seguros: segurosPorPersona,
     extras: extrasPorPersona,
+    cruceros: crucerosPorPersona,
     costo_neto,
     subtotal: costo_neto,
     total: costo_neto * pasajeros,
@@ -96,6 +116,7 @@ export function useCotizacionPricing({
   transfers,
   seguros,
   extras,
+  cruceros = [],
   numPasajeros,
   moneda,
 }: {
@@ -104,6 +125,7 @@ export function useCotizacionPricing({
   transfers: TransferCotizacion[];
   seguros: SeguroCotizacion[];
   extras: ExtraCotizacion[];
+  cruceros?: CruceroCotizacion[];
   numPasajeros: number;
   moneda: MonedaCotizacion;
 }) {
@@ -114,6 +136,7 @@ export function useCotizacionPricing({
       transfers,
       seguros,
       extras,
+      cruceros,
       numPasajeros,
     });
 
@@ -121,7 +144,7 @@ export function useCotizacionPricing({
       moneda,
       ...calculados,
     };
-  }, [vuelos, alojamientos, transfers, seguros, extras, numPasajeros, moneda]);
+  }, [vuelos, alojamientos, transfers, seguros, extras, cruceros, numPasajeros, moneda]);
 
   return { values };
 }

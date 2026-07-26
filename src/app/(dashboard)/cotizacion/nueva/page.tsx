@@ -20,6 +20,7 @@ import {
   Bus,
   Shield,
   Ticket,
+  Ship,
   ImageIcon
 } from 'lucide-react';
 import { parseAmadeusPNR, isValidAmadeusText, ParsedFlight } from '@/lib/amadeus-parser';
@@ -36,7 +37,7 @@ import ImagenUploader from '@/components/common/ImagenUploader';
 import { useCotizacionPricing, toMoney } from '@/components/cotizaciones/hooks/useCotizacionPricing';
 import { Cliente, clientesAPI } from '@/lib/api-clientes';
 import { getSimboloMoneda, parsePrecioInput } from '@/lib/utils';
-import type { AlojamientoCotizacion, TransferCotizacion, SeguroCotizacion, ExtraCotizacion, MonedaCotizacion } from '@/types/cotizacion';
+import type { AlojamientoCotizacion, TransferCotizacion, SeguroCotizacion, ExtraCotizacion, CruceroCotizacion, MonedaCotizacion } from '@/types/cotizacion';
 
 // ============================================
 // TIPOS
@@ -79,6 +80,7 @@ export default function NuevaCotizacionManual() {
   const [transfers, setTransfers] = useState<TransferCotizacion[]>([]);
   const [seguros, setSeguros] = useState<SeguroCotizacion[]>([]);
   const [extras, setExtras] = useState<ExtraCotizacion[]>([]);
+  const [cruceros, setCruceros] = useState<CruceroCotizacion[]>([]);
 
   // Datos de la cotización
   const [nombreCotizacion, setNombreCotizacion] = useState('');
@@ -177,6 +179,7 @@ export default function NuevaCotizacionManual() {
     transfers,
     seguros,
     extras,
+    cruceros,
     numPasajeros: totalPasajeros,
     moneda,
   });
@@ -234,6 +237,7 @@ export default function NuevaCotizacionManual() {
         traslados: transfers,
         seguros: seguros,
         extras: extras,
+        cruceros: cruceros,
         itinerario: itinerario,
         imagen_url: imagenUrl || null,
         incluye: incluye.filter(i => i.trim() !== ''),
@@ -246,6 +250,7 @@ export default function NuevaCotizacionManual() {
           traslados: values.traslados,
           seguros: values.seguros,
           extras: values.extras,
+          cruceros: values.cruceros,
           subtotal: values.subtotal,
           impuestos: 0,
           total: totalFinalNum,
@@ -603,12 +608,14 @@ RP/DZOUY2100/
           transfers={transfers}
           seguros={seguros}
           extras={extras}
+          cruceros={cruceros}
           moneda={moneda}
-          onChange={({ alojamientos: a, transfers: t, seguros: s, extras: e }) => {
+          onChange={({ alojamientos: a, transfers: t, seguros: s, extras: e, cruceros: c }) => {
             setAlojamientos(a);
             setTransfers(t);
             setSeguros(s);
             setExtras(e);
+            setCruceros(c);
           }}
         />
       </div>
@@ -830,6 +837,21 @@ RP/DZOUY2100/
             </div>
             <span className="text-[var(--muted-foreground)]">{getSimboloMoneda(moneda)}</span>
           </div>
+
+          {/* Cruceros */}
+          <div className="flex flex-wrap items-center gap-4 p-4 bg-[var(--muted)] rounded-xl">
+            <Ship className="w-5 h-5 text-cyan-400" />
+            <div className="flex-1">
+              <label className="block text-xs text-[var(--muted-foreground)]">Cruceros</label>
+              <input
+                type="text"
+                readOnly
+                value={values.cruceros.toFixed(2)}
+                className="w-full bg-transparent border-b border-[var(--border)] py-1 text-[var(--foreground)] outline-none cursor-default"
+              />
+            </div>
+            <span className="text-[var(--muted-foreground)]">{getSimboloMoneda(moneda)}</span>
+          </div>
         </div>
 
         {/* Subtotal (auto-calculado) */}
@@ -877,6 +899,10 @@ RP/DZOUY2100/
             <div className="flex justify-between">
               <span className="text-[var(--muted-foreground)]">Extras:</span>
               <span className="text-[var(--foreground)]">{extras.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[var(--muted-foreground)]">Cruceros:</span>
+              <span className="text-[var(--foreground)]">{cruceros.length}</span>
             </div>
           </div>
         </div>
@@ -933,6 +959,10 @@ RP/DZOUY2100/
                 <span className="text-[var(--muted-foreground)]">Extras:</span>
                 <span className="text-[var(--foreground)]">{extras.length}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--muted-foreground)]">Cruceros:</span>
+                <span className="text-[var(--foreground)]">{cruceros.length}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -949,7 +979,7 @@ RP/DZOUY2100/
             <div>
               <p className="text-sm font-medium text-[var(--foreground)]">Mostrar desglose de precios</p>
               <p className="text-xs text-[var(--muted-foreground)]">
-                Si está activado, el cliente verá vuelos, hospedajes, transfers, seguros y extras por separado.
+                Si está activado, el cliente verá vuelos, hospedajes, transfers, seguros, extras y cruceros por separado.
               </p>
             </div>
           </label>

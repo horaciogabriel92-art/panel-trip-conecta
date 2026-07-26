@@ -747,6 +747,7 @@ interface CotizacionPDFProps {
     traslados?: Array<any>;
     seguros?: Array<any>;
     extras?: Array<any>;
+    cruceros?: Array<any>;
     vuelos?: Array<any>;
     precios: {
       vuelos?: string | number;
@@ -755,6 +756,7 @@ interface CotizacionPDFProps {
       servicios?: string | number;
       traslados?: string | number;
       seguros?: string | number;
+      cruceros?: string | number;
       subtotal?: string | number;
       impuestos?: string | number;
       total?: string | number;
@@ -804,7 +806,7 @@ function formatPrice(value: string | number): string {
 export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDesgloseProp }: CotizacionPDFProps) {
   const COLORS = { ...DEFAULT_COLORS, ...colors };
   const styles = createStyles(COLORS);
-  const { cotizacion, cliente, paquete, pasajeros, hospedaje, traslados, seguros, extras, vuelos, vendedor, brand } = data;
+  const { cotizacion, cliente, paquete, pasajeros, hospedaje, traslados, seguros, extras, cruceros, vuelos, vendedor, brand } = data;
   const mostrarDesglose = mostrarDesgloseProp !== false;
   const hasBrand = !!(brand && (brand.logo_url || brand.nombre_marca || brand.tagline || brand.email || brand.telefono || brand.footer));
   
@@ -844,6 +846,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
     transfers: traslados || [],
     seguros: seguros || [],
     extras: extras || [],
+    cruceros: cruceros || [],
     numPasajeros: numPasajerosPdf,
   });
 
@@ -859,6 +862,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
     traslados: parsePrice(data.precios?.traslados ?? 0) || preciosCalculados.traslados,
     seguros: parsePrice(data.precios?.seguros ?? 0) || preciosCalculados.seguros,
     extras: parsePrice(data.precios?.extras ?? 0) || preciosCalculados.extras,
+    cruceros: parsePrice(data.precios?.cruceros ?? 0) || preciosCalculados.cruceros,
     subtotal: costoNetoPorPersona,
     impuestos: 0,
     total: totalFinal,
@@ -1190,6 +1194,41 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
           </View>
         )}
 
+        {/* Cruceros */}
+        {cruceros && cruceros.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Cruceros</Text>
+            {cruceros.map((c, idx) => (
+              <View key={idx} style={[styles.hotelCard, c.seleccionado && { borderLeft: `3px solid ${COLORS.primary}` }]}>
+                <View style={styles.hotelHeader}>
+                  <Text style={styles.hotelName}>
+                    {c.seleccionado ? '★ ' : ''}
+                    {c.nombre || `Crucero ${idx + 1}`}
+                    {c.es_opcion ? ' (opción)' : ''}
+                  </Text>
+                </View>
+                {c.compania && <Text style={styles.hotelInfo}>Compañía: {c.compania}</Text>}
+                {c.barco && <Text style={styles.hotelInfo}>Barco: {c.barco}</Text>}
+                {(c.puerto_embarque || c.puerto_desembarque) && (
+                  <Text style={styles.hotelInfo}>
+                    {c.puerto_embarque || '-'}{' → '}{c.puerto_desembarque || '-'}
+                  </Text>
+                )}
+                {(c.fecha_embarque || c.fecha_desembarque) && (
+                  <Text style={styles.hotelInfo}>Embarque: {c.fecha_embarque || '-'} · Desembarque: {c.fecha_desembarque || '-'}</Text>
+                )}
+                {(c.cabina || c.tipo_habitacion) && (
+                  <Text style={styles.hotelInfo}>Cabina: {c.cabina || '-'} · Habitación: {c.tipo_habitacion || '-'}</Text>
+                )}
+                {mostrarDesglose && c.precio_por_persona > 0 && (
+                  <Text style={styles.hotelInfo}>Precio por persona: ${formatPrice(c.precio_por_persona)} {preciosPdf.moneda}</Text>
+                )}
+                {c.notas && <Text style={styles.hotelInfo}>Notas: {c.notas}</Text>}
+              </View>
+            ))}
+          </View>
+        )}
+
         {/* Tabla de Todos los Pasajeros */}
         {pasajeros.length > 0 && (
           <View style={styles.section}>
@@ -1311,6 +1350,14 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                   <View style={styles.priceBreakdownRow}>
                     <Text style={styles.priceBreakdownLabel}>Extras</Text>
                     <Text style={styles.priceBreakdownValue}>${formatPrice(preciosPdf.extras || '0')} {preciosPdf.moneda}</Text>
+                  </View>
+                )}
+
+                {/* Cruceros */}
+                {parsePrice(preciosPdf.cruceros || '0') > 0 && (
+                  <View style={styles.priceBreakdownRow}>
+                    <Text style={styles.priceBreakdownLabel}>Cruceros</Text>
+                    <Text style={styles.priceBreakdownValue}>${formatPrice(preciosPdf.cruceros || '0')} {preciosPdf.moneda}</Text>
                   </View>
                 )}
 

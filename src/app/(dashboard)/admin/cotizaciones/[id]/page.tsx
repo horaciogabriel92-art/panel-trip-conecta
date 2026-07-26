@@ -35,7 +35,8 @@ import {
   BedDouble,
   Bus,
   Shield,
-  Sparkles
+  Sparkles,
+  Ship
 } from 'lucide-react';
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
@@ -140,6 +141,7 @@ interface Cotizacion {
     precio_traslados?: number;
     precio_seguros?: number;
     precio_extras?: number;
+    precio_cruceros?: number;
     precio_subtotal?: number;
     precio_impuestos?: number;
   };
@@ -165,6 +167,7 @@ interface Cotizacion {
   traslados?: any[];
   seguros?: any[];
   extras?: any[];
+  cruceros?: any[];
   paquete?: Paquete;
   venta?: Venta;
   comprobantes_pago?: Comprobante[];
@@ -179,6 +182,7 @@ interface Cotizacion {
   precio_traslados?: number;
   precio_seguros?: number;
   precio_extras?: number;
+  precio_cruceros?: number;
   precio_subtotal?: number;
   precio_impuestos?: number;
   precio_moneda?: string;
@@ -698,12 +702,14 @@ export default function AdminCotizacionDetalle() {
     traslados: cotizacion.traslados || [],
     seguros: cotizacion.seguros || [],
     extras: cotizacion.extras || [],
+    cruceros: cotizacion.cruceros || [],
     precios: {
       vuelos: cotizacion.precio_vuelos ?? (cotizacion.paquete_data as any)?.precio_vuelos,
       hospedajes: cotizacion.precio_hospedajes ?? (cotizacion.paquete_data as any)?.precio_hospedajes,
       traslados: cotizacion.precio_traslados ?? (cotizacion.paquete_data as any)?.precio_traslados,
       seguros: cotizacion.precio_seguros ?? (cotizacion.paquete_data as any)?.precio_seguros,
       extras: cotizacion.precio_extras ?? (cotizacion.paquete_data as any)?.precio_extras,
+      cruceros: cotizacion.precio_cruceros ?? (cotizacion.paquete_data as any)?.precio_cruceros,
       subtotal: cotizacion.precio_subtotal ?? (cotizacion.paquete_data as any)?.precio_subtotal,
       impuestos: cotizacion.precio_impuestos ?? (cotizacion.paquete_data as any)?.precio_impuestos,
       total: cotizacion.precio_total,
@@ -1253,6 +1259,62 @@ export default function AdminCotizacionDetalle() {
                         <p className="text-[var(--foreground)] capitalize">{hotel.regimen?.replace('_', ' ') || 'N/A'}</p>
                       </div>
                     </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* CRUCEROS */}
+          {cotizacion.cruceros && cotizacion.cruceros.length > 0 && (
+            <div className="glass-card rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <Ship className="w-5 h-5 text-cyan-400" />
+                Cruceros
+              </h3>
+              <div className="space-y-3">
+                {cotizacion.cruceros.map((crucero: any, idx: number) => (
+                  <div key={crucero.id || idx} className={`p-4 bg-[var(--muted)] rounded-xl border border-[var(--border)] ${crucero.seleccionado ? 'border-emerald-500/30' : ''}`}>
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="text-[var(--foreground)] font-bold">
+                          {crucero.seleccionado ? '★ ' : ''}
+                          {crucero.nombre}
+                          {crucero.es_opcion ? ' (opción)' : ''}
+                        </p>
+                        {crucero.compania && <p className="text-[var(--muted-foreground)] text-sm">{crucero.compania}</p>}
+                      </div>
+                      {crucero.incluido === false && crucero.seleccionado && (
+                        <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-xs font-bold">Seleccionado</span>
+                      )}
+                    </div>
+                    {crucero.barco && <p className="text-sm text-[var(--foreground)]">Barco: {crucero.barco}</p>}
+                    {(crucero.puerto_embarque || crucero.puerto_desembarque) && (
+                      <p className="text-sm text-[var(--muted-foreground)] mt-1">
+                        {crucero.puerto_embarque || '-'}{' → '}{crucero.puerto_desembarque || '-'}
+                      </p>
+                    )}
+                    {(crucero.fecha_embarque || crucero.fecha_desembarque) && (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-3">
+                        <div>
+                          <p className="text-[var(--muted-foreground)] text-xs">Embarque</p>
+                          <p className="text-[var(--foreground)]">{crucero.fecha_embarque || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[var(--muted-foreground)] text-xs">Desembarque</p>
+                          <p className="text-[var(--foreground)]">{crucero.fecha_desembarque || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[var(--muted-foreground)] text-xs">Cabina</p>
+                          <p className="text-[var(--foreground)]">{crucero.cabina || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[var(--muted-foreground)] text-xs">Habitación</p>
+                          <p className="text-[var(--foreground)]">{crucero.tipo_habitacion || 'N/A'}</p>
+                        </div>
+                      </div>
+                    )}
+                    {crucero.notas && <p className="text-sm text-[var(--muted-foreground)] mt-2">Notas: {crucero.notas}</p>}
                   </div>
                 ))}
               </div>

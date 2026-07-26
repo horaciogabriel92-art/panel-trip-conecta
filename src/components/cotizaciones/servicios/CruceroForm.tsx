@@ -2,23 +2,13 @@
 
 import { Plus, Trash2, Check } from "lucide-react";
 import { cn, getSimboloMoneda, parsePrecioInput } from "@/lib/utils";
-import type { AlojamientoCotizacion, MonedaCotizacion, TipoAlojamiento } from "@/types/cotizacion";
+import type { CruceroCotizacion, MonedaCotizacion } from "@/types/cotizacion";
 
 interface Props {
-  alojamientos: AlojamientoCotizacion[];
+  cruceros: CruceroCotizacion[];
   moneda?: MonedaCotizacion;
-  onChange: (alojamientos: AlojamientoCotizacion[]) => void;
+  onChange: (cruceros: CruceroCotizacion[]) => void;
 }
-
-const TIPOS_ALOJAMIENTO: TipoAlojamiento[] = [
-  "Hotel",
-  "Apartamento",
-  "Hostal",
-  "Resort",
-  "Posada",
-  "Cabaña",
-  "Otro",
-];
 
 const TIPOS_HABITACION = [
   { value: "simple", label: "Simple" },
@@ -28,90 +18,70 @@ const TIPOS_HABITACION = [
   { value: "suite", label: "Suite" },
 ];
 
-const REGIMENES = [
-  { value: "solo_alojamiento", label: "Solo alojamiento" },
-  { value: "desayuno", label: "Desayuno" },
-  { value: "media_pension", label: "Media pensión" },
-  { value: "todo_incluido", label: "Todo incluido" },
-];
-
-function calcularNoches(checkin?: string, checkout?: string) {
-  if (!checkin || !checkout) return 0;
-  const start = new Date(checkin);
-  const end = new Date(checkout);
-  const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-  return diff > 0 ? diff : 0;
-}
-
-export default function AlojamientoForm({ alojamientos, moneda = "USD", onChange }: Props) {
+export default function CruceroForm({ cruceros = [], moneda = "USD", onChange }: Props) {
   const add = () => {
     onChange([
-      ...alojamientos,
+      ...cruceros,
       {
-        nombre_alojamiento: "",
-        tipo_alojamiento: "Hotel",
-        ciudad: "",
-        fecha_checkin: "",
-        fecha_checkout: "",
+        nombre: "",
+        compania: "",
+        barco: "",
+        puerto_embarque: "",
+        puerto_desembarque: "",
+        fecha_embarque: "",
+        fecha_desembarque: "",
+        cabina: "",
         tipo_habitacion: "doble",
-        regimen: "desayuno",
         moneda,
-        es_opcion: false,    // por defecto es un hotel incluido en la cotización
-        seleccionado: false, // solo se usa para opciones
-        incluido: true,      // siempre parte del precio
+        precio_por_persona: 0,
+        incluido: true,
+        es_opcion: false,
+        seleccionado: false,
       },
     ]);
   };
 
   const remove = (index: number) => {
-    const updated = alojamientos.filter((_, i) => i !== index);
-    const opcionales = updated.filter((a) => a.incluido === false || a.es_opcion === true);
-    // Asegurar que al menos uno opcional esté seleccionado si quedan opciones
-    if (opcionales.length > 0 && !opcionales.some((a) => a.seleccionado)) {
-      const primerOpcional = updated.findIndex((a) => a.incluido === false || a.es_opcion === true);
+    const updated = cruceros.filter((_, i) => i !== index);
+    const opcionales = updated.filter((c) => c.incluido === false);
+    if (opcionales.length > 0 && !opcionales.some((c) => c.seleccionado)) {
+      const primerOpcional = updated.findIndex((c) => c.incluido === false);
       if (primerOpcional >= 0) updated[primerOpcional].seleccionado = true;
     }
     onChange(updated);
   };
 
-  const update = (index: number, field: keyof AlojamientoCotizacion, value: any) => {
-    const updated = [...alojamientos];
+  const update = (index: number, field: keyof CruceroCotizacion, value: any) => {
+    const updated = [...cruceros];
     updated[index] = { ...updated[index], [field]: value };
-
-    if (field === "fecha_checkin" || field === "fecha_checkout") {
-      updated[index].noches = calcularNoches(updated[index].fecha_checkin, updated[index].fecha_checkout);
-    }
-
     onChange(updated);
   };
 
   const toggleSeleccionado = (index: number) => {
-    const target = alojamientos[index];
-    if (target.incluido !== false && target.es_opcion !== true) return; // solo opcionales
-
-    const updated = alojamientos.map((a, i) => ({
-      ...a,
+    const target = cruceros[index];
+    if (target.incluido !== false && target.es_opcion !== true) return;
+    const updated = cruceros.map((c, i) => ({
+      ...c,
       seleccionado: i === index,
-      es_opcion: a.incluido === false || a.es_opcion === true || i === index,
+      es_opcion: c.incluido === false || c.es_opcion === true || i === index,
     }));
     onChange(updated);
   };
 
   const toggleIncluido = (index: number) => {
-    const updated = alojamientos.map((a, i) => {
-      if (i !== index) return a;
-      const nuevoIncluido = !(a.incluido !== false);
+    const updated = cruceros.map((c, i) => {
+      if (i !== index) return c;
+      const nuevoIncluido = !(c.incluido !== false);
       return {
-        ...a,
+        ...c,
         incluido: nuevoIncluido,
         es_opcion: !nuevoIncluido,
-        seleccionado: !nuevoIncluido ? a.seleccionado : false,
+        seleccionado: !nuevoIncluido ? c.seleccionado : false,
       };
     });
-    // Asegurar que haya al menos un opcional seleccionado si hay opcionales
-    const opcionales = updated.filter((a) => a.incluido === false || a.es_opcion === true);
-    if (opcionales.length > 0 && !opcionales.some((a) => a.seleccionado)) {
-      const primerOpcional = updated.findIndex((a) => a.incluido === false || a.es_opcion === true);
+    const opcionales = updated.filter((c) => c.incluido === false);
+    if (opcionales.length > 0 && !opcionales.some((c) => c.seleccionado)) {
+      const primerOpcional = updated.findIndex((c) => c.incluido === false);
       if (primerOpcional >= 0) updated[primerOpcional].seleccionado = true;
     }
     onChange(updated);
@@ -119,19 +89,21 @@ export default function AlojamientoForm({ alojamientos, moneda = "USD", onChange
 
   return (
     <div className="space-y-4">
-      {alojamientos.map((a, idx) => (
+      {cruceros.map((c, idx) => (
         <div
           key={idx}
           className={cn(
             "rounded-2xl border p-4 space-y-4 transition-all",
-            a.seleccionado
-              ? "bg-emerald-500/5 border-emerald-500/30"
+            c.incluido === false
+              ? c.seleccionado
+                ? "bg-emerald-500/5 border-emerald-500/30"
+                : "bg-[var(--muted)] border-[var(--border)]"
               : "bg-[var(--muted)] border-[var(--border)]"
           )}
         >
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              {a.incluido !== false ? (
+              {c.incluido !== false ? (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold">
                   <Check className="w-3 h-3" /> Incluido
                 </span>
@@ -140,7 +112,7 @@ export default function AlojamientoForm({ alojamientos, moneda = "USD", onChange
                   <span className="text-xs font-bold text-[var(--muted-foreground)] uppercase">
                     Opción {idx + 1}
                   </span>
-                  {a.seleccionado && (
+                  {c.seleccionado && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold">
                       <Check className="w-3 h-3" /> Seleccionado
                     </span>
@@ -154,18 +126,18 @@ export default function AlojamientoForm({ alojamientos, moneda = "USD", onChange
                 onClick={() => toggleIncluido(idx)}
                 className={cn(
                   "relative inline-flex h-5 w-9 items-center rounded-full transition-colors",
-                  a.incluido !== false ? "bg-emerald-500" : "bg-slate-500"
+                  c.incluido !== false ? "bg-emerald-500" : "bg-slate-500"
                 )}
-                title={a.incluido !== false ? "Incluido en la cotización" : "Opcional / upgrade"}
+                title={c.incluido !== false ? "Incluido en la cotización" : "Opcional / upgrade"}
               >
                 <span
                   className={cn(
                     "inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform",
-                    a.incluido !== false ? "translate-x-5" : "translate-x-1"
+                    c.incluido !== false ? "translate-x-5" : "translate-x-1"
                   )}
                 />
               </button>
-              {a.incluido === false && !a.seleccionado && (
+              {c.incluido === false && !c.seleccionado && (
                 <button
                   type="button"
                   onClick={() => toggleSeleccionado(idx)}
@@ -185,75 +157,96 @@ export default function AlojamientoForm({ alojamientos, moneda = "USD", onChange
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-[var(--muted-foreground)]">Tipo</label>
-              <select
-                value={a.tipo_alojamiento || "Hotel"}
-                onChange={(e) => update(idx, "tipo_alojamiento", e.target.value)}
-                className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
-              >
-                {TIPOS_ALOJAMIENTO.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-
             <div className="space-y-1 lg:col-span-2">
-              <label className="text-xs font-medium text-[var(--muted-foreground)]">Nombre del alojamiento</label>
+              <label className="text-xs font-medium text-[var(--muted-foreground)]">Nombre del crucero *</label>
               <input
                 type="text"
-                value={a.nombre_alojamiento || ""}
-                onChange={(e) => update(idx, "nombre_alojamiento", e.target.value)}
-                placeholder="Ej: Hotel Emblemático"
+                value={c.nombre || ""}
+                onChange={(e) => update(idx, "nombre", e.target.value)}
+                placeholder="Ej: Crucero por el Caribe"
                 className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-[var(--muted-foreground)]">Ciudad</label>
+              <label className="text-xs font-medium text-[var(--muted-foreground)]">Compañía</label>
               <input
                 type="text"
-                value={a.ciudad || ""}
-                onChange={(e) => update(idx, "ciudad", e.target.value)}
-                placeholder="Ej: Madrid"
+                value={c.compania || ""}
+                onChange={(e) => update(idx, "compania", e.target.value)}
+                placeholder="Ej: Royal Caribbean"
                 className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-[var(--muted-foreground)]">Check-in</label>
+              <label className="text-xs font-medium text-[var(--muted-foreground)]">Barco</label>
+              <input
+                type="text"
+                value={c.barco || ""}
+                onChange={(e) => update(idx, "barco", e.target.value)}
+                placeholder="Ej: Oasis of the Seas"
+                className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--muted-foreground)]">Puerto embarque</label>
+              <input
+                type="text"
+                value={c.puerto_embarque || ""}
+                onChange={(e) => update(idx, "puerto_embarque", e.target.value)}
+                placeholder="Ej: Miami"
+                className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--muted-foreground)]">Puerto desembarque</label>
+              <input
+                type="text"
+                value={c.puerto_desembarque || ""}
+                onChange={(e) => update(idx, "puerto_desembarque", e.target.value)}
+                placeholder="Ej: Barcelona"
+                className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-[var(--muted-foreground)]">Embarque</label>
               <input
                 type="date"
-                value={a.fecha_checkin || ""}
-                onChange={(e) => update(idx, "fecha_checkin", e.target.value)}
+                value={c.fecha_embarque || ""}
+                onChange={(e) => update(idx, "fecha_embarque", e.target.value)}
                 className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-[var(--muted-foreground)]">Check-out</label>
+              <label className="text-xs font-medium text-[var(--muted-foreground)]">Desembarque</label>
               <input
                 type="date"
-                value={a.fecha_checkout || ""}
-                onChange={(e) => update(idx, "fecha_checkout", e.target.value)}
+                value={c.fecha_desembarque || ""}
+                onChange={(e) => update(idx, "fecha_desembarque", e.target.value)}
                 className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-[var(--muted-foreground)]">Noches</label>
+              <label className="text-xs font-medium text-[var(--muted-foreground)]">Cabina / Tipo</label>
               <input
-                type="number"
-                value={a.noches || ""}
-                readOnly
-                className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--muted-foreground)] outline-none"
+                type="text"
+                value={c.cabina || ""}
+                onChange={(e) => update(idx, "cabina", e.target.value)}
+                placeholder="Ej: Balcón"
+                className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
               />
             </div>
 
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--muted-foreground)]">Habitación</label>
               <select
-                value={a.tipo_habitacion || "doble"}
+                value={c.tipo_habitacion || "doble"}
                 onChange={(e) => update(idx, "tipo_habitacion", e.target.value)}
                 className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
               >
@@ -264,25 +257,12 @@ export default function AlojamientoForm({ alojamientos, moneda = "USD", onChange
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-[var(--muted-foreground)]">Régimen</label>
-              <select
-                value={a.regimen || "desayuno"}
-                onChange={(e) => update(idx, "regimen", e.target.value)}
-                className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
-              >
-                {REGIMENES.map((r) => (
-                  <option key={r.value} value={r.value}>{r.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--muted-foreground)]">Precio por persona</label>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-[var(--muted-foreground)]">{getSimboloMoneda(moneda)}</span>
                 <input
                   type="number"
-                  value={a.precio_por_persona ?? ""}
+                  value={c.precio_por_persona ?? ""}
                   onChange={(e) => update(idx, "precio_por_persona", parsePrecioInput(e.target.value))}
                   placeholder="0.00"
                   className="flex-1 bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
@@ -291,21 +271,10 @@ export default function AlojamientoForm({ alojamientos, moneda = "USD", onChange
             </div>
 
             <div className="space-y-1 lg:col-span-2">
-              <label className="text-xs font-medium text-[var(--muted-foreground)]">Link web (opcional)</label>
-              <input
-                type="url"
-                value={a.link_hotel || ""}
-                onChange={(e) => update(idx, "link_hotel", e.target.value)}
-                placeholder="https://..."
-                className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
-              />
-            </div>
-
-            <div className="space-y-1 lg:col-span-2">
               <label className="text-xs font-medium text-[var(--muted-foreground)]">Notas</label>
               <input
                 type="text"
-                value={a.notas || ""}
+                value={c.notas || ""}
                 onChange={(e) => update(idx, "notas", e.target.value)}
                 placeholder="Detalles adicionales..."
                 className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] outline-none focus:border-emerald-500"
@@ -320,7 +289,7 @@ export default function AlojamientoForm({ alojamientos, moneda = "USD", onChange
         onClick={add}
         className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 font-medium transition-all"
       >
-        <Plus className="w-4 h-4" /> Agregar opción de alojamiento
+        <Plus className="w-4 h-4" /> Agregar crucero
       </button>
     </div>
   );

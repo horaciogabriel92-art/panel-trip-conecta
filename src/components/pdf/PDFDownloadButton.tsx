@@ -65,6 +65,7 @@ interface CotizacionData {
   traslados?: Array<any>;
   seguros?: Array<any>;
   extras?: Array<any>;
+  cruceros?: Array<any>;
   vuelos?: Array<any>;
   vendedor?: {
     nombre?: string;
@@ -80,6 +81,7 @@ interface CotizacionData {
     servicios?: number;
     traslados?: number;
     seguros?: number;
+    cruceros?: number;
     subtotal?: number;
     impuestos?: number;
     total?: number;
@@ -203,6 +205,7 @@ export function PDFDownloadButton({ data, mostrarDesglose = true, className = ''
     traslados: data.traslados || [],
     seguros: data.seguros || [],
     extras: data.extras || [],
+    cruceros: data.cruceros || [],
     vuelos: vuelosWithLogos || [],
     precios: {
       moneda: data.precios?.moneda || 'USD',
@@ -218,6 +221,7 @@ export function PDFDownloadButton({ data, mostrarDesglose = true, className = ''
       servicios: (data.precios?.servicios || 0) > 0 ? (data.precios?.servicios || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }) : undefined,
       traslados: (data.precios?.traslados || 0) > 0 ? (data.precios?.traslados || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }) : undefined,
       seguros: (data.precios?.seguros || 0) > 0 ? (data.precios?.seguros || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }) : undefined,
+      cruceros: (data.precios?.cruceros || 0) > 0 ? (data.precios?.cruceros || 0).toLocaleString('es-UY', { minimumFractionDigits: 2 }) : undefined,
     },
     vendedor: {
       nombre: data.vendedor?.nombre || 'Vendedor',

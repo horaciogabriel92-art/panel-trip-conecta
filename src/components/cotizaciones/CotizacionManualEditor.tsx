@@ -9,7 +9,7 @@ import AirlineLogo from '@/components/flights/AirlineLogo';
 import ServiciosStep from './servicios/ServiciosStep';
 import ImagenUploader from '@/components/common/ImagenUploader';
 import { useCotizacionPricing, toMoney, calcularTotalesDesdeServicios } from '@/components/cotizaciones/hooks/useCotizacionPricing';
-import type { AlojamientoCotizacion, TransferCotizacion, SeguroCotizacion, ExtraCotizacion } from '@/types/cotizacion';
+import type { AlojamientoCotizacion, TransferCotizacion, SeguroCotizacion, ExtraCotizacion, CruceroCotizacion } from '@/types/cotizacion';
 import {
   ArrowLeft, Save, Plus, Trash2, Plane, Hotel, FileText,
   DollarSign, Users, Calendar, MapPin, CheckCircle, Loader2,
@@ -93,6 +93,7 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
   const [transfers, setTransfers] = useState<TransferCotizacion[]>([]);
   const [seguros, setSeguros] = useState<SeguroCotizacion[]>([]);
   const [extras, setExtras] = useState<ExtraCotizacion[]>([]);
+  const [cruceros, setCruceros] = useState<CruceroCotizacion[]>([]);
   const [itinerario, setItinerario] = useState('');
   const [imagenUrl, setImagenUrl] = useState('');
   const [incluye, setIncluye] = useState<string[]>([]);
@@ -132,6 +133,7 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
     traslados?: number;
     seguros?: number;
     extras?: number;
+    cruceros?: number;
   }>({});
 
   useEffect(() => {
@@ -150,12 +152,19 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
           ...h,
           nombre_alojamiento: h.nombre_alojamiento || h.nombre_hotel,
           tipo_alojamiento: h.tipo_alojamiento || 'Hotel',
+          incluido: h.incluido !== undefined ? h.incluido : (h.es_opcion !== true),
           es_opcion: h.es_opcion ?? (data.hospedajes?.length > 1),
           seleccionado: h.seleccionado ?? false,
         })));
         setTransfers(data.traslados || []);
         setSeguros(data.seguros || []);
         setExtras(data.extras || []);
+        setCruceros((data.cruceros || []).map((c: any) => ({
+          ...c,
+          incluido: c.incluido !== undefined ? c.incluido : (c.es_opcion !== true),
+          es_opcion: c.es_opcion ?? false,
+          seleccionado: c.seleccionado ?? false,
+        })));
 
         const itin = typeof data.itinerario === 'string' ? data.itinerario : (data.itinerario?.texto || '');
         setItinerario(itin);
@@ -215,6 +224,7 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
     transfers,
     seguros,
     extras,
+    cruceros,
     numPasajeros,
     moneda,
   });
@@ -225,8 +235,9 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
   const trasladosVal = desgloseEdit.traslados ?? values.traslados;
   const segurosVal = desgloseEdit.seguros ?? values.seguros;
   const extrasVal = desgloseEdit.extras ?? values.extras;
+  const crucerosVal = desgloseEdit.cruceros ?? values.cruceros;
 
-  const subtotalCalculado = vuelosVal + hospedajesVal + trasladosVal + segurosVal + extrasVal;
+  const subtotalCalculado = vuelosVal + hospedajesVal + trasladosVal + segurosVal + extrasVal + crucerosVal;
   const totalCalculado = subtotalCalculado * numPasajeros;
 
   const addVuelo = () => {
@@ -299,6 +310,7 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
         traslados: transfers,
         seguros: seguros,
         extras: extras,
+        cruceros: cruceros,
         itinerario,
         imagen_url: imagenUrl || null,
         incluye: incluye.filter(Boolean),
@@ -311,6 +323,7 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
           traslados: trasladosVal,
           seguros: segurosVal,
           extras: extrasVal,
+          cruceros: crucerosVal,
           subtotal: subtotalCalculado,
           impuestos: 0,
           total: totalCalculado,
@@ -577,12 +590,14 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
           transfers={transfers}
           seguros={seguros}
           extras={extras}
+          cruceros={cruceros}
           moneda={moneda}
-          onChange={({ alojamientos: a, transfers: t, seguros: s, extras: e }) => {
+          onChange={({ alojamientos: a, transfers: t, seguros: s, extras: e, cruceros: c }) => {
             setAlojamientos(a);
             setTransfers(t);
             setSeguros(s);
             setExtras(e);
+            setCruceros(c);
           }}
         />
       </Section>
@@ -666,6 +681,7 @@ export default function CotizacionManualEditor({ cotizacionId, isAdmin = false }
             <PriceInput label="Transfers" value={trasladosVal} onChange={(v) => setDesgloseEdit((p) => ({ ...p, traslados: v }))} />
             <PriceInput label="Seguros" value={segurosVal} onChange={(v) => setDesgloseEdit((p) => ({ ...p, seguros: v }))} />
             <PriceInput label="Extras" value={extrasVal} onChange={(v) => setDesgloseEdit((p) => ({ ...p, extras: v }))} />
+            <PriceInput label="Cruceros" value={crucerosVal} onChange={(v) => setDesgloseEdit((p) => ({ ...p, cruceros: v }))} />
           </div>
           <p className="text-xs text-[var(--muted-foreground)]">
             Valores por persona. Se calculan desde los servicios, pero podés editarlos manualmente.
