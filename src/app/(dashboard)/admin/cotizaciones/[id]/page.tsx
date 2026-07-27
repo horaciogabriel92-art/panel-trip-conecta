@@ -632,7 +632,12 @@ export default function AdminCotizacionDetalle() {
     nombre_cotizacion: cotizacion.nombre_cotizacion,
     itinerario_manual: cotizacion.itinerario_manual,
     imagen_url: cotizacion.imagen_url,
-    brand: tenant?.configuracion?.pdf_brand || undefined,
+    brand: tenant?.configuracion?.pdf_brand
+      ? {
+          ...tenant.configuracion.pdf_brand,
+          website: tenant.configuracion.pdf_brand.website || tenant?.dominio || undefined,
+        }
+      : undefined,
     paquete: {
       titulo: paquete?.titulo || paquete?.nombre || datosPaqueteDesdeNotas?.titulo || cotizacion.nombre_cotizacion || 'Cotización',
       destino: paquete?.destino || datosPaqueteDesdeNotas?.destino || cotizacion.destino_principal || cotizacion.hospedaje?.[0]?.ciudad || cotizacion.hospedajes?.[0]?.ciudad || 'Destino no especificado',

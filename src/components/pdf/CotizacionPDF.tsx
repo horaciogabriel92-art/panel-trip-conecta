@@ -778,6 +778,7 @@ interface CotizacionPDFProps {
       tagline?: string;
       email?: string;
       telefono?: string;
+      website?: string;
       footer?: string;
     };
   };
@@ -808,7 +809,10 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
   const styles = createStyles(COLORS);
   const { cotizacion, cliente, paquete, pasajeros, hospedaje, traslados, seguros, extras, cruceros, vuelos, vendedor, brand } = data;
   const mostrarDesglose = mostrarDesgloseProp !== false;
-  const hasBrand = !!(brand && (brand.logo_url || brand.nombre_marca || brand.tagline || brand.email || brand.telefono || brand.footer));
+  const hasBrand = !!(brand && (brand.logo_url || brand.nombre_marca || brand.tagline || brand.email || brand.telefono || brand.website || brand.footer));
+  const brandWebsiteRaw = (brand?.website?.trim() || 'tripconecta.com').replace(/^https?:\/\//, '');
+  const brandWebsite = brandWebsiteRaw.startsWith('www.') ? brandWebsiteRaw : `www.${brandWebsiteRaw}`;
+  const brandName = brand?.nombre_marca?.trim() || `${vendedor.nombre || ''} ${vendedor.apellido || ''}`.trim() || 'Trip Conecta';
   
   // Calcular duración del viaje
   const calcularDuracion = () => {
@@ -900,10 +904,10 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                 <Text style={styles.companyTagline}>{brand.tagline}</Text>
               ) : null}
               {!hasBrand ? (
-                <Text style={styles.companyName}>{vendedor.nombre} {vendedor.apellido}</Text>
+                <Text style={styles.companyName}>{brandName}</Text>
               ) : null}
               {!hasBrand ? (
-                <Text style={styles.companyTagline}>Viajes y Turismo • tripconecta.com</Text>
+                <Text style={styles.companyTagline}>Viajes y Turismo • {brandWebsite}</Text>
               ) : null}
             </View>
           </View>
@@ -1507,10 +1511,10 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                 <Text style={styles.footerText}>{brand.telefono}</Text>
               ) : null}
               {!hasBrand ? (
-                <Text style={styles.footerText}>Trip Conecta - www.tripconecta.com</Text>
+                <Text style={styles.footerText}>{brandName} - {brandWebsite}</Text>
               ) : null}
               {!hasBrand ? (
-                <Text style={styles.footerText}>soporte@tripconecta.com</Text>
+                <Text style={styles.footerText}>{brand?.email || `soporte@${brandWebsiteRaw.replace(/^www\./, '')}`}</Text>
               ) : null}
             </View>
           </View>

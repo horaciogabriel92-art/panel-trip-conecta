@@ -605,7 +605,12 @@ export default function CotizacionDetalle() {
               nombre_cotizacion: cotizacion.nombre_cotizacion,
               itinerario_manual: cotizacion.itinerario_manual,
               imagen_url: cotizacion.imagen_url,
-              brand: tenant?.configuracion?.pdf_brand || undefined,
+              brand: tenant?.configuracion?.pdf_brand
+                ? {
+                    ...tenant.configuracion.pdf_brand,
+                    website: tenant.configuracion.pdf_brand.website || tenant?.dominio || undefined,
+                  }
+                : undefined,
               // Paquete: combina datos directos + parseados de notas
               paquete: {
                 titulo: paquete?.titulo || paquete?.nombre || datosPaqueteDesdeNotas?.titulo || cotizacion.nombre_cotizacion || 'Cotización',

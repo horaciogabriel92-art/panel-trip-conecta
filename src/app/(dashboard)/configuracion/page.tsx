@@ -88,6 +88,7 @@ export default function ConfiguracionPage() {
     tagline: "",
     email: "",
     telefono: "",
+    website: "",
     footer: "",
   });
   const [isSavingBrand, setIsSavingBrand] = useState(false);
@@ -175,6 +176,7 @@ export default function ConfiguracionPage() {
         tagline: pb.tagline || "",
         email: pb.email || "",
         telefono: pb.telefono || "",
+        website: pb.website || "",
         footer: pb.footer || "",
       });
     }
@@ -257,6 +259,7 @@ export default function ConfiguracionPage() {
           tagline: pdfBrand.tagline.trim(),
           email: pdfBrand.email.trim(),
           telefono: pdfBrand.telefono.trim(),
+          website: pdfBrand.website.trim(),
           footer: pdfBrand.footer.trim(),
         },
       });
@@ -727,12 +730,25 @@ export default function ConfiguracionPage() {
                 </div>
               </div>
               <div>
+                <label className="block text-sm text-[var(--muted-foreground)] mb-1">Sitio web</label>
+                <input
+                  type="url"
+                  value={pdfBrand.website}
+                  onChange={(e) => setPdfBrand((prev) => ({ ...prev, website: e.target.value }))}
+                  placeholder="Ej: www.miagencia.com"
+                  className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
+                />
+                <p className="text-xs text-[var(--muted-foreground)] mt-1">
+                  Si no completás este campo, se usará el dominio del tenant ({tenant?.dominio || "no configurado"}).
+                </p>
+              </div>
+              <div>
                 <label className="block text-sm text-[var(--muted-foreground)] mb-1">Texto de pie de página</label>
                 <input
                   type="text"
                   value={pdfBrand.footer}
                   onChange={(e) => setPdfBrand((prev) => ({ ...prev, footer: e.target.value }))}
-                  placeholder="Ej: Mi Agencia - www.miagencia.com"
+                  placeholder="Ej: Mi Agencia - Viajes y Turismo"
                   className="w-full bg-[var(--card)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:border-blue-500 focus:outline-none"
                 />
               </div>
@@ -815,10 +831,10 @@ export default function ConfiguracionPage() {
                   </div>
                   <div>
                     <div className="text-base font-bold" style={{ color: pdfColors.dark }}>
-                      Trip Conecta
+                      {pdfBrand.nombre_marca || tenant?.nombre || "Trip Conecta"}
                     </div>
                     <div className="text-[10px]" style={{ color: pdfColors.textLight }}>
-                      Agencia de viajes
+                      {pdfBrand.tagline || "Agencia de viajes"}
                     </div>
                   </div>
                 </div>
@@ -890,7 +906,7 @@ export default function ConfiguracionPage() {
                 style={{ borderTop: `1px solid ${pdfColors.primaryLight}` }}
               >
                 <div className="text-[10px]" style={{ color: pdfColors.textLight }}>
-                  tripconecta.com
+                  {pdfBrand.website || tenant?.dominio || "tripconecta.com"}
                 </div>
                 <div
                   className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[8px] font-bold"

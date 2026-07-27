@@ -34,6 +34,7 @@ interface CotizacionData {
     tagline?: string;
     email?: string;
     telefono?: string;
+    website?: string;
     footer?: string;
   };
   // Datos ya estructurados - el componente padre debe proporcionarlos
