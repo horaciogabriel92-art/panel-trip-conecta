@@ -22,6 +22,7 @@ interface User {
   tenant_id?: string;
   comision_porcentaje?: number;
   telefono?: string;
+  fecha_registro?: string;
   preferencias?: {
     pdf_colors?: Record<string, string>;
   };
@@ -88,6 +89,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(newUser);
     localStorage.setItem('token', newToken);
     localStorage.setItem('user', JSON.stringify(newUser));
+    // Limpiar flag del modal de demo para usuarios recién registrados
+    if (newUser.fecha_registro) {
+      const registro = new Date(newUser.fecha_registro);
+      const ahora = new Date();
+      const horasDesdeRegistro = (ahora.getTime() - registro.getTime()) / (1000 * 60 * 60);
+      if (horasDesdeRegistro < 48) {
+        localStorage.removeItem(`demo_modal_dismissed_${newUser.id}`);
+      }
+    }
     axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
 
     if (newUser.rol === 'admin') {
