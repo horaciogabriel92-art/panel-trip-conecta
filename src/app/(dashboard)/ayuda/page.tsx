@@ -141,8 +141,14 @@ export default function AyudaPage() {
       setPendingAttachments([]);
       fetchTickets();
     } catch (err: any) {
-      alert(err.response?.data?.error || "Error al crear ticket");
+    const details = err.response?.data?.details;
+    const errorMsg = err.response?.data?.error || "Error al crear ticket";
+    let msg = errorMsg;
+    if (Array.isArray(details) && details.length > 0) {
+      msg += "\n\n" + details.map((d: any) => `- ${d.path?.join(".") || "campo"}: ${d.message}`).join("\n");
     }
+    alert(msg);
+  }
   };
 
   const sendReply = async (e: React.FormEvent) => {
