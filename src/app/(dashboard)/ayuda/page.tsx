@@ -1,19 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import {
   Ticket,
   Plus,
-  Search,
   Loader2,
   MessageSquare,
   Send,
   X,
   CheckCircle2,
-  Clock,
-  AlertCircle,
+  Paperclip,
+  ImageIcon,
+  Trash2,
 } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
@@ -38,6 +38,13 @@ interface Reply {
   superadmins?: { nombre: string };
 }
 
+interface Attachment {
+  id: string;
+  file_name: string;
+  file_url: string;
+  content_type?: string;
+}
+
 const estados = {
   abierto: { label: "Abierto", color: "bg-blue-500/10 text-blue-500" },
   en_proceso: { label: "En proceso", color: "bg-amber-500/10 text-amber-500" },
@@ -51,6 +58,7 @@ export default function AyudaPage() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<TicketItem | null>(null);
   const [replies, setReplies] = useState<Reply[]>([]);
+  const [adjuntos, setAdjuntos] = useState<Attachment[]>([]);
   const [reply, setReply] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
@@ -59,9 +67,17 @@ export default function AyudaPage() {
     mensaje: "",
     prioridad: "media",
   });
+  const [pendingAttachments, setPendingAttachments] = useState<Attachment[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const api = axios.create({
     baseURL: `${API_URL}/support`,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  const uploadApi = axios.create({
+    baseURL: `${API_URL}/upload`,
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 
@@ -85,17 +101,44 @@ export default function AyudaPage() {
     try {
       const res = await api.get(`/tickets/${ticket.id}`);
       setReplies(res.data.replies || []);
+      setAdjuntos(res.data.adjuntos || []);
     } catch (err) {
       console.error("Error cargando ticket:", err);
     }
   };
 
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith("image/")) continue;
+        const formData = new FormData();
+        formData.append("adjunto", file);
+        const res = await uploadApi.post("/support-attachment", formData);
+        setPendingAttachments((prev) => [...prev, { id: res.data.path, file_name: res.data.file_name, file_url: res.data.url }]);
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.error || "Error al subir adjunto");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removePendingAttachment = (id: string) => {
+    setPendingAttachments((prev) => prev.filter((a) => a.id !== id));
+  };
+
   const createTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post("/tickets", form);
+      await api.post("/tickets", {
+        ...form,
+        adjuntos: pendingAttachments.map((a) => ({ url: a.file_url, path: a.id, file_name: a.file_name })),
+      });
       setShowForm(false);
       setForm({ asunto: "", categoria: "soporte_tecnico", mensaje: "", prioridad: "media" });
+      setPendingAttachments([]);
       fetchTickets();
     } catch (err: any) {
       alert(err.response?.data?.error || "Error al crear ticket");
@@ -200,6 +243,28 @@ export default function AyudaPage() {
                 </p>
               </div>
 
+              {adjuntos.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-[var(--foreground)] flex items-center gap-2">
+                    <Paperclip className="w-4 h-4" /> Adjuntos
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {adjuntos.map((a) => (
+                      <a
+                        key={a.id}
+                        href={a.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-xl border border-[var(--border)] overflow-hidden hover:border-[var(--primary)] transition-colors"
+                      >
+                        <img src={a.file_url} alt={a.file_name} className="w-full h-32 object-cover" />
+                        <p className="text-xs text-[var(--muted-foreground)] truncate p-2">{a.file_name}</p>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-4">
                 {replies.map((r) => (
                   <div
@@ -243,7 +308,7 @@ export default function AyudaPage() {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[var(--card)] rounded-2xl p-6 w-full max-w-lg">
+          <div className="bg-[var(--card)] rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-auto">
             <h2 className="text-xl font-bold text-[var(--foreground)] mb-4">Nuevo ticket de soporte</h2>
             <form onSubmit={createTicket} className="space-y-4">
               <div>
@@ -295,10 +360,53 @@ export default function AyudaPage() {
                   className="w-full mt-1 bg-[var(--background)] border border-[var(--border)] rounded-xl px-4 py-2 text-[var(--foreground)]"
                 />
               </div>
+
+              <div>
+                <label className="text-sm font-medium text-[var(--foreground)] flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4" /> Capturas de pantalla
+                </label>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => handleFiles(e.target.files)}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                  className="mt-1 w-full py-3 rounded-xl border border-dashed border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--accent)]/5 transition-colors disabled:opacity-50"
+                >
+                  {uploading ? "Subiendo..." : "Hacé clic para adjuntar imágenes"}
+                </button>
+
+                {pendingAttachments.length > 0 && (
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {pendingAttachments.map((a) => (
+                      <div key={a.id} className="relative rounded-xl border border-[var(--border)] overflow-hidden group">
+                        <img src={a.file_url} alt={a.file_name} className="w-full h-20 object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removePendingAttachment(a.id)}
+                          className="absolute top-1 right-1 p-1 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={() => {
+                    setShowForm(false);
+                    setPendingAttachments([]);
+                  }}
                   className="px-4 py-2 rounded-xl border border-[var(--border)] text-[var(--foreground)]"
                 >
                   Cancelar

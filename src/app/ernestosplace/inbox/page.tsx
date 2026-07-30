@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Send,
   X,
+  Paperclip,
 } from "lucide-react";
 
 interface Ticket {
@@ -43,6 +44,13 @@ interface Reply {
   users?: { nombre: string; apellido: string };
 }
 
+interface Attachment {
+  id: string;
+  file_name: string;
+  file_url: string;
+  content_type?: string;
+}
+
 const estados = {
   abierto: { label: "Abierto", color: "bg-blue-500/10 text-blue-500" },
   en_proceso: { label: "En proceso", color: "bg-amber-500/10 text-amber-500" },
@@ -64,6 +72,7 @@ export default function ErnestoInboxPage() {
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<Ticket | null>(null);
   const [replies, setReplies] = useState<Reply[]>([]);
+  const [adjuntos, setAdjuntos] = useState<Attachment[]>([]);
   const [reply, setReply] = useState("");
   const [filters, setFilters] = useState({ estado: "", search: "" });
   const [pagination, setPagination] = useState({ page: 1, limit: 25, total: 0, totalPages: 1 });
@@ -96,6 +105,7 @@ export default function ErnestoInboxPage() {
     try {
       const res = await api.get(`/support-tickets/${ticket.id}`);
       setReplies(res.data.replies || []);
+      setAdjuntos(res.data.adjuntos || []);
     } catch (err) {
       console.error("Error cargando ticket:", err);
     }
@@ -246,6 +256,28 @@ export default function ErnestoInboxPage() {
                   Recibido el {new Date(selected.created_at).toLocaleString("es-AR")}
                 </p>
               </div>
+
+              {adjuntos.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-[var(--foreground)] flex items-center gap-2">
+                    <Paperclip className="w-4 h-4" /> Adjuntos
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {adjuntos.map((a) => (
+                      <a
+                        key={a.id}
+                        href={a.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-xl border border-[var(--border)] overflow-hidden hover:border-[var(--primary)] transition-colors"
+                      >
+                        <img src={a.file_url} alt={a.file_name} className="w-full h-32 object-cover" />
+                        <p className="text-xs text-[var(--muted-foreground)] truncate p-2">{a.file_name}</p>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-4">
                 {replies.map((r) => (
