@@ -17,6 +17,7 @@ import {
   Settings,
   LogOut,
   Plane,
+  Headphones,
   X,
   BarChart3,
   CreditCard,
@@ -185,6 +186,21 @@ export default function Sidebar({
           >
             <Settings className={cn("w-5 h-5 shrink-0", pathname === '/configuracion' || pathname?.startsWith('/configuracion/') ? "text-white" : "")} />
             {!collapsed && <span className="font-medium truncate">Configuración</span>}
+          </Link>
+          <Link 
+            href="/ayuda"
+            onClick={handleLinkClick}
+            title={collapsed ? "Ayuda" : undefined}
+            className={cn(
+              "flex items-center rounded-xl transition-all",
+              collapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3",
+              pathname === '/ayuda' || pathname?.startsWith('/ayuda/')
+                ? "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/20"
+                : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+            )}
+          >
+            <Headphones className={cn("w-5 h-5 shrink-0", pathname === '/ayuda' || pathname?.startsWith('/ayuda/') ? "text-white" : "")} />
+            {!collapsed && <span className="font-medium truncate">Ayuda</span>}
           </Link>
           {isAdmin && (
             <Link 

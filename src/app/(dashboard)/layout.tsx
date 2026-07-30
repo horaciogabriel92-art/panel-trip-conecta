@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import TrialBanner from '@/components/billing/TrialBanner';
+import AnnouncementsBanner from '@/components/AnnouncementsBanner';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -54,6 +55,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Header userName={`${user.nombre} ${user.apellido}`} userRole={user.rol} onMenuClick={() => setMobileOpen(true)} />
         </div>
         <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden">
+          <div className="mb-6">
+            <AnnouncementsBanner />
+          </div>
           {children}
         </main>
       </div>
