@@ -366,42 +366,44 @@ function createStyles(COLORS: typeof DEFAULT_COLORS) {
   },
   includesGrid: {
     flexDirection: 'row',
-    gap: 15,
+    gap: 20,
   },
   includesBox: {
     flex: 1,
-    padding: 12,
-    borderRadius: 6,
+    padding: 16,
+    borderRadius: 8,
   },
   includesBoxIncluye: {
-    backgroundColor: '#d4edda',
-    border: '1px solid #c3e6cb',
+    backgroundColor: '#e8f5e9',
+    border: '1px solid #a5d6a7',
   },
   includesBoxNoIncluye: {
-    backgroundColor: '#f8d7da',
-    border: '1px solid #f5c6cb',
+    backgroundColor: '#ffebee',
+    border: '1px solid #ef9a9a',
   },
   includesTitle: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   includesTitleGreen: {
-    color: '#155724',
+    color: '#1b5e20',
   },
   includesTitleRed: {
-    color: '#721c24',
+    color: '#b71c1c',
   },
   includesItem: {
     fontSize: 9,
-    marginBottom: 3,
-    paddingLeft: 12,
+    marginBottom: 6,
+    paddingLeft: 14,
+    lineHeight: 1.5,
+    color: '#1f2937',
   },
-  checkGreen: {
-    color: '#28a745',
+  includesItemGreen: {
+    color: '#2e7d32',
   },
-  checkRed: {
-    color: '#dc3545',
+  includesItemRed: {
+    color: '#c62828',
   },
 
   // Políticas
@@ -471,52 +473,84 @@ function createStyles(COLORS: typeof DEFAULT_COLORS) {
     marginBottom: 3,
   },
   
-  // Vuelos - Mejorado con fechas claras
+  // Vuelos - Tarjeta limpia tipo itinerary
   flightCard: {
-    backgroundColor: COLORS.background,
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 8,
-    borderLeft: `3px solid ${COLORS.primary}`,
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    padding: 14,
+    marginBottom: 12,
+    border: `1px solid ${COLORS.primaryLight}`,
   },
-  flightHeader: {
+  flightTopRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottom: `1px solid ${COLORS.background}`,
   },
-  flightRoute: {
-    fontSize: 11,
+  flightAirlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  airlineLogo: {
+    width: 20,
+    height: 20,
+    objectFit: 'contain',
+  },
+  flightAirlineName: {
+    fontSize: 10,
     fontWeight: 'bold',
     color: COLORS.dark,
   },
-  flightNumber: {
-    backgroundColor: COLORS.primary,
-    color: 'white',
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+  flightNumberBadge: {
     fontSize: 9,
-    fontWeight: 'bold',
+    color: COLORS.textLight,
   },
-  flightTimeline: {
+  flightMain: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    justifyContent: 'space-between',
   },
   flightOrigin: {
     alignItems: 'flex-start',
-    width: '35%',
+    width: '30%',
   },
   flightDestination: {
     alignItems: 'flex-end',
-    width: '35%',
+    width: '30%',
+  },
+  flightTime: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.dark,
+  },
+  flightDate: {
+    fontSize: 9,
+    color: COLORS.textLight,
+    marginTop: 2,
+  },
+  flightLocation: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: COLORS.primaryDark,
+    marginTop: 6,
+  },
+  flightAirportName: {
+    fontSize: 8,
+    color: COLORS.textLight,
+    marginTop: 2,
+    textAlign: 'left',
+  },
+  flightAirportNameRight: {
+    textAlign: 'right',
   },
   flightConnector: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
   },
   flightConnectorLine: {
     width: '100%',
@@ -529,55 +563,25 @@ function createStyles(COLORS: typeof DEFAULT_COLORS) {
     color: COLORS.primary,
     fontWeight: 'bold',
   },
-  flightTimeLarge: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-  },
-  flightDateLarge: {
-    fontSize: 9,
-    color: COLORS.textLight,
-    marginTop: 2,
-  },
-  flightAirport: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: COLORS.primaryDark,
-    marginTop: 4,
-  },
-  flightCity: {
-    fontSize: 9,
-    color: COLORS.textLight,
-  },
   flightDuration: {
     fontSize: 8,
     color: COLORS.textLight,
     marginTop: 2,
   },
-  flightMeta: {
+  flightBottom: {
     flexDirection: 'row',
-    gap: 20,
-    marginTop: 10,
+    justifyContent: 'space-between',
+    marginTop: 12,
     paddingTop: 8,
     borderTop: `1px dashed ${COLORS.primaryLight}`,
   },
-  flightMetaItem: {
+  flightBottomItem: {
     fontSize: 9,
     color: COLORS.textLight,
   },
-  flightMetaLabel: {
+  flightBottomLabel: {
     fontWeight: 'bold',
     color: COLORS.dark,
-  },
-  flightAirlineRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  airlineLogo: {
-    width: 14,
-    height: 14,
-    objectFit: 'contain',
   },
   
   // Price breakdown
@@ -801,6 +805,21 @@ function formatPrice(value: string | number): string {
   return `${integerPart},${parts[1]}`;
 }
 
+function formatHora(hora?: string): string {
+  if (!hora) return '-';
+  // Si viene como "09:45:00" devuelve "09:45"; si ya es corta la deja.
+  return hora.trim().slice(0, 5);
+}
+
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+function formatFechaVuelo(fecha?: string): string {
+  if (!fecha) return '-';
+  const d = new Date(fecha);
+  if (isNaN(d.getTime())) return fecha;
+  return `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 // ============================================
 // COMPONENTE PDF
 // ============================================
@@ -997,63 +1016,56 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
           </View>
         </View>
 
-        {/* Vuelos - Con fechas y horas claras */}
+        {/* Vuelos - Tarjetas limpias con origen/destino claros */}
         {vuelos && vuelos.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Vuelos</Text>
             {vuelos.map((vuelo, idx) => (
               <View key={idx} style={styles.flightCard}>
-                <View style={styles.flightHeader}>
-                  <Text style={styles.flightRoute}>
-                    {vuelo.origen_nombre || vuelo.origen_ciudad} → {vuelo.destino_nombre || vuelo.destino_ciudad}
-                  </Text>
-                  <Text style={styles.flightNumber}>
-                    {vuelo.aerolinea_nombre || vuelo.aerolinea_codigo} {vuelo.numero_vuelo}
-                  </Text>
-                </View>
-                
-                {/* Timeline visual con horas y fechas */}
-                <View style={styles.flightTimeline}>
-                  <View style={styles.flightOrigin}>
-                    <Text style={styles.flightTimeLarge}>{vuelo.hora_salida}</Text>
-                    <Text style={styles.flightDateLarge}>{vuelo.fecha_salida}</Text>
-                    <Text style={styles.flightAirport}>{vuelo.origen_nombre || vuelo.origen_ciudad}</Text>
-                    <Text style={styles.flightCity}>{vuelo.origen_nombre || vuelo.origen_ciudad}</Text>
+                <View style={styles.flightTopRow}>
+                  <View style={styles.flightAirlineRow}>
+                    {vuelo.aerolinea_logo_base64 ? (
+                      <Image src={vuelo.aerolinea_logo_base64} style={styles.airlineLogo} />
+                    ) : null}
+                    <Text style={styles.flightAirlineName}>{vuelo.aerolinea_nombre || vuelo.aerolinea_codigo || 'Aerolínea'}</Text>
                   </View>
-                  
+                  <Text style={styles.flightNumberBadge}>Vuelo {vuelo.numero_vuelo || '-'}</Text>
+                </View>
+
+                <View style={styles.flightMain}>
+                  <View style={styles.flightOrigin}>
+                    <Text style={styles.flightTime}>{formatHora(vuelo.hora_salida)}</Text>
+                    <Text style={styles.flightDate}>{formatFechaVuelo(vuelo.fecha_salida)}</Text>
+                    <Text style={styles.flightLocation}>{vuelo.origen_ciudad || vuelo.origen_nombre?.split(' ')[0] || 'Origen'}</Text>
+                    <Text style={styles.flightAirportName}>{vuelo.origen_nombre || vuelo.origen_ciudad}</Text>
+                  </View>
+
                   <View style={styles.flightConnector}>
                     <View style={styles.flightConnectorLine} />
                     <Text style={styles.flightConnectorArrow}>✈</Text>
-                    {vuelo.duracion && (
+                    {vuelo.duracion ? (
                       <Text style={styles.flightDuration}>{vuelo.duracion}</Text>
-                    )}
+                    ) : null}
                   </View>
-                  
+
                   <View style={styles.flightDestination}>
-                    <Text style={styles.flightTimeLarge}>{vuelo.hora_llegada}</Text>
-                    <Text style={styles.flightDateLarge}>{vuelo.fecha_llegada}</Text>
-                    <Text style={styles.flightAirport}>{vuelo.destino_nombre || vuelo.destino_ciudad}</Text>
-                    <Text style={styles.flightCity}>{vuelo.destino_nombre || vuelo.destino_ciudad}</Text>
+                    <Text style={styles.flightTime}>{formatHora(vuelo.hora_llegada)}</Text>
+                    <Text style={styles.flightDate}>{formatFechaVuelo(vuelo.fecha_llegada)}</Text>
+                    <Text style={styles.flightLocation}>{vuelo.destino_ciudad || vuelo.destino_nombre?.split(' ')[0] || 'Destino'}</Text>
+                    <Text style={[styles.flightAirportName, styles.flightAirportNameRight]}>{vuelo.destino_nombre || vuelo.destino_ciudad}</Text>
                   </View>
                 </View>
-                
-                <View style={styles.flightMeta}>
-                  <View style={styles.flightAirlineRow}>
-                    {vuelo.aerolinea_logo_base64 && (
-                      <Image src={vuelo.aerolinea_logo_base64} style={styles.airlineLogo} />
-                    )}
-                    <Text style={styles.flightMetaItem}>
-                      <Text style={styles.flightMetaLabel}>Aerolínea:</Text> {vuelo.aerolinea_nombre}
-                    </Text>
-                  </View>
-                  <Text style={styles.flightMetaItem}>
-                    <Text style={styles.flightMetaLabel}>Clase:</Text> {vuelo.clase_codigo}
+
+                <View style={styles.flightBottom}>
+                  <Text style={styles.flightBottomItem}>
+                    <Text style={styles.flightBottomLabel}>Clase:</Text> {vuelo.clase_codigo || 'Económica'}
                   </Text>
-                  {vuelo.numero_vuelo && (
-                    <Text style={styles.flightMetaItem}>
-                      <Text style={styles.flightMetaLabel}>Vuelo:</Text> {vuelo.numero_vuelo}
-                    </Text>
-                  )}
+                  <Text style={styles.flightBottomItem}>
+                    <Text style={styles.flightBottomLabel}>Aerolínea:</Text> {vuelo.aerolinea_nombre || vuelo.aerolinea_codigo || '-'}
+                  </Text>
+                  <Text style={styles.flightBottomItem}>
+                    <Text style={styles.flightBottomLabel}>N° vuelo:</Text> {vuelo.numero_vuelo || '-'}
+                  </Text>
                 </View>
               </View>
             ))}
@@ -1063,7 +1075,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
         {/* Hotel desde Paquete - Después de Vuelos */}
         {(cotizacion.paquete_data as any)?.hotel_seleccionado && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Hotel upgrade</Text>
+            <Text style={styles.sectionTitle}>Hotel seleccionado</Text>
             <View style={styles.hotelCard}>
               <View style={styles.hotelHeader}>
                 <Text style={styles.hotelName}>{(cotizacion.paquete_data as any).hotel_seleccionado.nombre}</Text>
@@ -1416,7 +1428,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                   <View style={[styles.includesBox, styles.includesBoxIncluye]}>
                     <Text style={[styles.includesTitle, styles.includesTitleGreen]}>Incluye</Text>
                     {incluye.map((item: string, idx: number) => (
-                      <Text key={idx} style={[styles.includesItem, styles.checkGreen]}>+ {item}</Text>
+                      <Text key={idx} style={[styles.includesItem, styles.includesItemGreen]}>• {item}</Text>
                     ))}
                   </View>
                 )}
@@ -1425,7 +1437,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                   <View style={[styles.includesBox, styles.includesBoxNoIncluye]}>
                     <Text style={[styles.includesTitle, styles.includesTitleRed]}>No incluye</Text>
                     {noIncluye.map((item: string, idx: number) => (
-                      <Text key={idx} style={[styles.includesItem, styles.checkRed]}>- {item}</Text>
+                      <Text key={idx} style={[styles.includesItem, styles.includesItemRed]}>• {item}</Text>
                     ))}
                   </View>
                 )}
