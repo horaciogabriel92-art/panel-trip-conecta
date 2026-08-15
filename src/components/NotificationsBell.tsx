@@ -11,16 +11,10 @@ interface Notificacion {
   tipo: 'nueva_venta' | 'nueva_cotizacion' | 'pago_recibido' | 'comprobante_subido' | 'sistema';
   titulo: string;
   mensaje: string;
-  data?: {
-    venta_id?: string;
-    cotizacion_id?: string;
-    vendedor_nombre?: string;
-    cliente_nombre?: string;
-    monto?: number;
-    paquete_nombre?: string;
-  };
+  referencia_id?: string;
+  referencia_tipo?: string;
   leida: boolean;
-  fecha_creacion: string;
+  created_at: string;
 }
 
 const tipoConfig = {
@@ -128,10 +122,11 @@ export default function NotificationsBell() {
     }
     
     // Navegar según el tipo y el rol del usuario
-    if (notif.data?.venta_id) {
-      router.push(esAdmin ? `/admin/ventas/${notif.data.venta_id}` : '/mis-ventas');
-    } else if (notif.data?.cotizacion_id) {
-      router.push(esAdmin ? `/admin/cotizaciones/${notif.data.cotizacion_id}` : `/cotizaciones/${notif.data.cotizacion_id}`);
+    const refId = notif.referencia_id;
+    if (notif.referencia_tipo === 'venta' && refId) {
+      router.push(esAdmin ? `/admin/ventas/${refId}` : '/mis-ventas');
+    } else if (notif.referencia_tipo === 'cotizacion' && refId) {
+      router.push(esAdmin ? `/admin/cotizaciones/${refId}` : `/cotizaciones/${refId}`);
     }
     
     setIsOpen(false);
@@ -216,17 +211,12 @@ export default function NotificationsBell() {
                             {notif.titulo}
                           </p>
                           <span className="text-xs text-[var(--muted-foreground)] flex-shrink-0">
-                            {getTimeAgo(notif.fecha_creacion)}
+                            {getTimeAgo(notif.created_at)}
                           </span>
                         </div>
                         <p className="text-sm text-[var(--muted-foreground)] line-clamp-2 mt-1">
                           {notif.mensaje}
                         </p>
-                        {notif.data?.monto && (
-                          <p className="text-sm font-bold text-green-400 mt-1">
-                            ${notif.data.monto.toLocaleString()}
-                          </p>
-                        )}
                       </div>
                       {!notif.leida && (
                         <button
