@@ -469,7 +469,7 @@
   },
   "admin": {
     "title": "Panel de Administración",
-    "subtitle": "Resumen general del sistema Trip Conecta",
+    "subtitle": "Resumen general del sistema Quotix Travel",
     "stats": {
       "totalSales": "Ventas Totales",
       "sellers": "Vendedores",

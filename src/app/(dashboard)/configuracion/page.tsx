@@ -827,11 +827,11 @@ export default function ConfiguracionPage() {
                     className="w-10 h-10 rounded-md flex items-center justify-center text-white text-[10px] font-bold"
                     style={{ backgroundColor: pdfColors.primary }}
                   >
-                    TC
+                    QX
                   </div>
                   <div>
                     <div className="text-base font-bold" style={{ color: pdfColors.dark }}>
-                      {pdfBrand.nombre_marca || tenant?.nombre || "Trip Conecta"}
+                      {pdfBrand.nombre_marca || tenant?.nombre || "Quotix Travel"}
                     </div>
                     <div className="text-[10px]" style={{ color: pdfColors.textLight }}>
                       {pdfBrand.tagline || "Agencia de viajes"}
@@ -906,7 +906,7 @@ export default function ConfiguracionPage() {
                 style={{ borderTop: `1px solid ${pdfColors.primaryLight}` }}
               >
                 <div className="text-[10px]" style={{ color: pdfColors.textLight }}>
-                  {pdfBrand.website || tenant?.dominio || "tripconecta.com"}
+                  {pdfBrand.website || tenant?.dominio || "quotixos.com"}
                 </div>
                 <div
                   className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[8px] font-bold"

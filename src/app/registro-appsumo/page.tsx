@@ -268,7 +268,7 @@ function RegistrationForm() {
               </label>
               <div className="relative group">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] text-sm">
-                  panel.tripconecta.com/
+                  travel.quotixos.com/
                 </span>
                 <input
                   type="text"

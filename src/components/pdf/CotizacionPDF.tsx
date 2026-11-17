@@ -4,7 +4,7 @@ import { Document, Page, Text, View, StyleSheet, Image, Font, Link } from '@reac
 import { calcularTotalesDesdeServicios } from '@/components/cotizaciones/hooks/useCotizacionPricing';
 
 // ============================================
-// COLORES DE MARCA TRIP CONECTA
+// COLORES DE MARCA QUOTIX TRAVEL
 // ============================================
 const DEFAULT_COLORS = {
   primary: '#0d9488',      // Teal-600 (color principal)
@@ -829,9 +829,9 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
   const { cotizacion, cliente, paquete, pasajeros, hospedaje, traslados, seguros, extras, cruceros, vuelos, vendedor, brand } = data;
   const mostrarDesglose = mostrarDesgloseProp !== false;
   const hasBrand = !!(brand && (brand.logo_url || brand.nombre_marca || brand.tagline || brand.email || brand.telefono || brand.website || brand.footer));
-  const brandWebsiteRaw = (brand?.website?.trim() || 'tripconecta.com').replace(/^https?:\/\//, '');
+  const brandWebsiteRaw = (brand?.website?.trim() || 'quotixos.com').replace(/^https?:\/\//, '');
   const brandWebsite = brandWebsiteRaw.startsWith('www.') ? brandWebsiteRaw : `www.${brandWebsiteRaw}`;
-  const brandName = brand?.nombre_marca?.trim() || `${vendedor.nombre || ''} ${vendedor.apellido || ''}`.trim() || 'Trip Conecta';
+  const brandName = brand?.nombre_marca?.trim() || `${vendedor.nombre || ''} ${vendedor.apellido || ''}`.trim() || 'Quotix Travel';
   
   // Calcular duración del viaje
   const calcularDuracion = () => {
@@ -1510,7 +1510,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
               <Image src={brand.logo_url} style={styles.footerLogoImage} />
             ) : null}
             {!hasBrand ? (
-              <Image src="/logo-trip-conecta.png" style={styles.footerLogoImage} />
+              <Image src="/quotix_isotipo_q_v2.png" style={styles.footerLogoImage} />
             ) : null}
             <View style={styles.footerLogoText}>
               {hasBrand && brand?.footer ? (
