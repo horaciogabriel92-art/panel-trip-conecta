@@ -23,670 +23,670 @@ const DEFAULT_COLORS = {
 // ============================================
 function createStyles(COLORS: typeof DEFAULT_COLORS) {
   return StyleSheet.create({
-  page: {
-    padding: 25,
-    fontFamily: 'Helvetica',
-    fontSize: 9,
-    color: COLORS.text,
-  },
-  
-  // Header
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-    paddingBottom: 10,
-    borderBottom: `2px solid ${COLORS.primary}`,
-  },
-  logoSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  logoBox: {
-    width: 50,
-    height: 50,
-    backgroundColor: COLORS.primary,
-    borderRadius: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoText: {
-    color: 'white',
-    fontSize: 8,
-    textAlign: 'center',
-  },
-  brandLogo: {
-    height: 40,
-    maxWidth: 120,
-    objectFit: 'contain',
-  },
-  coverImage: {
-    width: '100%',
-    height: 140,
-    objectFit: 'cover',
-    borderRadius: 6,
-    marginBottom: 12,
-  },
-  companyName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-  },
-  companyTagline: {
-    fontSize: 9,
-    color: COLORS.textLight,
-  },
-  quoteInfo: {
-    textAlign: 'right',
-  },
-  quoteNumber: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-  },
-  quoteDate: {
-    fontSize: 9,
-    color: COLORS.textLight,
-    marginTop: 4,
-  },
+    page: {
+      padding: 25,
+      fontFamily: 'Helvetica',
+      fontSize: 9,
+      color: COLORS.text,
+    },
 
-  // Secciones
-  section: {
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-    marginBottom: 6,
-    textTransform: 'uppercase',
-    lineHeight: 1.4,
-  },
+    // Header
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 12,
+      paddingBottom: 10,
+      borderBottom: `2px solid ${COLORS.primary}`,
+    },
+    logoSection: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    logoBox: {
+      width: 50,
+      height: 50,
+      backgroundColor: COLORS.primary,
+      borderRadius: 6,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    logoText: {
+      color: 'white',
+      fontSize: 8,
+      textAlign: 'center',
+    },
+    brandLogo: {
+      height: 40,
+      maxWidth: 120,
+      objectFit: 'contain',
+    },
+    coverImage: {
+      width: '100%',
+      height: 140,
+      objectFit: 'cover',
+      borderRadius: 6,
+      marginBottom: 12,
+    },
+    companyName: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: COLORS.dark,
+    },
+    companyTagline: {
+      fontSize: 9,
+      color: COLORS.textLight,
+    },
+    quoteInfo: {
+      textAlign: 'right',
+    },
+    quoteNumber: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: COLORS.primary,
+    },
+    quoteDate: {
+      fontSize: 9,
+      color: COLORS.textLight,
+      marginTop: 4,
+    },
 
-  // Cards de info
-  infoGrid: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  infoCard: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    padding: 10,
-    borderRadius: 6,
-    borderLeft: `4px solid ${COLORS.primary}`,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    marginBottom: 4,
-  },
-  infoLabel: {
-    width: 80,
-    fontSize: 9,
-    color: COLORS.textLight,
-  },
-  infoValue: {
-    flex: 1,
-    fontSize: 9,
-    fontWeight: 'bold',
-  },
+    // Secciones
+    section: {
+      marginBottom: 10,
+    },
+    sectionTitle: {
+      fontSize: 11,
+      fontWeight: 'bold',
+      color: COLORS.primary,
+      marginBottom: 6,
+      textTransform: 'uppercase',
+      lineHeight: 1.4,
+    },
 
-  // Paquete
-  packageCard: {
-    flexDirection: 'row',
-    gap: 10,
-    backgroundColor: COLORS.background,
-    padding: 8,
-    borderRadius: 6,
-  },
-  packageImage: {
-    width: 80,
-    height: 60,
-    borderRadius: 4,
-  },
-  packageDetails: {
-    flex: 1,
-  },
-  packageTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 6,
-  },
-  packageMeta: {
-    flexDirection: 'row',
-    gap: 15,
-    marginBottom: 8,
-  },
-  metaItem: {
-    fontSize: 9,
-    color: COLORS.textLight,
-  },
-  metaBold: {
-    fontWeight: 'bold',
-    color: COLORS.dark,
-  },
-  packageDescription: {
-    fontSize: 9,
-    color: COLORS.textLight,
-    lineHeight: 1.4,
-  },
+    // Cards de info
+    infoGrid: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    infoCard: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+      padding: 10,
+      borderRadius: 6,
+      borderLeft: `4px solid ${COLORS.primary}`,
+    },
+    infoRow: {
+      flexDirection: 'row',
+      marginBottom: 4,
+    },
+    infoLabel: {
+      width: 80,
+      fontSize: 9,
+      color: COLORS.textLight,
+    },
+    infoValue: {
+      flex: 1,
+      fontSize: 9,
+      fontWeight: 'bold',
+    },
 
-  // Tabla de precios
-  pricingTable: {
-    marginTop: 10,
-  },
-  tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.dark,
-    color: 'white',
-    padding: 8,
-    fontWeight: 'bold',
-    fontSize: 9,
-  },
-  tableRow: {
-    flexDirection: 'row',
-    padding: 8,
-    borderBottom: `1px solid ${COLORS.textLight}`,
-    fontSize: 9,
-  },
-  tableCell: {
-    flex: 1,
-  },
-  tableCellRight: {
-    flex: 1,
-    textAlign: 'right',
-  },
-  totalRow: {
-    backgroundColor: COLORS.primary,
-    color: 'white',
-    padding: 10,
-    marginTop: 8,
-    borderRadius: 4,
-  },
-  totalText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  totalAmount: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    textAlign: 'right',
-  },
+    // Paquete
+    packageCard: {
+      flexDirection: 'row',
+      gap: 10,
+      backgroundColor: COLORS.background,
+      padding: 8,
+      borderRadius: 6,
+    },
+    packageImage: {
+      width: 80,
+      height: 60,
+      borderRadius: 4,
+    },
+    packageDetails: {
+      flex: 1,
+    },
+    packageTitle: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      marginBottom: 6,
+    },
+    packageMeta: {
+      flexDirection: 'row',
+      gap: 15,
+      marginBottom: 8,
+    },
+    metaItem: {
+      fontSize: 9,
+      color: COLORS.textLight,
+    },
+    metaBold: {
+      fontWeight: 'bold',
+      color: COLORS.dark,
+    },
+    packageDescription: {
+      fontSize: 9,
+      color: COLORS.textLight,
+      lineHeight: 1.4,
+    },
 
-  // Info de pago
-  paymentSection: {
-    backgroundColor: COLORS.background,
-    padding: 12,
-    borderRadius: 6,
-    marginTop: 15,
-  },
-  paymentGrid: {
-    flexDirection: 'row',
-    gap: 20,
-  },
-  paymentItem: {
-    flex: 1,
-  },
-  paymentLabel: {
-    fontSize: 8,
-    color: COLORS.textLight,
-  },
-  paymentValue: {
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
+    // Tabla de precios
+    pricingTable: {
+      marginTop: 10,
+    },
+    tableHeader: {
+      flexDirection: 'row',
+      backgroundColor: COLORS.dark,
+      color: 'white',
+      padding: 8,
+      fontWeight: 'bold',
+      fontSize: 9,
+    },
+    tableRow: {
+      flexDirection: 'row',
+      padding: 8,
+      borderBottom: `1px solid ${COLORS.textLight}`,
+      fontSize: 9,
+    },
+    tableCell: {
+      flex: 1,
+    },
+    tableCellRight: {
+      flex: 1,
+      textAlign: 'right',
+    },
+    totalRow: {
+      backgroundColor: COLORS.primary,
+      color: 'white',
+      padding: 10,
+      marginTop: 8,
+      borderRadius: 4,
+    },
+    totalText: {
+      fontSize: 12,
+      fontWeight: 'bold',
+    },
+    totalAmount: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      textAlign: 'right',
+    },
 
-  // Banner de validez
-  validityBanner: {
-    backgroundColor: COLORS.background,
-    border: `1px solid ${COLORS.primaryLight}`,
-    padding: 10,
-    borderRadius: 6,
-    marginTop: 15,
-    textAlign: 'center',
-  },
-  validityText: {
-    fontSize: 9,
-    color: COLORS.dark,
-  },
-  validityHighlight: {
-    fontWeight: 'bold',
-    color: COLORS.primaryDark,
-  },
+    // Info de pago
+    paymentSection: {
+      backgroundColor: COLORS.background,
+      padding: 12,
+      borderRadius: 6,
+      marginTop: 15,
+    },
+    paymentGrid: {
+      flexDirection: 'row',
+      gap: 20,
+    },
+    paymentItem: {
+      flex: 1,
+    },
+    paymentLabel: {
+      fontSize: 8,
+      color: COLORS.textLight,
+    },
+    paymentValue: {
+      fontSize: 10,
+      fontWeight: 'bold',
+    },
 
-  // Vendedor
-  sellerSection: {
-    marginTop: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  sellerAvatar: {
-    width: 35,
-    height: 35,
-    backgroundColor: COLORS.primary,
-    borderRadius: 9999,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sellerAvatarText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 12,
-  },
-  sellerInfo: {},
-  sellerName: {
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  sellerContact: {
-    fontSize: 8,
-    color: COLORS.textLight,
-  },
+    // Banner de validez
+    validityBanner: {
+      backgroundColor: COLORS.background,
+      border: `1px solid ${COLORS.primaryLight}`,
+      padding: 10,
+      borderRadius: 6,
+      marginTop: 15,
+      textAlign: 'center',
+    },
+    validityText: {
+      fontSize: 9,
+      color: COLORS.dark,
+    },
+    validityHighlight: {
+      fontWeight: 'bold',
+      color: COLORS.primaryDark,
+    },
 
-  // Footer
-  footer: {
-    marginTop: 15,
-    paddingTop: 8,
-    borderTop: `1px solid ${COLORS.primaryLight}`,
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 7,
-    color: COLORS.textLight,
-    textAlign: 'center',
-  },
-  footerLogo: {
-    width: 40,
-    height: 40,
-    marginBottom: 5,
-    alignSelf: 'center',
-  },
-  footerWithLogo: {
-    marginTop: 20,
-    paddingTop: 15,
-    borderTop: `1px solid ${COLORS.textLight}`,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  footerLogoSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  footerLogoImage: {
-    width: 35,
-    height: 35,
-  },
-  footerLogoText: {
-    flexDirection: 'column',
-  },
-  footerVendedorSection: {
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-  },
+    // Vendedor
+    sellerSection: {
+      marginTop: 15,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    sellerAvatar: {
+      width: 35,
+      height: 35,
+      backgroundColor: COLORS.primary,
+      borderRadius: 9999,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    sellerAvatarText: {
+      color: 'white',
+      fontWeight: 'bold',
+      fontSize: 12,
+    },
+    sellerInfo: {},
+    sellerName: {
+      fontSize: 10,
+      fontWeight: 'bold',
+    },
+    sellerContact: {
+      fontSize: 8,
+      color: COLORS.textLight,
+    },
 
-  // Página 2 - Itinerario
-  dayCard: {
-    marginBottom: 15,
-    padding: 12,
-    backgroundColor: COLORS.background,
-    borderRadius: 8,
-    borderLeft: `4px solid ${COLORS.primary}`,
-  },
-  dayHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 8,
-  },
-  dayBadge: {
-    backgroundColor: COLORS.primary,
-    color: 'white',
-    padding: '4 12',
-    borderRadius: 20,
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  dayTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  dayContent: {
-    fontSize: 9,
-    color: COLORS.textLight,
-    lineHeight: 1.5,
-  },
+    // Footer
+    footer: {
+      marginTop: 15,
+      paddingTop: 8,
+      borderTop: `1px solid ${COLORS.primaryLight}`,
+      alignItems: 'center',
+    },
+    footerText: {
+      fontSize: 7,
+      color: COLORS.textLight,
+      textAlign: 'center',
+    },
+    footerLogo: {
+      width: 40,
+      height: 40,
+      marginBottom: 5,
+      alignSelf: 'center',
+    },
+    footerWithLogo: {
+      marginTop: 20,
+      paddingTop: 15,
+      borderTop: `1px solid ${COLORS.textLight}`,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    footerLogoSection: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    footerLogoImage: {
+      width: 35,
+      height: 35,
+    },
+    footerLogoText: {
+      flexDirection: 'column',
+    },
+    footerVendedorSection: {
+      flexDirection: 'column',
+      alignItems: 'flex-end',
+    },
 
-  // Includes
-  includesSection: {
-    marginTop: 20,
-  },
-  includesGrid: {
-    flexDirection: 'row',
-    gap: 20,
-  },
-  includesBox: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 8,
-  },
-  includesBoxIncluye: {
-    backgroundColor: '#e8f5e9',
-    border: '1px solid #a5d6a7',
-  },
-  includesBoxNoIncluye: {
-    backgroundColor: '#ffebee',
-    border: '1px solid #ef9a9a',
-  },
-  includesTitle: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  includesTitleGreen: {
-    color: '#1b5e20',
-  },
-  includesTitleRed: {
-    color: '#b71c1c',
-  },
-  includesItem: {
-    fontSize: 9,
-    marginBottom: 6,
-    paddingLeft: 14,
-    lineHeight: 1.5,
-    color: '#1f2937',
-  },
-  includesItemGreen: {
-    color: '#2e7d32',
-  },
-  includesItemRed: {
-    color: '#c62828',
-  },
+    // Página 2 - Itinerario
+    dayCard: {
+      marginBottom: 15,
+      padding: 12,
+      backgroundColor: COLORS.background,
+      borderRadius: 8,
+      borderLeft: `4px solid ${COLORS.primary}`,
+    },
+    dayHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      marginBottom: 8,
+    },
+    dayBadge: {
+      backgroundColor: COLORS.primary,
+      color: 'white',
+      padding: '4 12',
+      borderRadius: 20,
+      fontSize: 10,
+      fontWeight: 'bold',
+    },
+    dayTitle: {
+      fontSize: 12,
+      fontWeight: 'bold',
+    },
+    dayContent: {
+      fontSize: 9,
+      color: COLORS.textLight,
+      lineHeight: 1.5,
+    },
 
-  // Políticas
-  policiesSection: {
-    marginTop: 15,
-    padding: 12,
-    backgroundColor: COLORS.background,
-    borderRadius: 6,
-    border: `1px solid ${COLORS.primaryLight}`,
-  },
-  policiesTitle: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-    marginBottom: 6,
-  },
-  policiesText: {
-    fontSize: 9,
-    color: COLORS.dark,
-    lineHeight: 1.4,
-  },
-  
-  // Hoteles
-  hotelCard: {
-    backgroundColor: COLORS.background,
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 8,
-    borderLeft: `3px solid ${COLORS.primary}`,
-  },
-  hotelHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  hotelName: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-    flex: 1,
-    lineHeight: 1.4,
-    marginBottom: 3,
-  },
-  hotelButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  hotelButtonText: {
-    color: 'white',
-    fontSize: 8,
-    fontWeight: 'bold',
-  },
-  hotelInfo: {
-    fontSize: 9,
-    color: COLORS.textLight,
-    marginTop: 3,
-    lineHeight: 1.5,
-  },
-  cardTitle: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-    lineHeight: 1.4,
-    marginBottom: 3,
-  },
-  
-  // Vuelos - Tarjeta limpia tipo itinerary
-  flightCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 12,
-    border: `1px solid ${COLORS.primaryLight}`,
-  },
-  flightTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-    paddingBottom: 8,
-    borderBottom: `1px solid ${COLORS.background}`,
-  },
-  flightAirlineRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  airlineLogo: {
-    width: 20,
-    height: 20,
-    objectFit: 'contain',
-  },
-  flightAirlineName: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-  },
-  flightNumberBadge: {
-    fontSize: 9,
-    color: COLORS.textLight,
-  },
-  flightMain: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  flightOrigin: {
-    alignItems: 'flex-start',
-    width: '30%',
-  },
-  flightDestination: {
-    alignItems: 'flex-end',
-    width: '30%',
-  },
-  flightTime: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-  },
-  flightDate: {
-    fontSize: 9,
-    color: COLORS.textLight,
-    marginTop: 2,
-  },
-  flightLocation: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: COLORS.primaryDark,
-    marginTop: 6,
-  },
-  flightAirportName: {
-    fontSize: 8,
-    color: COLORS.textLight,
-    marginTop: 2,
-    textAlign: 'left',
-  },
-  flightAirportNameRight: {
-    textAlign: 'right',
-  },
-  flightConnector: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 8,
-  },
-  flightConnectorLine: {
-    width: '100%',
-    height: 2,
-    backgroundColor: COLORS.primary,
-    marginBottom: 4,
-  },
-  flightConnectorArrow: {
-    fontSize: 10,
-    color: COLORS.primary,
-    fontWeight: 'bold',
-  },
-  flightDuration: {
-    fontSize: 8,
-    color: COLORS.textLight,
-    marginTop: 2,
-  },
-  flightBottom: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 12,
-    paddingTop: 8,
-    borderTop: `1px dashed ${COLORS.primaryLight}`,
-  },
-  flightBottomItem: {
-    fontSize: 9,
-    color: COLORS.textLight,
-  },
-  flightBottomLabel: {
-    fontWeight: 'bold',
-    color: COLORS.dark,
-  },
-  
-  // Price breakdown
-  priceBreakdownSection: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: COLORS.background,
-    borderRadius: 6,
-    borderLeft: `3px solid ${COLORS.primary}`,
-  },
-  priceBreakdownTitle: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-    marginBottom: 6,
-  },
-  priceBreakdownRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  priceBreakdownLabel: {
-    fontSize: 9,
-    color: COLORS.textLight,
-  },
-  priceBreakdownValue: {
-    fontSize: 9,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-  },
-  priceBreakdownDivider: {
-    height: 1,
-    backgroundColor: COLORS.textLight,
-    marginVertical: 6,
-  },
-  priceBreakdownTotal: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 4,
-  },
-  priceBreakdownTotalLabel: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-  },
-  priceBreakdownTotalValue: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-  },
+    // Includes
+    includesSection: {
+      marginTop: 20,
+    },
+    includesGrid: {
+      flexDirection: 'row',
+      gap: 20,
+    },
+    includesBox: {
+      flex: 1,
+      padding: 16,
+      borderRadius: 8,
+    },
+    includesBoxIncluye: {
+      backgroundColor: '#e8f5e9',
+      border: '1px solid #a5d6a7',
+    },
+    includesBoxNoIncluye: {
+      backgroundColor: '#ffebee',
+      border: '1px solid #ef9a9a',
+    },
+    includesTitle: {
+      fontSize: 11,
+      fontWeight: 'bold',
+      marginBottom: 10,
+    },
+    includesTitleGreen: {
+      color: '#1b5e20',
+    },
+    includesTitleRed: {
+      color: '#b71c1c',
+    },
+    includesItem: {
+      fontSize: 9,
+      marginBottom: 6,
+      paddingLeft: 14,
+      lineHeight: 1.5,
+      color: '#1f2937',
+    },
+    includesItemGreen: {
+      color: '#2e7d32',
+    },
+    includesItemRed: {
+      color: '#c62828',
+    },
 
-  // Opciones de hoteles
-  optionCard: {
-    backgroundColor: COLORS.background,
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 8,
-    borderLeft: `3px solid ${COLORS.primary}`,
-  },
-  optionCardSelected: {
-    borderLeft: `3px solid ${COLORS.primaryDark}`,
-    backgroundColor: '#ccfbf1',
-  },
-  optionTitle: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-    marginBottom: 4,
-    lineHeight: 1.4,
-  },
-  optionDetail: {
-    fontSize: 9,
-    color: COLORS.textLight,
-    marginBottom: 3,
-    lineHeight: 1.5,
-  },
-  optionTotalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 6,
-    paddingTop: 6,
-    borderTop: `1px dashed ${COLORS.primaryLight}`,
-  },
-  optionTotalLabel: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-  },
-  optionTotalValue: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-  },
-  optionBadge: {
-    backgroundColor: COLORS.primary,
-    color: 'white',
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    fontSize: 8,
-    fontWeight: 'bold',
-    alignSelf: 'flex-start',
-    marginBottom: 6,
-    lineHeight: 1.4,
-  },
+    // Políticas
+    policiesSection: {
+      marginTop: 15,
+      padding: 12,
+      backgroundColor: COLORS.background,
+      borderRadius: 6,
+      border: `1px solid ${COLORS.primaryLight}`,
+    },
+    policiesTitle: {
+      fontSize: 10,
+      fontWeight: 'bold',
+      color: COLORS.dark,
+      marginBottom: 6,
+    },
+    policiesText: {
+      fontSize: 9,
+      color: COLORS.dark,
+      lineHeight: 1.4,
+    },
+
+    // Hoteles
+    hotelCard: {
+      backgroundColor: COLORS.background,
+      borderRadius: 6,
+      padding: 10,
+      marginBottom: 8,
+      borderLeft: `3px solid ${COLORS.primary}`,
+    },
+    hotelHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 6,
+    },
+    hotelName: {
+      fontSize: 11,
+      fontWeight: 'bold',
+      color: COLORS.dark,
+      flex: 1,
+      lineHeight: 1.4,
+      marginBottom: 3,
+    },
+    hotelButton: {
+      backgroundColor: COLORS.primary,
+      borderRadius: 4,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    hotelButtonText: {
+      color: 'white',
+      fontSize: 8,
+      fontWeight: 'bold',
+    },
+    hotelInfo: {
+      fontSize: 9,
+      color: COLORS.textLight,
+      marginTop: 3,
+      lineHeight: 1.5,
+    },
+    cardTitle: {
+      fontSize: 11,
+      fontWeight: 'bold',
+      color: COLORS.dark,
+      lineHeight: 1.4,
+      marginBottom: 3,
+    },
+
+    // Vuelos - Tarjeta limpia tipo itinerary
+    flightCard: {
+      backgroundColor: COLORS.white,
+      borderRadius: 8,
+      padding: 14,
+      marginBottom: 12,
+      border: `1px solid ${COLORS.primaryLight}`,
+    },
+    flightTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 12,
+      paddingBottom: 8,
+      borderBottom: `1px solid ${COLORS.background}`,
+    },
+    flightAirlineRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    airlineLogo: {
+      width: 20,
+      height: 20,
+      objectFit: 'contain',
+    },
+    flightAirlineName: {
+      fontSize: 10,
+      fontWeight: 'bold',
+      color: COLORS.dark,
+    },
+    flightNumberBadge: {
+      fontSize: 9,
+      color: COLORS.textLight,
+    },
+    flightMain: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    flightOrigin: {
+      alignItems: 'flex-start',
+      width: '30%',
+    },
+    flightDestination: {
+      alignItems: 'flex-end',
+      width: '30%',
+    },
+    flightTime: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: COLORS.dark,
+    },
+    flightDate: {
+      fontSize: 9,
+      color: COLORS.textLight,
+      marginTop: 2,
+    },
+    flightLocation: {
+      fontSize: 12,
+      fontWeight: 'bold',
+      color: COLORS.primaryDark,
+      marginTop: 6,
+    },
+    flightAirportName: {
+      fontSize: 8,
+      color: COLORS.textLight,
+      marginTop: 2,
+      textAlign: 'left',
+    },
+    flightAirportNameRight: {
+      textAlign: 'right',
+    },
+    flightConnector: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 8,
+    },
+    flightConnectorLine: {
+      width: '100%',
+      height: 2,
+      backgroundColor: COLORS.primary,
+      marginBottom: 4,
+    },
+    flightConnectorArrow: {
+      fontSize: 10,
+      color: COLORS.primary,
+      fontWeight: 'bold',
+    },
+    flightDuration: {
+      fontSize: 8,
+      color: COLORS.textLight,
+      marginTop: 2,
+    },
+    flightBottom: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 12,
+      paddingTop: 8,
+      borderTop: `1px dashed ${COLORS.primaryLight}`,
+    },
+    flightBottomItem: {
+      fontSize: 9,
+      color: COLORS.textLight,
+    },
+    flightBottomLabel: {
+      fontWeight: 'bold',
+      color: COLORS.dark,
+    },
+
+    // Price breakdown
+    priceBreakdownSection: {
+      marginTop: 10,
+      padding: 10,
+      backgroundColor: COLORS.background,
+      borderRadius: 6,
+      borderLeft: `3px solid ${COLORS.primary}`,
+    },
+    priceBreakdownTitle: {
+      fontSize: 10,
+      fontWeight: 'bold',
+      color: COLORS.dark,
+      marginBottom: 6,
+    },
+    priceBreakdownRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 4,
+    },
+    priceBreakdownLabel: {
+      fontSize: 9,
+      color: COLORS.textLight,
+    },
+    priceBreakdownValue: {
+      fontSize: 9,
+      fontWeight: 'bold',
+      color: COLORS.dark,
+    },
+    priceBreakdownDivider: {
+      height: 1,
+      backgroundColor: COLORS.textLight,
+      marginVertical: 6,
+    },
+    priceBreakdownTotal: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 4,
+    },
+    priceBreakdownTotalLabel: {
+      fontSize: 10,
+      fontWeight: 'bold',
+      color: COLORS.dark,
+    },
+    priceBreakdownTotalValue: {
+      fontSize: 10,
+      fontWeight: 'bold',
+      color: COLORS.primary,
+    },
+
+    // Opciones de hoteles
+    optionCard: {
+      backgroundColor: COLORS.background,
+      borderRadius: 6,
+      padding: 10,
+      marginBottom: 8,
+      borderLeft: `3px solid ${COLORS.primary}`,
+    },
+    optionCardSelected: {
+      borderLeft: `3px solid ${COLORS.primaryDark}`,
+      backgroundColor: '#ccfbf1',
+    },
+    optionTitle: {
+      fontSize: 11,
+      fontWeight: 'bold',
+      color: COLORS.dark,
+      marginBottom: 4,
+      lineHeight: 1.4,
+    },
+    optionDetail: {
+      fontSize: 9,
+      color: COLORS.textLight,
+      marginBottom: 3,
+      lineHeight: 1.5,
+    },
+    optionTotalRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 6,
+      paddingTop: 6,
+      borderTop: `1px dashed ${COLORS.primaryLight}`,
+    },
+    optionTotalLabel: {
+      fontSize: 10,
+      fontWeight: 'bold',
+      color: COLORS.dark,
+    },
+    optionTotalValue: {
+      fontSize: 10,
+      fontWeight: 'bold',
+      color: COLORS.primary,
+    },
+    optionBadge: {
+      backgroundColor: COLORS.primary,
+      color: 'white',
+      borderRadius: 4,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      fontSize: 8,
+      fontWeight: 'bold',
+      alignSelf: 'flex-start',
+      marginBottom: 6,
+      lineHeight: 1.4,
+    },
   });
 }
 
@@ -832,7 +832,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
   const brandWebsiteRaw = (brand?.website?.trim() || 'quotixos.com').replace(/^https?:\/\//, '');
   const brandWebsite = brandWebsiteRaw.startsWith('www.') ? brandWebsiteRaw : `www.${brandWebsiteRaw}`;
   const brandName = brand?.nombre_marca?.trim() || `${vendedor.nombre || ''} ${vendedor.apellido || ''}`.trim() || 'Quotix Travel';
-  
+
   // Calcular duración del viaje
   const calcularDuracion = () => {
     if (hospedaje && hospedaje.length > 0) {
@@ -855,7 +855,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
     }
     return paquete.duracion_dias || 0;
   };
-  
+
   const duracionDias = calcularDuracion();
   const esCotizacionManual = cotizacion.tipo_cotizacion === 'manual';
   const tituloCotizacion = cotizacion.nombre_cotizacion || paquete.titulo;
@@ -1325,7 +1325,7 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
           <Text style={styles.sectionTitle}>
             {mostrarDesglose ? 'Detalle de Precios' : 'Resumen de Precios'}
           </Text>
-          
+
           <View style={styles.priceBreakdownSection}>
             {esCotizacionManual && mostrarDesglose && (
               <>
@@ -1402,9 +1402,9 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
                 ${formatPrice(parsePrice(preciosPdf.total || 0) / (cotizacion.num_pasajeros || 1))} {preciosPdf.moneda}
               </Text>
             </View>
-            
+
             <View style={styles.priceBreakdownDivider} />
-            
+
             {/* Total */}
             <View style={styles.priceBreakdownTotal}>
               <Text style={styles.priceBreakdownTotalLabel}>TOTAL ({cotizacion.num_pasajeros} pasajeros)</Text>
@@ -1417,9 +1417,9 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
         {(() => {
           const incluye = cotizacion.paquete_data?.incluye || cotizacion.incluye || paquete.incluye || [];
           const noIncluye = cotizacion.paquete_data?.no_incluye || cotizacion.no_incluye || paquete.no_incluye || [];
-          
+
           if (incluye.length === 0 && noIncluye.length === 0) return null;
-          
+
           return (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Detalles del Servicio</Text>
@@ -1450,25 +1450,25 @@ export function CotizacionPDFDocument({ data, colors, mostrarDesglose: mostrarDe
         {(() => {
           const itin = cotizacion.paquete_data?.itinerario || paquete.itinerario;
           if (!itin) return null;
-          
+
           return (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Itinerario</Text>
-              
+
               {/* Si es string */}
               {typeof itin === 'string' && (
                 <View style={styles.dayCard}>
                   <Text style={styles.dayContent}>{itin}</Text>
                 </View>
               )}
-              
+
               {/* Si es objeto con {texto, dias} */}
               {typeof itin === 'object' && !Array.isArray(itin) && (itin as any).texto && (
                 <View style={styles.dayCard}>
                   <Text style={styles.dayContent}>{(itin as any).texto}</Text>
                 </View>
               )}
-              
+
               {/* Si es array de días */}
               {typeof itin === 'object' && Array.isArray(itin) && itin.length > 0 && (
                 itin.map((dia: any, idx: number) => (

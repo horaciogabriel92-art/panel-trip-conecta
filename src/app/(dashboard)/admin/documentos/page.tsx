@@ -92,6 +92,7 @@ export default function DocumentosAdmin() {
     formData.append('tipo', uploadForm.tipo);
     formData.append('descripcion', uploadForm.descripcion);
     formData.append('archivo', uploadForm.archivo);
+    formData.append('documento', uploadForm.archivo);
 
     try {
       await api.post('/documentos', formData);
